@@ -19,10 +19,10 @@ public class UsuarioDao {
 	private EntityManager manager;
 
 	@Transactional
-	public void inserir(Usuario usuario){
+	public void inserir(Usuario usuario) {
 		manager.persist(usuario);
 	}
-	
+
 	// @Transactional
 	public Usuario obter(Long idUsuario) {
 		return manager.find(Usuario.class, idUsuario);
@@ -30,7 +30,8 @@ public class UsuarioDao {
 
 	// @Transactional
 	public Usuario obter(String login_usuario) {
-		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.nome = :login_usuario", Usuario.class);
+		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
+				Usuario.class);
 		query.setParameter("login_usuario", login_usuario);
 		try {
 			return query.getSingleResult();
@@ -41,17 +42,17 @@ public class UsuarioDao {
 
 	// @Transactional
 	public List<Host> listarHosts(String login_usuario) {
-		TypedQuery<Host> query = manager.createQuery("SELECT h FROM Host h WHERE h.usuario.nome = :login_usuario",Host.class); 
+		TypedQuery<Host> query = manager.createQuery("SELECT h FROM Host h WHERE h.usuario.login = :login_usuario",
+				Host.class);
 		query.setParameter("login_usuario", login_usuario);
 		return query.getResultList();
 	}
 
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
-		TypedQuery<Usuario> query = manager
-				.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class);
-		System.out.println("login = " + usuario.getLogin());
-		
+		TypedQuery<Usuario> query = manager.createQuery(
+				"SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class);
+
 		query.setParameter("login_usuario", usuario.getLogin());
 		query.setParameter("senha_usuario", usuario.getSenha());
 		try {
@@ -61,5 +62,5 @@ public class UsuarioDao {
 			return null;
 		}
 	}
-	
+
 }

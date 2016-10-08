@@ -43,6 +43,7 @@ public class FiltroJwtSeguranca implements Filter {
 			Map<String, Object> claims = verifier.verify(token);
 			chain.doFilter(req, resp);
 		} catch (Exception e) {
+			e.printStackTrace();
 			if (token == null) {
 				response.sendError(HttpStatus.UNAUTHORIZED.value());
 			} else {

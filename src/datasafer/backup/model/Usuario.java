@@ -14,8 +14,10 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({"id","hosts"})
+@JsonIgnoreProperties({ "id", "hosts" })
 @Entity
 public class Usuario {
 
@@ -67,10 +69,17 @@ public class Usuario {
 	private String login;
 
 	@Column
+	@JsonProperty(access = Access.WRITE_ONLY)
 	private String senha;
 
 	@Enumerated(EnumType.STRING)
 	private Status status;
+
+	@Column
+	private Long armazenamento;
+
+	@Enumerated(EnumType.STRING)
+	private Privilegio privilegio;
 
 	public Long getId() {
 		return id;
@@ -105,16 +114,10 @@ public class Usuario {
 	}
 
 	public String getSenha() {
-		
-		
-		
 		return senha;
 	}
 
 	public void setSenha(String senha) {
-		/*JWTSigner signer = new JWTSigner(UsuarioRestController.SECRET);
-		HashMap<String,Object> claims = new HashMap<>();
-		this.senha = signer.sign(claims);*/
 		this.senha = senha;
 	}
 
@@ -141,11 +144,5 @@ public class Usuario {
 	public void setPrivilegio(Privilegio privilegio) {
 		this.privilegio = privilegio;
 	}
-
-	@Column
-	private Long armazenamento;
-
-	@Enumerated(EnumType.STRING)
-	private Privilegio privilegio;
 
 }

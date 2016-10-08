@@ -25,9 +25,9 @@ public class HostDao {
 	}
 	
 	//@Transactional
-	public Host obter(String nome_usuario, String nome_host){
-		TypedQuery<Host> query = manager.createQuery("SELECT h FROM Host h WHERE h.usuario.nome = :nome_usuario AND h.nome = :nome_host",Host.class); 
-		query.setParameter("nome_usuario", nome_usuario);
+	public Host obter(String login_usuario, String nome_host){
+		TypedQuery<Host> query = manager.createQuery("SELECT h FROM Host h WHERE h.usuario.login = :login_usuario AND h.nome = :nome_host",Host.class); 
+		query.setParameter("login_usuario", login_usuario);
 		query.setParameter("nome_host", nome_host);
 		try {
 			return query.getSingleResult();
