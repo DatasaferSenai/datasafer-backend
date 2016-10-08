@@ -1,10 +1,11 @@
-package datasafer.backup.modelo;
+package datasafer.backup.model;
 
 import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -14,7 +15,7 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties("usuario")
+@JsonIgnoreProperties({"id","usuario","backups"})
 @Entity
 public class Host {
 	
@@ -23,21 +24,21 @@ public class Host {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(length = 20)
-	private String host;
+	@Column(length = 20, nullable = false)
+	private String nome;
 	
 	// RELAÇÕES
 	@ManyToOne
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
-	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
 
 	// ATRIBUTOS
-	@Column(length = 20)
-	private String nome;
-	
+	@Column(length = 50)
+	private String descricao;
+
 	public Long getId() {
 		return id;
 	}
@@ -69,4 +70,13 @@ public class Host {
 	public void setBackups(List<Backup> backups) {
 		this.backups = backups;
 	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
+
 }

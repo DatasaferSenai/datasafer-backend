@@ -1,4 +1,4 @@
-package datasafer.backup.modelo;
+package datasafer.backup.model;
 
 import java.util.Date;
 
@@ -11,11 +11,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyEnumerated;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties("backup")
+@JsonIgnoreProperties({"id","backup"})
 @Entity
 public class Operacao {
 	

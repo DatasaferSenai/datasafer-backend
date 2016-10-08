@@ -5,15 +5,17 @@ import javax.persistence.PersistenceContext;
 
 import org.springframework.stereotype.Repository;
 
-import datasafer.backup.modelo.Usuario;
+import datasafer.backup.model.Operacao;
 
 @Repository
-public class DatasaferDao {
+public class OperacaoDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-
-	public void inserir(Usuario usuario) {
-		manager.persist(usuario);
+	
+	//@Transactional
+	public Operacao obter(Long idOperacao){
+		return manager.find(Operacao.class, idOperacao);
 	}
+	
 }

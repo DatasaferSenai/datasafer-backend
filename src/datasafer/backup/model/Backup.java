@@ -1,4 +1,4 @@
-package datasafer.backup.modelo;
+package datasafer.backup.model;
 
 import java.util.Date;
 import java.util.List;
@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,7 +16,7 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties("host")
+@JsonIgnoreProperties({ "id", "host", "operacoes" })
 @Entity
 public class Backup {
 
@@ -38,34 +39,34 @@ public class Backup {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
-	@Column(length = 20)
+
+	@Column(length = 20, nullable = false)
 	private String nome;
-	
+
 	@Column(length = 50)
 	private String descricao;
-	
+
 	// RELAÇÕES
 	@ManyToOne
 	@JoinColumn(name = "host_id")
 	private Host host;
-	
-	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true)
+
+	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Operacao> operacoes;
-	
+
 	// ATRIBUTOS
 	@Column
 	private Date inicio;
-	
+
 	@Column
 	private Frequencia frequencia;
-	
+
 	@Column
 	private Date intervalo;
-	
+
 	@Column
 	private String pasta;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -137,5 +138,5 @@ public class Backup {
 	public void setPasta(String pasta) {
 		this.pasta = pasta;
 	}
-	
+
 }

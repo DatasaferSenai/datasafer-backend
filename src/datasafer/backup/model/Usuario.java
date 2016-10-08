@@ -1,4 +1,4 @@
-package datasafer.backup.modelo;
+package datasafer.backup.model;
 
 import java.util.List;
 
@@ -7,11 +7,15 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties({"id","hosts"})
 @Entity
 public class Usuario {
 
@@ -50,24 +54,24 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(length = 20)
 	private String nome;
 
 	// RELAÇÕES
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true)
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
 	// ATRIBUTOS
-	@Column(length = 20)
-	private String usuario;
-	
-	@Column(length = 20)
+	@Column(length = 20, nullable = false, unique = true)
+	private String login;
+
+	@Column
 	private String senha;
-	
+
 	@Enumerated(EnumType.STRING)
 	private Status status;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -92,19 +96,25 @@ public class Usuario {
 		this.hosts = hosts;
 	}
 
-	public String getUsuario() {
-		return usuario;
+	public String getLogin() {
+		return login;
 	}
 
-	public void setUsuario(String usuario) {
-		this.usuario = usuario;
+	public void setLogin(String login) {
+		this.login = login;
 	}
 
 	public String getSenha() {
+		
+		
+		
 		return senha;
 	}
 
 	public void setSenha(String senha) {
+		/*JWTSigner signer = new JWTSigner(UsuarioRestController.SECRET);
+		HashMap<String,Object> claims = new HashMap<>();
+		this.senha = signer.sign(claims);*/
 		this.senha = senha;
 	}
 
@@ -134,7 +144,7 @@ public class Usuario {
 
 	@Column
 	private Long armazenamento;
-	
+
 	@Enumerated(EnumType.STRING)
 	private Privilegio privilegio;
 
