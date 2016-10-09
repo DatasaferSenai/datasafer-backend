@@ -6,6 +6,8 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,13 +16,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties({ "id", "host", "operacoes" })
+@JsonIgnoreProperties({ "id", "host","operacoes" })
 @Entity
 public class Backup {
 
-	private enum Frequencia {
+	public enum Frequencia {
 		INTERVALO("Intervalo"), DIARIO("Diario"), SEMANAL("Semanal"), MENSAL("Mensal");
 
 		private String descricao;
@@ -51,16 +56,18 @@ public class Backup {
 	@JoinColumn(name = "host_id")
 	private Host host;
 
-	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<Operacao> operacoes;
 
 	// ATRIBUTOS
+	@JsonFormat(shape=Shape.STRING,pattern="yyyy-mm-dd hh:MM:ss")
 	@Column
 	private Date inicio;
 
-	@Column
+	@Enumerated(EnumType.STRING)
 	private Frequencia frequencia;
 
+	@JsonFormat(shape=Shape.STRING,pattern="MM:ss")
 	@Column
 	private Date intervalo;
 
@@ -137,6 +144,20 @@ public class Backup {
 
 	public void setPasta(String pasta) {
 		this.pasta = pasta;
+	}
+	
+	@JsonProperty("status")
+	public Operacao.Status getStatus() {
+		if(operacoes.size() > 0){
+			Operacao ultimaOperacao = operacoes.get(0);
+			for (Operacao operacao : operacoes) {
+				if(operacao.getData().before(ultimaOperacao.getData())){
+					ultimaOperacao = operacao;
+				}
+			}
+			return ultimaOperacao.getStatus();
+		}
+		return null;
 	}
 
 }

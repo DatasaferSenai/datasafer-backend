@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTSigner;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Host;
@@ -30,21 +31,42 @@ public class UsuarioRestController {
 	@Autowired
 	private UsuarioDao usuarioDao;
 
-	@RequestMapping(value = "/usuario/{login_usuario}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/backup/{login_usuario}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Usuario> obter(@PathVariable String login_usuario) {
-		Usuario usuario = usuarioDao.obter(login_usuario);
-		if (usuario != null) {
-			return ResponseEntity.ok().body(usuario);
-		} else {
-			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		try {
+			Usuario usuario = usuarioDao.obter(login_usuario);
+			if (usuario != null) {
+				return ResponseEntity.ok().body(usuario);
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		}
+		catch (Exception e){
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
-	@RequestMapping(value = "/usuario/{login_usuario}/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public List<Host> listarHosts(@PathVariable String login_usuario) {
-		return usuarioDao.listarHosts(login_usuario);
-	}
+	@RequestMapping(value = "/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Usuario> inserir(@RequestBody String strUsuario) {
+		try {
 
+			JSONObject job = new JSONObject(strUsuario);
+			Usuario usuario = new Usuario();
+
+			usuario.setArmazenamento(job.getLong("armazenamento"));
+
+			usuarioDao.inserir(usuario);
+
+			URI location = new URI("/usuario/" + usuario.getLogin());
+
+			return ResponseEntity.created(location).body(usuario);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody Usuario usuario) {
 		System.out.println(usuario.getSenha());
@@ -71,26 +93,6 @@ public class UsuarioRestController {
 				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 			}
 		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@RequestMapping(value = "/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Usuario> inserir(@RequestBody String strUsuario) {
-		try {
-
-			JSONObject job = new JSONObject(strUsuario);
-			Usuario usuario = new Usuario();
-
-			usuario.setArmazenamento(job.getLong("armazenamento"));
-
-			usuarioDao.inserir(usuario);
-
-			URI location = new URI("/usuario/" + usuario.getLogin());
-
-			return ResponseEntity.created(location).body(usuario);
-		} catch (Exception e) {
-			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}

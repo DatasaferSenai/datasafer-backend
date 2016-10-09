@@ -13,6 +13,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -21,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 @Entity
 public class Usuario {
 
-	private enum Status {
+	public enum Status {
 		ATIVO("Ativo"), SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"), SUSPENSO_TENTATIVAS(
 				"Suspenso por excesso de tentativas");
 
@@ -37,7 +38,7 @@ public class Usuario {
 		}
 	};
 
-	private enum Privilegio {
+	public enum Privilegio {
 		COMUM("Comum"), ADMINISTRADOR("Administrador");
 
 		private String descricao;
@@ -61,7 +62,7 @@ public class Usuario {
 	private String nome;
 
 	// RELAÇÕES
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<Host> hosts;
 
 	// ATRIBUTOS
@@ -145,4 +146,14 @@ public class Usuario {
 		this.privilegio = privilegio;
 	}
 
+	@JsonProperty("falha")
+	public boolean isFalha() {
+		for (Host host : hosts) {
+			if (host.isFalha()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }

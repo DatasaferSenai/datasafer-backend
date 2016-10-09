@@ -1,7 +1,6 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -19,7 +18,7 @@ import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@WebFilter("/*")
+@WebFilter("/backup*")
 public class FiltroJwtSeguranca implements Filter {
 	@Override
 	public void destroy() {
@@ -40,7 +39,7 @@ public class FiltroJwtSeguranca implements Filter {
 		String token = request.getHeader("Authorization");
 		try {
 			JWTVerifier verifier = new JWTVerifier(UsuarioRestController.SECRET);
-			Map<String, Object> claims = verifier.verify(token);
+			/*Map<String, Object> claims = */verifier.verify(token);
 			chain.doFilter(req, resp);
 		} catch (Exception e) {
 			e.printStackTrace();

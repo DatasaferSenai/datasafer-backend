@@ -12,13 +12,15 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
 @JsonIgnoreProperties({"id","backup"})
 @Entity
 public class Operacao {
 	
-	private enum Status {
+	public enum Status {
 		SUCESSO("Sucesso"), EXECUTANDO("Executando"), FALHA("Falha"), AGENDADO("Agendado"), EXCLUIDO("Excluído");
 
 		private String descricao;
@@ -44,6 +46,7 @@ public class Operacao {
 	private Backup backup;
 	
 	// ATRIBUTOS
+	@JsonFormat(shape=Shape.STRING,pattern="yyyy-mm-dd hh:MM:ss")
 	@Column
 	private Date data;
 	

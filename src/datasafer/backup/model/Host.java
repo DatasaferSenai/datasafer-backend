@@ -14,8 +14,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties({"id","usuario","backups"})
+@JsonIgnoreProperties({"id","usuario", "backups"})
 @Entity
 public class Host {
 	
@@ -32,7 +33,7 @@ public class Host {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
-	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<Backup> backups;
 
 	// ATRIBUTOS
@@ -79,4 +80,14 @@ public class Host {
 		this.descricao = descricao;
 	}
 
+	@JsonProperty("falha")
+	public boolean isFalha() {
+		for (Backup backup : backups) {
+			if (backup.getStatus() == Operacao.Status.FALHA) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 }
