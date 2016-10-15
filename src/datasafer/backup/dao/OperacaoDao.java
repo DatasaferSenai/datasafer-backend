@@ -20,7 +20,12 @@ public class OperacaoDao {
 	
 	@Transactional
 	public void inserir(String login_usuario, String nome_host, String nome_backup, Operacao operacao){
-		operacao.setBackup(backup);
+		TypedQuery<Backup> query = manager.createQuery("SELECT b FROM Backup b WHERE b.host.usuario.login = :login_usuario AND b.host.nome = :nome_host AND b.nome = :nome_backup",Backup.class); 
+		query.setParameter("login_usuario", login_usuario);
+		query.setParameter("nome_host", nome_host);
+		query.setParameter("nome_backup", nome_backup);
+		
+		operacao.setBackup(query.getSingleResult());
 		manager.persist(operacao);
 	}
 	
