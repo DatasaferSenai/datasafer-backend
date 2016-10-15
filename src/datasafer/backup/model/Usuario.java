@@ -1,7 +1,15 @@
 package datasafer.backup.model;
 
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -12,13 +20,15 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "hosts" })
+import datasafer.backup.controller.UsuarioRestController;
+
+@JsonIgnoreProperties({ "id", "hosts", "token" })
 @Entity
 public class Usuario {
 
@@ -39,7 +49,7 @@ public class Usuario {
 	};
 
 	public enum Privilegio {
-		COMUM("Comum"), ADMINISTRADOR("Administrador");
+		VISUALIZACAO("Visualização"), OPERADOR("Operador"), ADMINISTRADOR("Administrador"), SUPER("Super");
 
 		private String descricao;
 
@@ -58,29 +68,42 @@ public class Usuario {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 20)
+	@Column(length = 20, nullable = false)
 	private String nome;
 
 	// RELAÇÕES
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
 	// ATRIBUTOS
-	@Column(length = 20, nullable = false, unique = true)
+	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
-	@Column
+	@Column(nullable = false)
 	@JsonProperty(access = Access.WRITE_ONLY)
 	private String senha;
 
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	@Column
+	@Column(nullable = false)
 	private Long armazenamento;
 
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Privilegio privilegio;
+
+	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private Token token;
+
+	public Token getToken() {
+		return token;
+	}
+
+	public void setToken(Token token) {
+		this.token = token;
+	}
 
 	public Long getId() {
 		return id;
@@ -146,14 +169,34 @@ public class Usuario {
 		this.privilegio = privilegio;
 	}
 
-	@JsonProperty("falha")
-	public boolean isFalha() {
-		for (Host host : hosts) {
-			if (host.isFalha()) {
-				return true;
+	@JsonProperty("operacoes")
+	public Map<String, Integer> getOperacoes() {
+		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+		for (Operacao.Status s : Operacao.Status.values()) {
+			Integer count = 0;
+			for (Host h : this.getHosts()) {
+				for (Backup b : h.getBackups()) {
+					for (Operacao p : b.getOperacoes()) {
+						if (p.getStatus() == s) {
+							count++;
+						}
+					}
+				}
 			}
+			map.put(s.toString(), count);
 		}
-		return false;
+		return map;
 	}
-	
+
+	private String protegeSenha(String senha) {
+		try {
+			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(), 65535, 128);
+			SecretKey key = skf.generateSecret(spec);
+			return new String(key.getEncoded(), "UTF-8");
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException | UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 }

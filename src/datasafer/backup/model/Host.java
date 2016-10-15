@@ -1,6 +1,8 @@
 package datasafer.backup.model;
 
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -37,7 +39,7 @@ public class Host {
 	private List<Backup> backups;
 
 	// ATRIBUTOS
-	@Column(length = 50)
+	@Column(length = 50, nullable = true)
 	private String descricao;
 
 	public Long getId() {
@@ -80,14 +82,20 @@ public class Host {
 		this.descricao = descricao;
 	}
 
-	@JsonProperty("falha")
-	public boolean isFalha() {
-		for (Backup backup : backups) {
-			if (backup.getStatus() == Operacao.Status.FALHA) {
-				return true;
+	@JsonProperty("operacoes")
+	public Map<String,Integer> getOperacoes() {
+		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+		for( Operacao.Status s : Operacao.Status.values() ){
+			Integer count = 0;
+			for (Backup b : this.getBackups()){
+				for (Operacao p : b.getOperacoes()){
+					if(p.getStatus() == s){
+						count++;
+					}
+				}
 			}
+			map.put(s.toString(), count);
 		}
-		return false;
+		return map;
 	}
-	
 }

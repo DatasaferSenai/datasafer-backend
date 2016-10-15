@@ -18,7 +18,7 @@ import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@WebFilter("/backup*")
+@WebFilter("/*")
 public class FiltroJwtSeguranca implements Filter {
 	@Override
 	public void destroy() {
@@ -27,10 +27,9 @@ public class FiltroJwtSeguranca implements Filter {
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
-
+	
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-
 		if (request.getRequestURI().contains("login")) {
 			chain.doFilter(req, resp);
 			return;

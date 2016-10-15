@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties({ "id", "host","operacoes" })
+@JsonIgnoreProperties({ "id", "host", "operacoes" })
 @Entity
 public class Backup {
 
@@ -48,7 +48,7 @@ public class Backup {
 	@Column(length = 20, nullable = false)
 	private String nome;
 
-	@Column(length = 50)
+	@Column(length = 50, nullable = true)
 	private String descricao;
 
 	// RELAÇÕES
@@ -56,22 +56,24 @@ public class Backup {
 	@JoinColumn(name = "host_id")
 	private Host host;
 
-	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
+	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Operacao> operacoes;
 
 	// ATRIBUTOS
-	@JsonFormat(shape=Shape.STRING,pattern="yyyy-mm-dd hh:MM:ss")
-	@Column
+	//@JsonFormat(shape = Shape.STRING, pattern = "yyyy-mm-dd hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
+	@Column(nullable = false)
 	private Date inicio;
 
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Frequencia frequencia;
 
-	@JsonFormat(shape=Shape.STRING,pattern="MM:ss")
-	@Column
+	@JsonFormat(shape = Shape.STRING, pattern = "hh:MM:ss")
+	@Column(nullable = true)
 	private Date intervalo;
 
-	@Column
+	@Column(nullable = false)
 	private String pasta;
 
 	public Long getId() {
@@ -145,13 +147,13 @@ public class Backup {
 	public void setPasta(String pasta) {
 		this.pasta = pasta;
 	}
-	
+
 	@JsonProperty("status")
 	public Operacao.Status getStatus() {
-		if(operacoes.size() > 0){
+		if (operacoes.size() > 0) {
 			Operacao ultimaOperacao = operacoes.get(0);
 			for (Operacao operacao : operacoes) {
-				if(operacao.getData().before(ultimaOperacao.getData())){
+				if (operacao.getData().before(ultimaOperacao.getData())) {
 					ultimaOperacao = operacao;
 				}
 			}

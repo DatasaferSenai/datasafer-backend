@@ -16,10 +16,10 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 
-@JsonIgnoreProperties({"id","backup"})
+@JsonIgnoreProperties({ "id", "backup" })
 @Entity
 public class Operacao {
-	
+
 	public enum Status {
 		SUCESSO("Sucesso"), EXECUTANDO("Executando"), FALHA("Falha"), AGENDADO("Agendado"), EXCLUIDO("Excluído");
 
@@ -34,28 +34,30 @@ public class Operacao {
 			return this.descricao;
 		}
 	};
-	
+
 	// IDENTIFICADORES
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	// RELAÇÕES
 	@ManyToOne
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
-	
+
 	// ATRIBUTOS
-	@JsonFormat(shape=Shape.STRING,pattern="yyyy-mm-dd hh:MM:ss")
-	@Column
+	//@JsonFormat(shape = Shape.STRING, pattern = "yyyy-mm-dd hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
+	@Column(nullable = false)
 	private Date data;
-	
+
+	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
-	
-	@Column
+
+	@Column(nullable = false)
 	private Long tamanho;
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -87,7 +89,7 @@ public class Operacao {
 	public void setStatus(Status status) {
 		this.status = status;
 	}
-	
+
 	public Long getTamanho() {
 		return tamanho;
 	}

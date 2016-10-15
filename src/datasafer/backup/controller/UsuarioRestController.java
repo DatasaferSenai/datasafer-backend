@@ -1,24 +1,25 @@
 package datasafer.backup.controller;
 
-import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTSigner;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.bo.TokenBo;
+import datasafer.backup.bo.UsuarioBo;
 import datasafer.backup.model.Host;
 import datasafer.backup.model.Usuario;
 
@@ -29,12 +30,30 @@ public class UsuarioRestController {
 	public static final long EXPIRES_IN_SECONDS = 60 * 60 * 24;
 
 	@Autowired
-	private UsuarioDao usuarioDao;
-
-	@RequestMapping(value = "/backup/{login_usuario}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Usuario> obter(@PathVariable String login_usuario) {
+	private UsuarioBo usuarioBo;
+	@Autowired
+	private TokenBo tokenBo;
+	
+	@PostConstruct
+	private void init(){
+		usuarioBo.verificaAdmin();
+	}
+	
+	@RequestMapping(value = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Void> inserir(@RequestBody Usuario usuario) {
 		try {
-			Usuario usuario = usuarioDao.obter(login_usuario);
+			usuarioBo.inserir(usuario);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+	
+	@RequestMapping(value = "/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Usuario> obter(@RequestHeader(name="usuario") String login_usuario) {
+		try {
+			Usuario usuario = usuarioBo.obter(login_usuario);
 			if (usuario != null) {
 				return ResponseEntity.ok().body(usuario);
 			} else {
@@ -46,21 +65,16 @@ public class UsuarioRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-	@RequestMapping(value = "/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Usuario> inserir(@RequestBody String strUsuario) {
+	
+	@RequestMapping(value = "/usuario/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<List<Host>> listarOperacoes(@RequestHeader(name="usuario") String login_usuario) {
 		try {
-
-			JSONObject job = new JSONObject(strUsuario);
-			Usuario usuario = new Usuario();
-
-			usuario.setArmazenamento(job.getLong("armazenamento"));
-
-			usuarioDao.inserir(usuario);
-
-			URI location = new URI("/usuario/" + usuario.getLogin());
-
-			return ResponseEntity.created(location).body(usuario);
+			Usuario usuario = usuarioBo.obter(login_usuario);
+			if (usuario != null) {
+				return ResponseEntity.ok().body(usuario.getHosts());
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -69,9 +83,8 @@ public class UsuarioRestController {
 	
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody Usuario usuario) {
-		System.out.println(usuario.getSenha());
 		try {
-			usuario = usuarioDao.logar(usuario);
+			usuario = usuarioBo.logar(usuario);
 			if (usuario != null) {
 				// data de emissão do token
 				long iat = System.currentTimeMillis() / 1000;
@@ -88,11 +101,12 @@ public class UsuarioRestController {
 				JSONObject token = new JSONObject();
 				token.put("token", jwt);
 
-				return ResponseEntity.ok(token.toString());
+				return ResponseEntity.ok().body(token.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
