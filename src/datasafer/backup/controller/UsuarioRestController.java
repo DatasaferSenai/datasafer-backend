@@ -35,7 +35,7 @@ public class UsuarioRestController {
 	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_usuario,
 			@RequestBody Usuario novo_usuario) {
 		try {
-			usuarioBo.inserirUsuario(novo_usuario);
+			usuarioBo.inserirUsuario(login_usuario, novo_usuario);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();

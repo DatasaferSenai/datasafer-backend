@@ -24,6 +24,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
@@ -62,6 +65,30 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
+//	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//	private Usuario usuarioAcima;
+//	
+//
+//	public Usuario getUsuarioAcima() {
+//		return usuarioAcima;
+//	}
+//
+//	public void setUsuarioAcima(Usuario usuarioAcima) {
+//		this.usuarioAcima = usuarioAcima;
+//	}
+//
+//	public List<Usuario> getUsuariosAbaixo() {
+//		return usuariosAbaixo;
+//	}
+//
+//	public void setUsuariosAbaixo(List<Usuario> usuariosAbaixo) {
+//		this.usuariosAbaixo = usuariosAbaixo;
+//	}
+//
+//	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+//	@Fetch(FetchMode.SUBSELECT)
+//	private List<Usuario> usuariosAbaixo;
+	
 	// ATRIBUTOS
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
@@ -79,7 +106,7 @@ public class Usuario {
 
 	@Column(nullable = true)
 	private String privilegio;
-	
+
 	public Long getId() {
 		return id;
 	}

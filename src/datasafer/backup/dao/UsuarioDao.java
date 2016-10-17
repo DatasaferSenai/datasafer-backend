@@ -17,7 +17,7 @@ public class UsuarioDao {
 	private EntityManager manager;
 	
 	@Transactional
-	public void inserirUsuario(Usuario usuario) {
+	public void inserirUsuario(String login_usuario, Usuario usuario) {
 		manager.persist(usuario);
 	}
 	

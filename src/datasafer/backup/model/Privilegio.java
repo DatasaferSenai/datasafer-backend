@@ -54,9 +54,6 @@ public class Privilegio {
 
 	@Column(unique = true, nullable = false)
 	private String nome;
-	
-	@Column(nullable = false)
-	private Integer nivel;
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)

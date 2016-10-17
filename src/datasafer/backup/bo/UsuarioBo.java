@@ -12,8 +12,8 @@ public class UsuarioBo {
 	@Autowired
 	private UsuarioDao usuarioDao;
 	
-	public void inserirUsuario(Usuario usuario) {
-		usuarioDao.inserirUsuario(usuario);
+	public void inserirUsuario(String login_usuario, Usuario usuario) {
+		usuarioDao.inserirUsuario(login_usuario, usuario);
 	}
 
 	public void modificarUsario(Usuario usuario) {

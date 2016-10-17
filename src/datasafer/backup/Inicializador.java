@@ -58,7 +58,7 @@ public class Inicializador {
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
 
-			usuarioBo.inserirUsuario(usuario_admin);
+			usuarioBo.inserirUsuario(null, usuario_admin);
 		}
 		
 	}
