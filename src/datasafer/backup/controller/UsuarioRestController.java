@@ -3,8 +3,6 @@ package datasafer.backup.controller;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,9 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTSigner;
 
-import datasafer.backup.bo.TokenBo;
+import datasafer.backup.bo.PrivilegioBo;
 import datasafer.backup.bo.UsuarioBo;
 import datasafer.backup.model.Host;
+import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 
 @RestController
@@ -31,45 +30,38 @@ public class UsuarioRestController {
 
 	@Autowired
 	private UsuarioBo usuarioBo;
-	@Autowired
-	private TokenBo tokenBo;
-	
-	@PostConstruct
-	private void init(){
-		usuarioBo.verificaAdmin();
-	}
-	
-	@RequestMapping(value = "/", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(@RequestBody Usuario usuario) {
+
+	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_usuario,
+			@RequestBody Usuario novo_usuario) {
 		try {
-			usuarioBo.inserir(usuario);
+			usuarioBo.inserirUsuario(novo_usuario);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	@RequestMapping(value = "/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Usuario> obter(@RequestHeader(name="usuario") String login_usuario) {
+
+	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Usuario> obterUsuario(@RequestHeader(name = "usuario") String login_usuario) {
 		try {
-			Usuario usuario = usuarioBo.obter(login_usuario);
+			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
 			if (usuario != null) {
 				return ResponseEntity.ok().body(usuario);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
-		}
-		catch (Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	@RequestMapping(value = "/usuario/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Host>> listarOperacoes(@RequestHeader(name="usuario") String login_usuario) {
+
+	@RequestMapping(value = "/gerenciamento/usuario/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<List<Host>> listarOperacoes(@RequestHeader(name = "usuario") String login_usuario) {
 		try {
-			Usuario usuario = usuarioBo.obter(login_usuario);
+			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
 			if (usuario != null) {
 				return ResponseEntity.ok().body(usuario.getHosts());
 			} else {
@@ -80,8 +72,8 @@ public class UsuarioRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+
+	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody Usuario usuario) {
 		try {
 			usuario = usuarioBo.logar(usuario);
@@ -94,7 +86,7 @@ public class UsuarioRestController {
 				claims.put("iat", iat);
 				claims.put("exp", exp);
 				claims.put("iss", ISSUER);
-				claims.put("id_usuario", usuario.getId());
+				claims.put("login_usuario", usuario.getLogin());
 
 				String jwt = signer.sign(claims);
 

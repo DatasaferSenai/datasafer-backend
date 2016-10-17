@@ -83,8 +83,8 @@ public class Host {
 	}
 
 	@JsonProperty("operacoes")
-	public Map<String,Integer> getOperacoes() {
-		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+	public Map<Operacao.Status,Integer> getOperacoes() {
+		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
 		for( Operacao.Status s : Operacao.Status.values() ){
 			Integer count = 0;
 			for (Backup b : this.getBackups()){
@@ -94,7 +94,7 @@ public class Host {
 					}
 				}
 			}
-			map.put(s.toString(), count);
+			map.put(s, count);
 		}
 		return map;
 	}

@@ -1,8 +1,9 @@
 package datasafer.backup.model;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +20,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@JsonIgnoreProperties({ "id", "hosts", "token" })
+@JsonIgnoreProperties({ "id", "hosts" })
 @Entity
 public class Usuario {
 
@@ -39,21 +41,6 @@ public class Usuario {
 		private String descricao;
 
 		private Status(String descricao) {
-			this.descricao = descricao;
-		}
-
-		@Override
-		public String toString() {
-			return this.descricao;
-		}
-	};
-
-	public enum Privilegio {
-		VISUALIZACAO("Visualização"), OPERADOR("Operador"), ADMINISTRADOR("Administrador"), SUPER("Super");
-
-		private String descricao;
-
-		private Privilegio(String descricao) {
 			this.descricao = descricao;
 		}
 
@@ -90,21 +77,9 @@ public class Usuario {
 	@Column(nullable = false)
 	private Long armazenamento;
 
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private Privilegio privilegio;
-
-	@OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private Token token;
-
-	public Token getToken() {
-		return token;
-	}
-
-	public void setToken(Token token) {
-		this.token = token;
-	}
-
+	@Column(nullable = true)
+	private String privilegio;
+	
 	public Long getId() {
 		return id;
 	}
@@ -142,7 +117,7 @@ public class Usuario {
 	}
 
 	public void setSenha(String senha) {
-		this.senha = senha;
+		this.senha = protegeSenha(senha);
 	}
 
 	public Status getStatus() {
@@ -161,17 +136,17 @@ public class Usuario {
 		this.armazenamento = armazenamento;
 	}
 
-	public Privilegio getPrivilegio() {
+	public String getPrivilegio() {
 		return privilegio;
 	}
 
-	public void setPrivilegio(Privilegio privilegio) {
+	public void setPrivilegio(String privilegio) {
 		this.privilegio = privilegio;
 	}
 
 	@JsonProperty("operacoes")
-	public Map<String, Integer> getOperacoes() {
-		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+	public Map<Operacao.Status, Integer> getOperacoes() {
+		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
 		for (Operacao.Status s : Operacao.Status.values()) {
 			Integer count = 0;
 			for (Host h : this.getHosts()) {
@@ -183,7 +158,7 @@ public class Usuario {
 					}
 				}
 			}
-			map.put(s.toString(), count);
+			map.put(s, count);
 		}
 		return map;
 	}
@@ -191,10 +166,10 @@ public class Usuario {
 	private String protegeSenha(String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(), 65535, 128);
+			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
 			SecretKey key = skf.generateSecret(spec);
-			return new String(key.getEncoded(), "UTF-8");
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException | UnsupportedEncodingException e) {
+			return Base64.getEncoder().encodeToString(key.getEncoded());
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new RuntimeException(e);
 		}
 	}

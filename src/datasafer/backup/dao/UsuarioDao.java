@@ -7,7 +7,7 @@ import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.model.Token;
+import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -15,14 +15,19 @@ public class UsuarioDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-
+	
 	@Transactional
-	public void inserir(Usuario usuario) {
+	public void inserirUsuario(Usuario usuario) {
 		manager.persist(usuario);
+	}
+	
+	@Transactional
+	public void modificarUsuario(Usuario usuario) {
+		manager.merge(usuario);
 	}
 
 	// @Transactional
-	public Usuario obter(String login_usuario) {
+	public Usuario obterUsuario(String login_usuario) {
 		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",Usuario.class);
 		query.setParameter("login_usuario", login_usuario);
 		try {
@@ -31,7 +36,7 @@ public class UsuarioDao {
 			return null;
 		}
 	}
-
+	
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
 		TypedQuery<Usuario> query = manager.createQuery(
