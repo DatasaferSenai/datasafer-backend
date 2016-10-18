@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,9 +24,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -53,43 +51,41 @@ public class Usuario {
 		}
 	};
 
-	// IDENTIFICADORES
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 20, nullable = false)
+	@Column(length = 40, nullable = false)
 	private String nome;
 
-	// RELAÇÕES
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
-//	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-//	private Usuario usuarioAcima;
-//	
-//
-//	public Usuario getUsuarioAcima() {
-//		return usuarioAcima;
-//	}
-//
-//	public void setUsuarioAcima(Usuario usuarioAcima) {
-//		this.usuarioAcima = usuarioAcima;
-//	}
-//
-//	public List<Usuario> getUsuariosAbaixo() {
-//		return usuariosAbaixo;
-//	}
-//
-//	public void setUsuariosAbaixo(List<Usuario> usuariosAbaixo) {
-//		this.usuariosAbaixo = usuariosAbaixo;
-//	}
-//
-//	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-//	@Fetch(FetchMode.SUBSELECT)
-//	private List<Usuario> usuariosAbaixo;
-	
-	// ATRIBUTOS
+	// @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	// private Usuario usuarioAcima;
+	//
+	//
+	// public Usuario getUsuarioAcima() {
+	// return usuarioAcima;
+	// }
+	//
+	// public void setUsuarioAcima(Usuario usuarioAcima) {
+	// this.usuarioAcima = usuarioAcima;
+	// }
+	//
+	// public List<Usuario> getUsuariosAbaixo() {
+	// return usuariosAbaixo;
+	// }
+	//
+	// public void setUsuariosAbaixo(List<Usuario> usuariosAbaixo) {
+	// this.usuariosAbaixo = usuariosAbaixo;
+	// }
+	//
+	// @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch =
+	// FetchType.EAGER)
+	// @Fetch(FetchMode.SUBSELECT)
+	// private List<Usuario> usuariosAbaixo;
+
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
@@ -104,8 +100,50 @@ public class Usuario {
 	@Column(nullable = false)
 	private Long armazenamento;
 
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "privilegio_id")
+	private Privilegio privilegio;
+
 	@Column(nullable = true)
-	private String privilegio;
+	private Date dataInclusao;
+
+	@Column(nullable = true)
+	private Date dataModificacao;
+
+	@Column(nullable = true)
+	private Date dataExclusao;
+
+	public Privilegio getPrivilegio() {
+		return privilegio;
+	}
+
+	public void setPrivilegio(Privilegio privilegio) {
+		this.privilegio = privilegio;
+	}
+	
+	public Date getDataInclusao() {
+		return dataInclusao;
+	}
+
+	public void setDataInclusao(Date dataInclusao) {
+		this.dataInclusao = dataInclusao;
+	}
+
+	public Date getDataModificacao() {
+		return dataModificacao;
+	}
+
+	public void setDataModificacao(Date dataModificacao) {
+		this.dataModificacao = dataModificacao;
+	}
+
+	public Date getDataExclusao() {
+		return dataExclusao;
+	}
+
+	public void setDataExclusao(Date dataExclusao) {
+		this.dataExclusao = dataExclusao;
+	}
 
 	public Long getId() {
 		return id;
@@ -144,7 +182,15 @@ public class Usuario {
 	}
 
 	public void setSenha(String senha) {
-		this.senha = protegeSenha(senha);
+		try {
+			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
+			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(),
+					UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
+			SecretKey key = skf.generateSecret(spec);
+			this.senha = Base64.getEncoder().encodeToString(key.getEncoded());
+		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public Status getStatus() {
@@ -161,14 +207,6 @@ public class Usuario {
 
 	public void setArmazenamento(Long armazenamento) {
 		this.armazenamento = armazenamento;
-	}
-
-	public String getPrivilegio() {
-		return privilegio;
-	}
-
-	public void setPrivilegio(String privilegio) {
-		this.privilegio = privilegio;
 	}
 
 	@JsonProperty("operacoes")
@@ -189,16 +227,4 @@ public class Usuario {
 		}
 		return map;
 	}
-
-	private String protegeSenha(String senha) {
-		try {
-			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
-			SecretKey key = skf.generateSecret(spec);
-			return Base64.getEncoder().encodeToString(key.getEncoded());
-		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 }

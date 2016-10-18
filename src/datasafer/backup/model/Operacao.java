@@ -35,17 +35,18 @@ public class Operacao {
 		}
 	};
 
-	// IDENTIFICADORES
+	//---------------------------------------------------------------------------------------------------
+	
+	@ManyToOne
+	@JoinColumn(name = "backup_id")
+	private Backup backup;
+	
+	//---------------------------------------------------------------------------------------------------
+	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// RELAÇÕES
-	@ManyToOne
-	@JoinColumn(name = "backup_id")
-	private Backup backup;
-
-	// ATRIBUTOS
 	//@JsonFormat(shape = Shape.STRING, pattern = "yyyy-mm-dd hh:MM:ss")
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
 	@Column(nullable = false)
@@ -58,6 +59,39 @@ public class Operacao {
 	@Column(nullable = false)
 	private Long tamanho;
 
+	@Column(nullable = true)
+	private Date dataInclusao;
+	
+	@Column(nullable = true)
+	private Date dataModificacao;
+	
+	@Column(nullable = true)
+	private Date dataExclusao;
+	
+	public Date getDataInclusao() {
+		return dataInclusao;
+	}
+
+	public void setDataInclusao(Date dataInclusao) {
+		this.dataInclusao = dataInclusao;
+	}
+
+	public Date getDataModificacao() {
+		return dataModificacao;
+	}
+
+	public void setDataModificacao(Date dataModificacao) {
+		this.dataModificacao = dataModificacao;
+	}
+
+	public Date getDataExclusao() {
+		return dataExclusao;
+	}
+
+	public void setDataExclusao(Date dataExclusao) {
+		this.dataExclusao = dataExclusao;
+	}
+	
 	public Long getId() {
 		return id;
 	}

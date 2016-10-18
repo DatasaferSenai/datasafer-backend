@@ -22,16 +22,19 @@ public class HostDao {
 		manager.merge(host);
 	}
 
-	@Transactional
+	@Transactional(noRollbackFor = Exception.class)
 	public Host inserirHost(String login_usuario, Host host) {
 		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
 				Usuario.class);
 		query.setParameter("login_usuario", login_usuario);
-
-		host.setUsuario(query.getSingleResult());
-		manager.persist(host);
-		
-		return host;
+		try {
+			host.setUsuario(query.getSingleResult());
+			manager.persist(host);
+			return host;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	// @Transactional
@@ -44,6 +47,7 @@ public class HostDao {
 		try {
 			return query.getSingleResult();
 		} catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 	}

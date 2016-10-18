@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,30 +19,69 @@ import javax.persistence.OneToMany;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+
+/**
+ * Representa uma estação ou "host"
+ */
 @JsonIgnoreProperties({"id","usuario", "backups"})
 @Entity
 public class Host {
+
+	//---------------------------------------------------------------------------------------------------
 	
-	// IDENTIFICADORES
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(length = 20, nullable = false)
-	private String nome;
-	
-	// RELAÇÕES
 	@ManyToOne
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 	
 	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
 	private List<Backup> backups;
+	
+	//---------------------------------------------------------------------------------------------------
+	
+	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@Column(length = 40, nullable = false)
+	private String nome;
 
-	// ATRIBUTOS
 	@Column(length = 50, nullable = true)
 	private String descricao;
 
+	@Column(nullable = true)
+	private Date dataInclusao;
+	
+	@Column(nullable = true)
+	private Date dataModificacao;
+	
+	@Column(nullable = true)
+	private Date dataExclusao;
+	
+	public Date getDataInclusao() {
+		return dataInclusao;
+	}
+
+	public void setDataInclusao(Date dataInclusao) {
+		this.dataInclusao = dataInclusao;
+	}
+
+	public Date getDataModificacao() {
+		return dataModificacao;
+	}
+
+	public void setDataModificacao(Date dataModificacao) {
+		this.dataModificacao = dataModificacao;
+	}
+
+	public Date getDataExclusao() {
+		return dataExclusao;
+	}
+
+	public void setDataExclusao(Date dataExclusao) {
+		this.dataExclusao = dataExclusao;
+	}
+	
 	public Long getId() {
 		return id;
 	}

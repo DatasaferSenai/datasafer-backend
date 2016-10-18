@@ -13,23 +13,26 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
 import com.auth0.jwt.JWTVerifier;
 
+import datasafer.backup.bo.UsuarioBo;
 import datasafer.backup.controller.UsuarioRestController;
+import datasafer.backup.model.Usuario;
+import datasafer.backup.model.Usuario.Status;
 
 @WebFilter("/Datasafer/gerenciamento/*")
 public class LoginFiltroJwt implements Filter {
-	@Override
-	public void destroy() {
 
-	}
+	@Autowired
+	private UsuarioBo usuarioBo;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
-		
+
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 		if (request.getRequestURI().contains("login")) {
@@ -42,27 +45,34 @@ public class LoginFiltroJwt implements Filter {
 		try {
 			JWTVerifier verifier = new JWTVerifier(UsuarioRestController.SECRET);
 			Map<String, Object> claims = verifier.verify(token);
-			
-			if(login_usuario == claims.get("login_usuario")){
+
+			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
+
+			if (usuario.getStatus() == Status.ATIVO) {
 				chain.doFilter(req, resp);
 			} else {
-				response.sendError(HttpStatus.FORBIDDEN.value());
+				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus().toString());
 			}
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			if (token == null) {
-				response.sendError(HttpStatus.UNAUTHORIZED.value());
+				response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 			} else {
-				response.sendError(HttpStatus.FORBIDDEN.value());
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 			}
 		}
 
 	}
 
 	@Override
+	public void destroy() {
+
+	}
+
+	@Override
 	public void init(FilterConfig arg0) throws ServletException {
-		
+
 	}
 
 }

@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.Date;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -60,6 +61,39 @@ public class Privilegio {
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> permissoes;
 
+	@Column(nullable = true)
+	private Date dataInclusao;
+	
+	@Column(nullable = true)
+	private Date dataModificacao;
+	
+	@Column(nullable = true)
+	private Date dataExclusao;
+	
+	public Date getDataInclusao() {
+		return dataInclusao;
+	}
+
+	public void setDataInclusao(Date dataInclusao) {
+		this.dataInclusao = dataInclusao;
+	}
+
+	public Date getDataModificacao() {
+		return dataModificacao;
+	}
+
+	public void setDataModificacao(Date dataModificacao) {
+		this.dataModificacao = dataModificacao;
+	}
+
+	public Date getDataExclusao() {
+		return dataExclusao;
+	}
+
+	public void setDataExclusao(Date dataExclusao) {
+		this.dataExclusao = dataExclusao;
+	}
+	
 	public Long getId() {
 		return id;
 	}

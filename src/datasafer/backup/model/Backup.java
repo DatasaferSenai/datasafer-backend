@@ -42,28 +42,24 @@ public class Backup {
 			return this.descricao;
 		}
 	};
+	
+	@ManyToOne
+	@JoinColumn(name = "host_id")
+	private Host host;
+	
+	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private List<Operacao> operacoes;
 
-	// IDENTIFICADORES
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 20, nullable = false)
+	@Column(length = 40, nullable = false)
 	private String nome;
 
 	@Column(length = 50, nullable = true)
 	private String descricao;
-
-	// RELAÇÕES
-	@ManyToOne
-	@JoinColumn(name = "host_id")
-	private Host host;
-
-	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Operacao> operacoes;
-
-	// ATRIBUTOS
-	//@JsonFormat(shape = Shape.STRING, pattern = "yyyy-mm-dd hh:MM:ss")
+	
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
 	@Column(nullable = false)
 	private Date inicio;
@@ -72,12 +68,44 @@ public class Backup {
 	@Enumerated(EnumType.STRING)
 	private Frequencia frequencia;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "hh:MM:ss")
 	@Column(nullable = true)
-	private Date intervalo;
+	private Integer intervalo;
 
 	@Column(nullable = false)
 	private String pasta;
+	
+	@Column(nullable = true)
+	private Date dataInclusao;
+	
+	@Column(nullable = true)
+	private Date dataModificacao;
+	
+	@Column(nullable = true)
+	private Date dataExclusao;
+	
+	public Date getDataInclusao() {
+		return dataInclusao;
+	}
+
+	public void setDataInclusao(Date dataInclusao) {
+		this.dataInclusao = dataInclusao;
+	}
+
+	public Date getDataModificacao() {
+		return dataModificacao;
+	}
+
+	public void setDataModificacao(Date dataModificacao) {
+		this.dataModificacao = dataModificacao;
+	}
+
+	public Date getDataExclusao() {
+		return dataExclusao;
+	}
+
+	public void setDataExclusao(Date dataExclusao) {
+		this.dataExclusao = dataExclusao;
+	}
 
 	public Long getId() {
 		return id;
@@ -135,11 +163,11 @@ public class Backup {
 		this.frequencia = frequencia;
 	}
 
-	public Date getIntervalo() {
+	public Integer getIntervalo() {
 		return intervalo;
 	}
 
-	public void setIntervalo(Date intervalo) {
+	public void setIntervalo(Integer intervalo) {
 		this.intervalo = intervalo;
 	}
 

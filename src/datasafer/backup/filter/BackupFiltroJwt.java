@@ -1,6 +1,8 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -18,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import datasafer.backup.bo.PrivilegioBo;
 import datasafer.backup.bo.UsuarioBo;
 import datasafer.backup.model.Privilegio;
+import datasafer.backup.model.Privilegio.Permissao;
 import datasafer.backup.model.Usuario;
 
 @WebFilter("/Datasafer/gerenciamento/backup*")
@@ -36,24 +39,19 @@ public class BackupFiltroJwt implements Filter {
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		Usuario usuario = usuarioBo.obterUsuario(request.getHeader("usuario"));
-		Privilegio privilegio = privilegioBo.obterPrivilegio(usuario.getPrivilegio());
+		Set<Permissao> permissoes = usuario.getPrivilegio().getPermissoes();
 
-		if (!privilegio.getPermissoes().contains(Privilegio.Permissao.ADMINISTRADOR)) {
-			if ((request.getMethod() == "GET"
-					&& !privilegio.getPermissoes().contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
-					| (request.getMethod() == "POST"
-							&& !privilegio.getPermissoes().contains(Privilegio.Permissao.INSERIR_BACKUPS))
-					| (request.getMethod() == "UPDATE"
-							&& !privilegio.getPermissoes().contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
-					| (request.getMethod() == "DELETE"
-							&& !privilegio.getPermissoes().contains(Privilegio.Permissao.EXCLUIR_BACKUPS))
-
-			) {
-				response.sendError(HttpStatus.FORBIDDEN.value());
+		if (permissoes != null) {
+			if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
+					| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
+					| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_BACKUPS))
+					| (request.getMethod() == "UPDATE" && permissoes.contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
+					| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_BACKUPS))) {
+				chain.doFilter(req, resp);
 			}
 		}
-
-		chain.doFilter(req, resp);
+		response.sendError(HttpStatus.FORBIDDEN.value(),
+				"O usuário não possui permissão para realizar a operação solicitada");
 	}
 
 	@Override

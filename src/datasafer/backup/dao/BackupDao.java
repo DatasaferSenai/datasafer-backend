@@ -15,22 +15,23 @@ public class BackupDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-	
-	@Transactional
+
+	@Transactional(noRollbackFor = Exception.class)
 	public Backup inserirBackup(String login_usuario, String nome_host, Backup backup) {
 		TypedQuery<Host> query = manager.createQuery(
 				"SELECT h FROM Host h WHERE h.usuario.login = :login_usuario AND h.nome = :nome_host", Host.class);
 		query.setParameter("login_usuario", login_usuario);
 		query.setParameter("nome_host", nome_host);
-
-		Host host = query.getSingleResult();
-		backup.setHost(host);
-		manager.persist(backup);
-		
-		return backup;
+		try {
+			backup.setHost(query.getSingleResult());
+			manager.persist(backup);
+			return backup;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
-	
-	
+
 	@Transactional
 	public void modificarBackup(Backup backup) {
 		manager.persist(backup);
