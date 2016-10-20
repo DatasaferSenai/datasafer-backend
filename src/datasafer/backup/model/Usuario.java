@@ -61,57 +61,106 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
-	// @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	// private Usuario usuarioAcima;
-	//
-	//
-	// public Usuario getUsuarioAcima() {
-	// return usuarioAcima;
-	// }
-	//
-	// public void setUsuarioAcima(Usuario usuarioAcima) {
-	// this.usuarioAcima = usuarioAcima;
-	// }
-	//
-	// public List<Usuario> getUsuariosAbaixo() {
-	// return usuariosAbaixo;
-	// }
-	//
-	// public void setUsuariosAbaixo(List<Usuario> usuariosAbaixo) {
-	// this.usuariosAbaixo = usuariosAbaixo;
-	// }
-	//
-	// @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch =
-	// FetchType.EAGER)
-	// @Fetch(FetchMode.SUBSELECT)
-	// private List<Usuario> usuariosAbaixo;
-
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
-	@Column(nullable = false)
 	@JsonProperty(access = Access.WRITE_ONLY)
-	private String senha;
-
 	@Column(nullable = false)
+	private String senha;
+	
 	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
 	private Status status;
 
 	@Column(nullable = false)
 	private Long armazenamento;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "privilegio_id")
 	private Privilegio privilegio;
 
-	@Column(nullable = true)
-	private Date dataInclusao;
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario superior;
 
-	@Column(nullable = true)
-	private Date dataModificacao;
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private Date inseridoEm;
 
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario inseridoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
-	private Date dataExclusao;
+	private Date modificadoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario modificadoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = true)
+	private Date excluidoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario excluidoPor;
+
+	public Usuario getSuperior() {
+		return superior;
+	}
+
+	public void setSuperior(Usuario superior) {
+		this.superior = superior;
+	}
+
+	public Date getInseridoEm() {
+		return inseridoEm;
+	}
+
+	public void setInseridoEm(Date inseridoEm) {
+		this.inseridoEm = inseridoEm;
+	}
+
+	public Usuario getInseridoPor() {
+		return inseridoPor;
+	}
+
+	public void setInseridoPor(Usuario inseridoPor) {
+		this.inseridoPor = inseridoPor;
+	}
+
+	public Date getModificadoEm() {
+		return modificadoEm;
+	}
+
+	public void setModificadoEm(Date modificadoEm) {
+		this.modificadoEm = modificadoEm;
+	}
+
+	public Usuario getModificadoPor() {
+		return modificadoPor;
+	}
+
+	public void setModificadoPor(Usuario modificadoPor) {
+		this.modificadoPor = modificadoPor;
+	}
+
+	public Date getExcluidoEm() {
+		return excluidoEm;
+	}
+
+	public void setExcluidoEm(Date excluidoEm) {
+		this.excluidoEm = excluidoEm;
+	}
+
+	public Usuario getExcluidoPor() {
+		return excluidoPor;
+	}
+
+	public void setExcluidoPor(Usuario excluidoPor) {
+		this.excluidoPor = excluidoPor;
+	}
 
 	public Privilegio getPrivilegio() {
 		return privilegio;
@@ -119,30 +168,6 @@ public class Usuario {
 
 	public void setPrivilegio(Privilegio privilegio) {
 		this.privilegio = privilegio;
-	}
-	
-	public Date getDataInclusao() {
-		return dataInclusao;
-	}
-
-	public void setDataInclusao(Date dataInclusao) {
-		this.dataInclusao = dataInclusao;
-	}
-
-	public Date getDataModificacao() {
-		return dataModificacao;
-	}
-
-	public void setDataModificacao(Date dataModificacao) {
-		this.dataModificacao = dataModificacao;
-	}
-
-	public Date getDataExclusao() {
-		return dataExclusao;
-	}
-
-	public void setDataExclusao(Date dataExclusao) {
-		this.dataExclusao = dataExclusao;
 	}
 
 	public Long getId() {

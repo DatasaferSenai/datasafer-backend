@@ -18,70 +18,119 @@ import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 /**
  * Representa uma estação ou "host"
  */
-@JsonIgnoreProperties({"id","usuario", "backups"})
+@JsonIgnoreProperties({ "id", "usuario", "backups" })
 @Entity
 public class Host {
 
-	//---------------------------------------------------------------------------------------------------
-	
+	// ---------------------------------------------------------------------------------------------------
+
 	@ManyToOne
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
-	
-	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch=FetchType.EAGER)
+
+	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
-	
-	//---------------------------------------------------------------------------------------------------
-	
-	
+
+	// ---------------------------------------------------------------------------------------------------
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	
+
 	@Column(length = 40, nullable = false)
 	private String nome;
 
-	@Column(length = 50, nullable = true)
+	@Column(length = 100, nullable = true)
 	private String descricao;
 
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario proprietario;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private Date inseridoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario inseridoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
-	private Date dataInclusao;
-	
+	private Date modificadoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario modificadoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
-	private Date dataModificacao;
-	
-	@Column(nullable = true)
-	private Date dataExclusao;
-	
-	public Date getDataInclusao() {
-		return dataInclusao;
+	private Date excluidoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario excluidoPor;
+
+	public Usuario getProprietario() {
+		return proprietario;
 	}
 
-	public void setDataInclusao(Date dataInclusao) {
-		this.dataInclusao = dataInclusao;
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
-	public Date getDataModificacao() {
-		return dataModificacao;
+	public Date getInseridoEm() {
+		return inseridoEm;
 	}
 
-	public void setDataModificacao(Date dataModificacao) {
-		this.dataModificacao = dataModificacao;
+	public void setInseridoEm(Date inseridoEm) {
+		this.inseridoEm = inseridoEm;
 	}
 
-	public Date getDataExclusao() {
-		return dataExclusao;
+	public Usuario getInseridoPor() {
+		return inseridoPor;
 	}
 
-	public void setDataExclusao(Date dataExclusao) {
-		this.dataExclusao = dataExclusao;
+	public void setInseridoPor(Usuario inseridoPor) {
+		this.inseridoPor = inseridoPor;
 	}
-	
+
+	public Date getModificadoEm() {
+		return modificadoEm;
+	}
+
+	public void setModificadoEm(Date modificadoEm) {
+		this.modificadoEm = modificadoEm;
+	}
+
+	public Usuario getModificadoPor() {
+		return modificadoPor;
+	}
+
+	public void setModificadoPor(Usuario modificadoPor) {
+		this.modificadoPor = modificadoPor;
+	}
+
+	public Date getExcluidoEm() {
+		return excluidoEm;
+	}
+
+	public void setExcluidoEm(Date excluidoEm) {
+		this.excluidoEm = excluidoEm;
+	}
+
+	public Usuario getExcluidoPor() {
+		return excluidoPor;
+	}
+
+	public void setExcluidoPor(Usuario excluidoPor) {
+		this.excluidoPor = excluidoPor;
+	}
+
 	public Long getId() {
 		return id;
 	}
@@ -123,13 +172,13 @@ public class Host {
 	}
 
 	@JsonProperty("operacoes")
-	public Map<Operacao.Status,Integer> getOperacoes() {
+	public Map<Operacao.Status, Integer> getOperacoes() {
 		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
-		for( Operacao.Status s : Operacao.Status.values() ){
+		for (Operacao.Status s : Operacao.Status.values()) {
 			Integer count = 0;
-			for (Backup b : this.getBackups()){
-				for (Operacao p : b.getOperacoes()){
-					if(p.getStatus() == s){
+			for (Backup b : this.getBackups()) {
+				for (Operacao p : b.getOperacoes()) {
+					if (p.getStatus() == s) {
 						count++;
 					}
 				}

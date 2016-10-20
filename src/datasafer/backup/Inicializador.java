@@ -50,11 +50,13 @@ public class Inicializador {
 
 	private void verificaAdmin() {
 
+		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
+		
 		Privilegio privilegio_admin = privilegioBo.obterPrivilegio("Administrador");
 		if (privilegio_admin == null) {
 			privilegio_admin = new Privilegio();
 			privilegio_admin.setNome("Administrador");
-
+			privilegio_admin.setInseridoEm(agora);
 			Set<Permissao> permissoes = new HashSet<Permissao>();
 			for (Permissao p : Permissao.values())
 				permissoes.add(p);
@@ -73,7 +75,8 @@ public class Inicializador {
 			usuario_admin.setNome("Administrador");
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
-
+			usuario_admin.setInseridoEm(agora);
+			
 			usuarioBo.inserirUsuario(null, usuario_admin);
 
 			usuarioBo.modificarPrivilegio("admin", privilegio_admin);
@@ -88,7 +91,7 @@ public class Inicializador {
 		if (gerenciador == null) {
 			gerenciador = new Privilegio();
 			gerenciador.setNome("Gerenciador");
-			gerenciador.setDataInclusao(agora);
+			gerenciador.setInseridoEm(agora);
 			gerenciador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS,
 					Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_USUARIOS,
@@ -102,7 +105,7 @@ public class Inicializador {
 		if (operador == null) {
 			operador = new Privilegio();
 			operador.setNome("Operador");
-			operador.setDataInclusao(agora);
+			operador.setInseridoEm(agora);
 			operador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_BACKUPS,
 					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_BACKUPS)));
@@ -113,7 +116,7 @@ public class Inicializador {
 		if (visualizacao == null) {
 			visualizacao = new Privilegio();
 			visualizacao.setNome("Visualização");
-			visualizacao.setDataInclusao(agora);
+			visualizacao.setInseridoEm(agora);
 			visualizacao.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES)));
 			privilegioBo.inserirPrivilegio(visualizacao);
@@ -136,7 +139,7 @@ public class Inicializador {
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
-				usuario.setDataInclusao(agora);
+				usuario.setInseridoEm(agora);
 				usuario.setArmazenamento(10000000L);
 				usuario.setLogin(login);
 				usuario.setSenha(login);
@@ -176,7 +179,7 @@ public class Inicializador {
 			Host host = hostBo.obterHost(login_usuario, nome_host);
 			if (host == null) {
 				host = new Host();
-				host.setDataInclusao(agora);
+				host.setInseridoEm(agora);
 				host.setNome(nome_host);
 				hostBo.inserirHost(login_usuario, host);
 				
@@ -210,7 +213,7 @@ public class Inicializador {
 			Backup backup = backupBo.obterBackup(login_usuario, nome_host, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
-				backup.setDataInclusao(agora);
+				backup.setInseridoEm(agora);
 				backup.setNome(nomeBackup);
 				backup.setFrequencia(frequencia);
 				if(frequencia == Frequencia.INTERVALO){

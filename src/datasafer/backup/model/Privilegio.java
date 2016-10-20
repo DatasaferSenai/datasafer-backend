@@ -3,6 +3,7 @@ package datasafer.backup.model;
 import java.util.Date;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -12,8 +13,11 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @JsonIgnoreProperties({ "id", "usuarios" })
 @Entity
@@ -53,47 +57,100 @@ public class Privilegio {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(unique = true, nullable = false)
+	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
+
+	@Column(length = 100, nullable = true)
+	private String descricao;
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> permissoes;
 
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario proprietario;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private Date inseridoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario inseridoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
-	private Date dataInclusao;
-	
+	private Date modificadoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario modificadoPor;
+
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
-	private Date dataModificacao;
-	
-	@Column(nullable = true)
-	private Date dataExclusao;
-	
-	public Date getDataInclusao() {
-		return dataInclusao;
+	private Date excluidoEm;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	private Usuario excluidoPor;
+
+	public Usuario getProprietario() {
+		return proprietario;
 	}
 
-	public void setDataInclusao(Date dataInclusao) {
-		this.dataInclusao = dataInclusao;
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
-	public Date getDataModificacao() {
-		return dataModificacao;
+	public Date getInseridoEm() {
+		return inseridoEm;
 	}
 
-	public void setDataModificacao(Date dataModificacao) {
-		this.dataModificacao = dataModificacao;
+	public void setInseridoEm(Date inseridoEm) {
+		this.inseridoEm = inseridoEm;
 	}
 
-	public Date getDataExclusao() {
-		return dataExclusao;
+	public Usuario getInseridoPor() {
+		return inseridoPor;
 	}
 
-	public void setDataExclusao(Date dataExclusao) {
-		this.dataExclusao = dataExclusao;
+	public void setInseridoPor(Usuario inseridoPor) {
+		this.inseridoPor = inseridoPor;
 	}
-	
+
+	public Date getModificadoEm() {
+		return modificadoEm;
+	}
+
+	public void setModificadoEm(Date modificadoEm) {
+		this.modificadoEm = modificadoEm;
+	}
+
+	public Usuario getModificadoPor() {
+		return modificadoPor;
+	}
+
+	public void setModificadoPor(Usuario modificadoPor) {
+		this.modificadoPor = modificadoPor;
+	}
+
+	public Date getExcluidoEm() {
+		return excluidoEm;
+	}
+
+	public void setExcluidoEm(Date excluidoEm) {
+		this.excluidoEm = excluidoEm;
+	}
+
+	public Usuario getExcluidoPor() {
+		return excluidoPor;
+	}
+
+	public void setExcluidoPor(Usuario excluidoPor) {
+		this.excluidoPor = excluidoPor;
+	}
+
 	public Long getId() {
 		return id;
 	}
