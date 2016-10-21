@@ -44,7 +44,7 @@ public class OperacaoFiltroJwt implements Filter {
 			if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
 					| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_OPERACOES))
 					| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_OPERACOES))
-					| (request.getMethod() == "UPDATE" && permissoes.contains(Privilegio.Permissao.MODIFICAR_OPERACOES))
+					| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_OPERACOES))
 					| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_OPERACOES))
 
 			) {

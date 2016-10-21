@@ -44,7 +44,7 @@ public class HostRestController {
 	@RequestMapping(value = "/gerenciamento/host", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> inserirHost(@RequestHeader(name="usuario") String login_usuario, @RequestBody Host host){
 		try {
-			host = hostBo.inserirHost(login_usuario, host);
+			hostBo.inserirHost(login_usuario, host);
 			if (host != null) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {

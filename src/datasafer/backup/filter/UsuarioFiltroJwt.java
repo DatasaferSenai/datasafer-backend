@@ -49,7 +49,7 @@ public class UsuarioFiltroJwt implements Filter {
 			if (usuario.getPrivilegio().getPermissoes().contains(Permissao.ADMINISTRADOR)
 					| (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
 					| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_USUARIOS))
-					| (request.getMethod() == "UPDATE" && permissoes.contains(Permissao.MODIFICAR_USUARIOS))
+					| (request.getMethod() == "PUT" && permissoes.contains(Permissao.MODIFICAR_USUARIOS))
 					| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_USUARIOS))
 
 			) {

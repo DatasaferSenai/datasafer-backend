@@ -29,12 +29,8 @@ public class BackupRestController {
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> inserirBackup(@RequestHeader(name="usuario") String login_usuario, @RequestHeader(name="host") String nome_host, @RequestBody Backup backup){
 		try {
-			backup = backupBo.inserirBackup(login_usuario, nome_host, backup);
-			if (backup != null) {
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			} else {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
+			backupBo.inserirBackup(login_usuario, nome_host, backup);
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

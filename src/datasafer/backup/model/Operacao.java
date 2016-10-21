@@ -64,6 +64,7 @@ public class Operacao {
 	private Long tamanho;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
 	@JsonProperty(access = Access.READ_ONLY)

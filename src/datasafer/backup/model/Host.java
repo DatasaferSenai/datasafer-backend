@@ -29,9 +29,9 @@ public class Host {
 
 	// ---------------------------------------------------------------------------------------------------
 
-	@ManyToOne
-	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
+//	@ManyToOne
+//	@JoinColumn(name = "usuario_id")
+//	private Usuario usuario;
 
 	@OneToMany(mappedBy = "host", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
@@ -49,6 +49,7 @@ public class Host {
 	private String descricao;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
 	@JsonProperty(access = Access.READ_ONLY)
@@ -147,13 +148,13 @@ public class Host {
 		this.nome = nome;
 	}
 
-	public Usuario getUsuario() {
-		return usuario;
-	}
-
-	public void setUsuario(Usuario usuario) {
-		this.usuario = usuario;
-	}
+//	public Usuario getUsuario() {
+//		return usuario;
+//	}
+//
+//	public void setUsuario(Usuario usuario) {
+//		this.usuario = usuario;
+//	}
 
 	public List<Backup> getBackups() {
 		return backups;

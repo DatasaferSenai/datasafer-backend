@@ -16,11 +16,11 @@ public class UsuarioBo {
 	private UsuarioDao usuarioDao;
 	
 	public void inserirUsuario(String login_usuario, Usuario usuario) {
-		usuarioDao.inserirUsuario(login_usuario, usuario);
+		usuarioDao.inserir(login_usuario, usuario);
 	}
 
 	public void modificarUsario(Usuario usuario) {
-		usuarioDao.modificarUsuario(usuario);
+		usuarioDao.modificar(usuario);
 	}
 	
 	public void modificarPrivilegio(String login_usuario, Privilegio privilegio) {
@@ -28,7 +28,7 @@ public class UsuarioBo {
 	}
 	
 	public Usuario obterUsuario(String login_usuario){
-		return usuarioDao.obterUsuario(login_usuario);
+		return usuarioDao.obter(login_usuario);
 	}
 	
 	public Usuario logar(Usuario usuario){

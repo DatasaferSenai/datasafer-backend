@@ -18,25 +18,8 @@ public class UsuarioDao {
 	@PersistenceContext
 	private EntityManager manager;
 
-	@Transactional
-	public void inserirUsuario(String login_usuario, Usuario usuario) {
-		manager.persist(usuario);
-	}
-
-	@Transactional
-	public void modificarUsuario(Usuario usuario) {
-		manager.merge(usuario);
-	}
-
-	@Transactional
-	public void modificarPrivilegio(String login_usuario, Privilegio privilegio) {
-		Usuario usuario = this.obterUsuario(login_usuario);
-		usuario.setPrivilegio(privilegio);
-		manager.merge(usuario);
-	}
-
 	// @Transactional
-	public Usuario obterUsuario(String login_usuario) {
+	public Usuario obter(String login_usuario) {
 		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
 				Usuario.class);
 		query.setParameter("login_usuario", login_usuario);
@@ -45,6 +28,31 @@ public class UsuarioDao {
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+	@Transactional
+	public void inserir(String login_usuario, Usuario usuario) {
+		if(login_usuario != null){
+			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
+					Usuario.class);
+			query.setParameter("login_usuario", login_usuario);
+			usuario.setSuperior(query.getSingleResult());
+		} else {
+			usuario.setSuperior(null);
+		}
+		manager.persist(usuario);
+	}
+
+	@Transactional
+	public void modificar(Usuario usuario) {
+		manager.merge(usuario);
+	}
+
+	@Transactional
+	public void modificarPrivilegio(String login_usuario, Privilegio privilegio) {
+		Usuario usuario = this.obter(login_usuario);
+		usuario.setPrivilegio(privilegio);
+		manager.merge(usuario);
 	}
 
 	// @Transactional

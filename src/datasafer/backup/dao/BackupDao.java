@@ -16,41 +16,36 @@ public class BackupDao {
 	@PersistenceContext
 	private EntityManager manager;
 
-	@Transactional(noRollbackFor = Exception.class)
-	public Backup inserirBackup(String login_usuario, String nome_host, Backup backup) {
+	@Transactional
+	public void inserir(String login_usuario, String nome_host, Backup backup) {
 		TypedQuery<Host> query = manager.createQuery(
-				"SELECT h FROM Host h WHERE h.usuario.login = :login_usuario AND h.nome = :nome_host", Host.class);
+				"SELECT h FROM Host h WHERE h.proprietario.login = :login_usuario AND h.nome = :nome_host", Host.class);
 		query.setParameter("login_usuario", login_usuario);
 		query.setParameter("nome_host", nome_host);
-		try {
-			backup.setHost(query.getSingleResult());
-			manager.persist(backup);
-			return backup;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	@Transactional
-	public void modificarBackup(Backup backup) {
+		backup.setHost(query.getSingleResult());
 		manager.persist(backup);
 	}
 
 	// @Transactional
-	public Backup obterBackup(String login_usuario, String nome_host, String nome_backup) {
+	public Backup obter(String login_usuario, String nome_host, String nome_backup) {
 		TypedQuery<Backup> query = manager.createQuery(
-				"SELECT b FROM Backup b WHERE b.host.usuario.login = :login_usuario AND b.host.nome = :nome_host AND b.nome = :nome_backup",
+				"SELECT b FROM Backup b WHERE b.host.proprietario.login = :login_usuario AND b.host.nome = :nome_host AND b.nome = :nome_backup",
 				Backup.class);
 		query.setParameter("login_usuario", login_usuario);
 		query.setParameter("nome_host", nome_host);
 		query.setParameter("nome_backup", nome_backup);
-
 		try {
 			return query.getSingleResult();
 		} catch (Exception e) {
 			return null;
 		}
 	}
+	
+	@Transactional
+	public void modificar(Backup backup) {
+		manager.persist(backup);
+	}
+
+
 
 }

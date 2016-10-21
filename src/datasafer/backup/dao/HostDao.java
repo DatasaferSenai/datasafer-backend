@@ -17,39 +17,32 @@ public class HostDao {
 	@PersistenceContext
 	private EntityManager manager;
 
-	@Transactional
-	public void modificarHost(Host host) {
-		manager.merge(host);
-	}
-
-	@Transactional(noRollbackFor = Exception.class)
-	public Host inserirHost(String login_usuario, Host host) {
-		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
-				Usuario.class);
-		query.setParameter("login_usuario", login_usuario);
-		try {
-			host.setUsuario(query.getSingleResult());
-			manager.persist(host);
-			return host;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
 	// @Transactional
-	public Host obterHost(String login_usuario, String nome_host) {
+	public Host obter(String login_usuario, String nome_host) {
 		TypedQuery<Host> query = manager.createQuery(
-				"SELECT h FROM Host h WHERE h.usuario.login = :login_usuario AND h.nome = :nome_host", Host.class);
+				"SELECT h FROM Host h WHERE h.proprietario.login = :login_usuario AND h.nome = :nome_host", Host.class);
 		query.setParameter("login_usuario", login_usuario);
 		query.setParameter("nome_host", nome_host);
-
 		try {
 			return query.getSingleResult();
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	@Transactional
+	public void modificar(Host host) {
+		manager.merge(host);
+	}
+
+	@Transactional
+	public void inserir(String login_usuario, Host host) {
+		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
+				Usuario.class);
+		query.setParameter("login_usuario", login_usuario);
+		host.setProprietario(query.getSingleResult());
+		manager.persist(host);
 	}
 
 }

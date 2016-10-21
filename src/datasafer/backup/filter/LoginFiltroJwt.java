@@ -46,13 +46,26 @@ public class LoginFiltroJwt implements Filter {
 			JWTVerifier verifier = new JWTVerifier(UsuarioRestController.SECRET);
 			Map<String, Object> claims = verifier.verify(token);
 
+			Usuario solicitador = usuarioBo.obterUsuario((String) claims.get("login_usuario"));
 			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
 
-			if (usuario.getStatus() == Status.ATIVO) {
-				chain.doFilter(req, resp);
-			} else {
-				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus().toString());
+			if (solicitador == null || solicitador.getExcluidoEm() != null || solicitador.getExcluidoPor() != null) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Solicitador inválido ou não encontrado");
 			}
+			if (solicitador.getStatus() != Status.ATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), solicitador.getStatus().toString());
+			}
+			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuario inválido ou não encontrado");
+			}
+
+			for (Usuario superior = usuario.getSuperior(); superior != null; superior = superior.getSuperior()) {
+				if (superior == solicitador) {
+					chain.doFilter(req, resp);
+				}
+			}
+			
+			response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não está relacionado ao solicitador");
 
 		} catch (Exception e) {
 			e.printStackTrace();

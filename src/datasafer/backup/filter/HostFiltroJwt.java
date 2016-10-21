@@ -44,7 +44,7 @@ public class HostFiltroJwt implements Filter {
 			if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
 					| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_HOSTS))
 					| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_HOSTS))
-					| (request.getMethod() == "UPDATE" && permissoes.contains(Privilegio.Permissao.MODIFICAR_HOSTS))
+					| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_HOSTS))
 					| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_HOSTS))
 
 			) {

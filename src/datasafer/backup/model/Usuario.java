@@ -58,7 +58,7 @@ public class Usuario {
 	@Column(length = 40, nullable = false)
 	private String nome;
 
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Host> hosts;
 
 	@Column(length = 20, unique = true, nullable = false)
@@ -80,6 +80,7 @@ public class Usuario {
 	private Privilegio privilegio;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
 	@JsonProperty(access = Access.READ_ONLY)

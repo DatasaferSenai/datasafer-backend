@@ -16,11 +16,11 @@ public class OperacaoBo {
 	private OperacaoDao operacaoDao;
 
 	public void modificarOperacao(Operacao operacao) {
-		operacaoDao.modificarOperacao(operacao);
+		operacaoDao.modificar(operacao);
 	}
 	
 	public Operacao obterOperacao(String login_usuario, String nome_host, String nome_backup, Date data_operacao){
-		return operacaoDao.obterOperacao(login_usuario, nome_host, nome_backup, data_operacao);
+		return operacaoDao.obter(login_usuario, nome_host, nome_backup, data_operacao);
 	}
 	
 }

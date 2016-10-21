@@ -12,16 +12,16 @@ public class HostBo {
 	@Autowired
 	private HostDao hostDao;
 
-	public Host inserirHost(String login_usuario, Host host) {
-		return hostDao.inserirHost(login_usuario, host);
+	public void inserirHost(String login_usuario, Host host) {
+		hostDao.inserir(login_usuario, host);
 	}
 	
 	public void modificarHost(Host host) {
-		hostDao.modificarHost(host);
+		hostDao.modificar(host);
 	}
 	
 	public Host obterHost(String login_usuario, String nome_host) {
-		return hostDao.obterHost(login_usuario, nome_host);
+		return hostDao.obter(login_usuario, nome_host);
 	}
 
 }
