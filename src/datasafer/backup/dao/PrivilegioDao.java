@@ -1,5 +1,8 @@
 package datasafer.backup.dao;
 
+import java.util.Calendar;
+import java.util.TimeZone;
+
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
@@ -17,25 +20,54 @@ public class PrivilegioDao {
 	private EntityManager manager;
 
 	@Transactional
-	public void inserirPrivilegio(String login_usuario, Privilegio privilegio) {
-		if (login_usuario != null) {
-			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
-					Usuario.class);
-			query.setParameter("login_usuario", login_usuario);
+	public void inserir(String login_solicitante, String login_proprietario, Privilegio privilegio) {
+
+		if (login_solicitante != null) {
+			TypedQuery<Usuario> query = manager
+					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class);
+			query.setParameter("login_solicitante", login_solicitante);
+
+			privilegio.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
 			privilegio.setInseridoPor(query.getSingleResult());
 		} else {
+			privilegio.setInseridoEm(null);
 			privilegio.setInseridoPor(null);
 		}
+
+		if (login_proprietario != null) {
+			TypedQuery<Usuario> query = manager
+					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_proprietario", Usuario.class);
+			query.setParameter("login_proprietario", login_proprietario);
+
+			privilegio.setProprietario(query.getSingleResult());
+		} else {
+			privilegio.setProprietario(null);
+		}
+
 		manager.persist(privilegio);
 	}
 
 	@Transactional
-	public void modificarPrivilegio(Privilegio privilegio) {
+	public void modificar(String login_solicitante, Privilegio privilegio) {
+		
+		if(login_solicitante != null){
+			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
+					Usuario.class);
+			query.setParameter("login_solicitante", login_solicitante);
+			
+			privilegio.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+			privilegio.setModificadoPor(query.getSingleResult());
+			
+		} else {
+			privilegio.setModificadoEm(null);
+			privilegio.setModificadoPor(null);
+		}
+		
 		manager.merge(privilegio);
 	}
 
 	// @Transactional
-	public Privilegio obterPrivilegio(String nome_privilegio) {
+	public Privilegio obter(String nome_privilegio) {
 		TypedQuery<Privilegio> query = manager.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio",
 				Privilegio.class);
 		query.setParameter("nome_privilegio", nome_privilegio);

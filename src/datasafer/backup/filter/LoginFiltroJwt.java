@@ -18,7 +18,7 @@ import org.springframework.http.HttpStatus;
 
 import com.auth0.jwt.JWTVerifier;
 
-import datasafer.backup.bo.UsuarioBo;
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.controller.UsuarioRestController;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
@@ -27,7 +27,7 @@ import datasafer.backup.model.Usuario.Status;
 public class LoginFiltroJwt implements Filter {
 
 	@Autowired
-	private UsuarioBo usuarioBo;
+	private UsuarioDao usuarioDao;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -46,8 +46,8 @@ public class LoginFiltroJwt implements Filter {
 			JWTVerifier verifier = new JWTVerifier(UsuarioRestController.SECRET);
 			Map<String, Object> claims = verifier.verify(token);
 
-			Usuario solicitador = usuarioBo.obterUsuario((String) claims.get("login_usuario"));
-			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
+			Usuario solicitador = usuarioDao.obter((String) claims.get("login_usuario"));
+			Usuario usuario = usuarioDao.obter(login_usuario);
 
 			if (solicitador == null || solicitador.getExcluidoEm() != null || solicitador.getExcluidoPor() != null) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Solicitador inválido ou não encontrado");
@@ -60,6 +60,7 @@ public class LoginFiltroJwt implements Filter {
 			}
 
 			for (Usuario superior = usuario.getSuperior(); superior != null; superior = superior.getSuperior()) {
+				System.out.println("superior = " + superior.getNome());
 				if (superior == solicitador) {
 					chain.doFilter(req, resp);
 				}

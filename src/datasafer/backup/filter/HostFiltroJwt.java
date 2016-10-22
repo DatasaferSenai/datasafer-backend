@@ -16,8 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
-import datasafer.backup.bo.PrivilegioBo;
-import datasafer.backup.bo.UsuarioBo;
+import datasafer.backup.dao.PrivilegioDao;
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Privilegio.Permissao;
@@ -26,9 +26,9 @@ import datasafer.backup.model.Privilegio.Permissao;
 public class HostFiltroJwt implements Filter {
 
 	@Autowired
-	private UsuarioBo usuarioBo;
+	private UsuarioDao usuarioDao;
 	@Autowired
-	private PrivilegioBo privilegioBo;
+	private PrivilegioDao privilegioDao;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
@@ -37,7 +37,7 @@ public class HostFiltroJwt implements Filter {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
-		Usuario usuario = usuarioBo.obterUsuario(request.getHeader("usuario"));
+		Usuario usuario = usuarioDao.obter(request.getHeader("usuario"));
 		Set<Permissao> permissoes = usuario.getPrivilegio().getPermissoes();
 
 		if (permissoes != null) {

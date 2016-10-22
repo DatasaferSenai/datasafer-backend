@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.bo.HostBo;
-import datasafer.backup.bo.PrivilegioBo;
+import datasafer.backup.dao.HostDao;
+import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Host;
 
@@ -21,15 +21,15 @@ import datasafer.backup.model.Host;
 public class HostRestController {
 
 	@Autowired
-	private HostBo hostBo;
+	private HostDao hostDao;
 	@Autowired
-	private PrivilegioBo privilegioBo;
+	private PrivilegioDao privilegioDao;
 
 	@RequestMapping(value = "/gerenciamento/host", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Host> obterHost(@RequestHeader(name = "usuario") String login_usuario,
 			@RequestHeader(name = "host") String nome_host) {
 		try {
-			Host host = hostBo.obterHost(login_usuario, nome_host);
+			Host host = hostDao.obter(login_usuario, nome_host);
 			if (host != null) {
 				return ResponseEntity.ok().body(host);
 			} else {
@@ -40,11 +40,12 @@ public class HostRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@RequestMapping(value = "/gerenciamento/host", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserirHost(@RequestHeader(name="usuario") String login_usuario, @RequestBody Host host){
+	public ResponseEntity<Void> inserirHost(@RequestHeader(name = "usuario") String login_usuario,
+			@RequestBody Host host) {
 		try {
-			hostBo.inserirHost(login_usuario, host);
+			hostDao.inserir(null,login_usuario, host);
 			if (host != null) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
@@ -60,7 +61,7 @@ public class HostRestController {
 	public ResponseEntity<List<Backup>> listarBackups(@RequestHeader(name = "usuario") String login_usuario,
 			@RequestHeader(name = "host") String nome_host) {
 		try {
-			Host host = hostBo.obterHost(login_usuario, nome_host);
+			Host host = hostDao.obter(login_usuario, nome_host);
 			if (host != null) {
 				return ResponseEntity.ok().body(host.getBackups());
 			} else {

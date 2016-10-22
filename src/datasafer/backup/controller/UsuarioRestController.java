@@ -16,10 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTSigner;
 
-import datasafer.backup.bo.PrivilegioBo;
-import datasafer.backup.bo.UsuarioBo;
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Host;
-import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 
 @RestController
@@ -29,7 +27,7 @@ public class UsuarioRestController {
 	public static final long EXPIRES_IN_SECONDS = 60 * 60 * 24;
 
 	@Autowired
-	private UsuarioBo usuarioBo;
+	private UsuarioDao usuarioDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_superior,
@@ -38,9 +36,9 @@ public class UsuarioRestController {
 			JSONObject job = new JSONObject(corpo_usuario);
 			Usuario usuario = new Usuario();
 			usuario.setNome(job.getString("nome"));
-			usuario.setLogin(job.getString("login"));;
-			usuario.setSenha(job.getString("senha"));;
-			usuarioBo.inserirUsuario(login_superior, usuario);
+			usuario.setLogin(job.getString("login"));
+			usuario.setSenha(job.getString("senha"));
+			//usuarioDao.inserir(login_superior, usuario);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -51,7 +49,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> obterUsuario(@RequestHeader(name = "usuario") String login_usuario) {
 		try {
-			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
+			Usuario usuario = usuarioDao.obter(login_usuario);
 			if (usuario != null) {
 				JSONObject job = new JSONObject();
 				job.put("nome", usuario.getNome());
@@ -69,7 +67,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<List<Host>> listarOperacoes(@RequestHeader(name = "usuario") String login_usuario) {
 		try {
-			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
+			Usuario usuario = usuarioDao.obter(login_usuario);
 			if (usuario != null) {
 				return ResponseEntity.ok().body(usuario.getHosts());
 			} else {
@@ -84,7 +82,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody Usuario usuario) {
 		try {
-			usuario = usuarioBo.logar(usuario);
+			usuario = usuarioDao.logar(usuario);
 			if (usuario != null) {
 				// data de emissão do token
 				long iat = System.currentTimeMillis() / 1000;

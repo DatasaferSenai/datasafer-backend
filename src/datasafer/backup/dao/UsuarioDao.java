@@ -1,6 +1,9 @@
 package datasafer.backup.dao;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -31,20 +34,51 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public void inserir(String login_usuario, Usuario usuario) {
-		if(login_usuario != null){
-			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
+	public void inserir(String login_solicitante, String login_superior, Usuario usuario) {
+		
+		if(login_solicitante != null){
+			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
 					Usuario.class);
-			query.setParameter("login_usuario", login_usuario);
+			query.setParameter("login_solicitante", login_solicitante);
+			
+			usuario.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+			usuario.setInseridoPor(query.getSingleResult());
+			
+		} else {
+			usuario.setInseridoEm(null);
+			usuario.setInseridoPor(null);
+		}
+		
+		if(login_superior != null){
+			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior",
+					Usuario.class);
+			query.setParameter("login_superior", login_superior);
+			
 			usuario.setSuperior(query.getSingleResult());
 		} else {
 			usuario.setSuperior(null);
 		}
+		
+		
 		manager.persist(usuario);
 	}
 
 	@Transactional
-	public void modificar(Usuario usuario) {
+	public void modificar(String login_solicitante, Usuario usuario) {
+		
+		if(login_solicitante != null){
+			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
+					Usuario.class);
+			query.setParameter("login_usuario", login_solicitante);
+			
+			usuario.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+			usuario.setModificadoPor(query.getSingleResult());
+			
+		} else {
+			usuario.setModificadoEm(null);
+			usuario.setModificadoPor(null);
+		}
+		
 		manager.merge(usuario);
 	}
 

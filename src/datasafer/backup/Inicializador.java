@@ -14,11 +14,11 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import datasafer.backup.bo.BackupBo;
-import datasafer.backup.bo.HostBo;
-import datasafer.backup.bo.OperacaoBo;
-import datasafer.backup.bo.PrivilegioBo;
-import datasafer.backup.bo.UsuarioBo;
+import datasafer.backup.dao.BackupDao;
+import datasafer.backup.dao.HostDao;
+import datasafer.backup.dao.OperacaoDao;
+import datasafer.backup.dao.PrivilegioDao;
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Backup.Frequencia;
 import datasafer.backup.model.Host;
@@ -31,15 +31,15 @@ import datasafer.backup.model.Usuario.Status;
 public class Inicializador {
 
 	@Autowired
-	private UsuarioBo usuarioBo;
+	private UsuarioDao usuarioDao;
 	@Autowired
-	private HostBo hostBo;
+	private HostDao hostDao;
 	@Autowired
-	private BackupBo backupBo;
+	private BackupDao backupDao;
 	@Autowired
-	private OperacaoBo operacaoBo;
+	private OperacaoDao operacaoDao;
 	@Autowired
-	private PrivilegioBo privilegioBo;
+	private PrivilegioDao privilegioDao;
 
 	@PostConstruct
 	private void Inicializa() {
@@ -52,7 +52,7 @@ public class Inicializador {
 
 		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
 		
-		Privilegio privilegio_admin = privilegioBo.obterPrivilegio("Administrador");
+		Privilegio privilegio_admin = privilegioDao.obter("Administrador");
 		if (privilegio_admin == null) {
 			privilegio_admin = new Privilegio();
 			privilegio_admin.setNome("Administrador");
@@ -62,10 +62,10 @@ public class Inicializador {
 				permissoes.add(p);
 			privilegio_admin.setPermissoes(permissoes);
 
-			privilegioBo.inserirPrivilegio(null,privilegio_admin);
+			privilegioDao.inserir(null,null,privilegio_admin);
 		}
 
-		Usuario usuario_admin = usuarioBo.obterUsuario("admin");
+		Usuario usuario_admin = usuarioDao.obter("admin");
 		if (usuario_admin == null) {
 			usuario_admin = new Usuario();
 
@@ -75,11 +75,10 @@ public class Inicializador {
 			usuario_admin.setNome("Administrador");
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
-			usuario_admin.setInseridoEm(agora);
 			
-			usuarioBo.inserirUsuario(null, usuario_admin);
+			usuarioDao.inserir(null,null, usuario_admin);
 
-			usuarioBo.modificarPrivilegio("admin", privilegio_admin);
+			usuarioDao.modificarPrivilegio("admin", privilegio_admin);
 		}
 	}
 
@@ -87,7 +86,7 @@ public class Inicializador {
 
 		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
 
-		Privilegio gerenciador = privilegioBo.obterPrivilegio("Gerenciador");
+		Privilegio gerenciador = privilegioDao.obter("Gerenciador");
 		if (gerenciador == null) {
 			gerenciador = new Privilegio();
 			gerenciador.setNome("Gerenciador");
@@ -98,10 +97,10 @@ public class Inicializador {
 					Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_USUARIOS,
 					Permissao.MODIFICAR_HOSTS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
 					Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioBo.inserirPrivilegio("admin",gerenciador);
+			privilegioDao.inserir("admin","admin",gerenciador);
 		}
 
-		Privilegio operador = privilegioBo.obterPrivilegio("Operador");
+		Privilegio operador = privilegioDao.obter("Operador");
 		if (operador == null) {
 			operador = new Privilegio();
 			operador.setNome("Operador");
@@ -109,17 +108,17 @@ public class Inicializador {
 			operador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_BACKUPS,
 					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioBo.inserirPrivilegio("admin",operador);
+			privilegioDao.inserir("admin","admin",operador);
 		}
 
-		Privilegio visualizacao = privilegioBo.obterPrivilegio("Visualização");
+		Privilegio visualizacao = privilegioDao.obter("Visualização");
 		if (visualizacao == null) {
 			visualizacao = new Privilegio();
 			visualizacao.setNome("Visualização");
 			visualizacao.setInseridoEm(agora);
 			visualizacao.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES)));
-			privilegioBo.inserirPrivilegio("admin",visualizacao);
+			privilegioDao.inserir("admin","admin",visualizacao);
 		}
 	}
 
@@ -135,7 +134,7 @@ public class Inicializador {
 				login += nomes.get(i).charAt(0);
 			}
 
-			Usuario usuario = usuarioBo.obterUsuario(login);
+			Usuario usuario = usuarioDao.obter(login);
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
@@ -145,10 +144,10 @@ public class Inicializador {
 				usuario.setSenha(login);
 				usuario.setStatus(Status.ATIVO);
 
-				usuarioBo.inserirUsuario("admin", usuario);
+				usuarioDao.inserir("admin","admin", usuario);
 
-				Privilegio privilegio_giovanni = privilegioBo.obterPrivilegio("Gerenciador");
-				usuarioBo.modificarPrivilegio(login, privilegio_giovanni);
+				Privilegio privilegio_giovanni = privilegioDao.obter("Gerenciador");
+				usuarioDao.modificarPrivilegio(login, privilegio_giovanni);
 
 				populaHosts(login);
 			}
@@ -176,12 +175,12 @@ public class Inicializador {
 			String nome_host = tiposDispositivos.get(tipo_index) + separadores.get(separador_index)
 					+ nomesDispositivos.get(nome_index);
 
-			Host host = hostBo.obterHost(login_usuario, nome_host);
+			Host host = hostDao.obter(login_usuario, nome_host);
 			if (host == null) {
 				host = new Host();
 				host.setInseridoEm(agora);
 				host.setNome(nome_host);
-				hostBo.inserirHost(login_usuario, host);
+				hostDao.inserir("admin",login_usuario, host);
 				
 				populaBackups(login_usuario,nome_host);
 			}
@@ -210,7 +209,7 @@ public class Inicializador {
 			String nomeBackup = nomes_backups.get(nomeIndex);
 			Frequencia frequencia = Frequencia.values()[frequenciaIndex];
 
-			Backup backup = backupBo.obterBackup(login_usuario, nome_host, nomeBackup);
+			Backup backup = backupDao.obter(login_usuario, nome_host, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setInseridoEm(agora);
@@ -222,7 +221,7 @@ public class Inicializador {
 				backup.setInicio(new Date(agora.getTime() + (1000 * 60 * 60 * 24 * inicio)));
 				backup.setPasta("C:\\" + nomeBackup.toLowerCase().replace(' ', '_'));
 				
-				backupBo.inserirBackup(login_usuario, nome_host, backup);
+				backupDao.inserir("admin",login_usuario, nome_host, backup);
 			}
 		}
 	}
