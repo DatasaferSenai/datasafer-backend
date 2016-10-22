@@ -15,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -67,8 +69,10 @@ public class Backup {
 	@Enumerated(EnumType.STRING)
 	private Frequencia frequencia;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "hh:MM:ss")
+	@Temporal(TemporalType.TIME)
 	@Column(nullable = true)
-	private Integer intervalo;
+	private Date intervalo;
 
 	@Column(nullable = false)
 	private String pasta;
@@ -216,11 +220,11 @@ public class Backup {
 		this.frequencia = frequencia;
 	}
 
-	public Integer getIntervalo() {
+	public Date getIntervalo() {
 		return intervalo;
 	}
 
-	public void setIntervalo(Integer intervalo) {
+	public void setIntervalo(Date intervalo) {
 		this.intervalo = intervalo;
 	}
 

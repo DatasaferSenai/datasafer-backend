@@ -1,8 +1,7 @@
 package datasafer.backup.controller;
 
-import java.util.Calendar;
+import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.TimeZone;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,7 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserirBackup(@RequestHeader(name = "Authorization") String token,
+	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token,
 			@RequestHeader(name = "estacao") String nome_estacao, @RequestBody String corpo_backup) {
 		try {
 			JSONObject job = new JSONObject(corpo_backup);
@@ -39,9 +38,8 @@ public class BackupRestController {
 			backup.setDescricao(job.getString("descricao"));
 			backup.setPasta(job.getString("pasta"));
 			backup.setFrequencia(Frequencia.valueOf(job.getString("frequencia")));
-			// backup.setIntervalo(job.getString("intervalo"));
-			// backup.setInicio(job.getString("inicio"));
-			backup.setInicio(Calendar.getInstance(TimeZone.getDefault()).getTime());
+			backup.setIntervalo(new SimpleDateFormat("hh:MM:ss").parse(job.getString("intervalo")));
+			backup.setInicio(new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").parse(job.getString("inicio")));
 
 			backupDao.inserir(null,
 					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),

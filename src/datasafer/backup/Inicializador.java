@@ -1,5 +1,7 @@
 package datasafer.backup;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -191,7 +193,7 @@ public class Inicializador {
 		for (int n = 0; n < quantidade; n++) {
 			int nomeIndex = gerador.nextInt(nomes_backups.size());
 			int frequenciaIndex = gerador.nextInt(Frequencia.values().length);
-			int intervalo = gerador.nextInt(111) + 10;
+			int intervalo = gerador.nextInt(11) + 1;
 			int inicio = gerador.nextInt(60);
 
 			String nomeBackup = nomes_backups.get(nomeIndex);
@@ -203,8 +205,16 @@ public class Inicializador {
 				backup.setNome(nomeBackup);
 				backup.setFrequencia(frequencia);
 				if (frequencia == Frequencia.INTERVALO) {
-					backup.setIntervalo(intervalo);
+					Calendar cal = Calendar.getInstance();
+					try {
+						cal.setTime(new SimpleDateFormat("hh:MM:ss").parse("00:00:00"));
+						cal.set(Calendar.HOUR_OF_DAY, intervalo);
+					} catch (ParseException e) {
+						e.printStackTrace();
+					}
+					backup.setIntervalo(cal.getTime());
 				}
+				
 				backup.setInicio(new Date(Calendar.getInstance(TimeZone.getDefault()).getTime().getTime()
 						+ (1000 * 60 * 60 * 24 * inicio)));
 				backup.setPasta("C:\\" + nomeBackup.toLowerCase().replace(' ', '_'));
@@ -233,7 +243,7 @@ public class Inicializador {
 				operacao.setData(new Date(
 						Calendar.getInstance(TimeZone.getDefault()).getTime().getTime() + gerador.nextInt(365)));
 				operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
-				operacao.setTamanho((long) gerador.nextInt(10000000)); 
+				operacao.setTamanho((long) gerador.nextInt(10000000));
 				operacaoDao.inserir("admin", login_usuario, nome_estacao, nome_backup, operacao);
 
 			}
