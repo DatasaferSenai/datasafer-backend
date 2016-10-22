@@ -11,8 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWTVerifier;
+
 import datasafer.backup.dao.OperacaoDao;
-import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.model.Operacao;
 
 @RestController
@@ -20,15 +21,15 @@ public class OperacaoRestController {
 
 	@Autowired
 	private OperacaoDao operacaoDao;
-	@Autowired
-	private PrivilegioDao privilegioDao;
 
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Operacao> obterOperacao(@RequestHeader(name = "usuario") String login_usuario,
-			@RequestHeader(name = "host") String nome_host, @RequestHeader(name = "backup") String nome_backup,
+	public ResponseEntity<Operacao> obter(@RequestHeader(name = "Authorization") String token,
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup,
 			@RequestHeader(name = "operacao") Date data_operacao) {
 		try {
-			Operacao operacao = operacaoDao.obter(login_usuario, nome_host, nome_backup, data_operacao);
+			Operacao operacao = operacaoDao.obter(
+					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+					nome_estacao, nome_backup, data_operacao);
 			if (operacao != null) {
 				return ResponseEntity.ok().body(operacao);
 			} else {

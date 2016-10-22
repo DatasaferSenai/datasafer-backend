@@ -16,21 +16,19 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import org.hibernate.FetchMode;
-import org.hibernate.annotations.Fetch;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "host", "operacoes","proprietario","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
+@JsonIgnoreProperties({ "id", "estacao", "operacoes", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm",
+		"modificadoPor", "excluidoEm", "excluidoPor" })
 @Entity
 public class Backup {
 
 	public enum Frequencia {
-		INTERVALO("Intervalo"), DIARIO("Diario"), SEMANAL("Semanal"), MENSAL("Mensal");
+		NAO("Não"), INTERVALO("Intervalo"), DIARIO("Diario"), SEMANAL("Semanal"), MENSAL("Mensal");
 
 		private String descricao;
 
@@ -45,8 +43,8 @@ public class Backup {
 	};
 
 	@ManyToOne
-	@JoinColumn(name = "host_id")
-	private Host host;
+	@JoinColumn(name = "estacao_id")
+	private Estacao estacao;
 
 	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Operacao> operacoes;
@@ -79,6 +77,7 @@ public class Backup {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -87,6 +86,7 @@ public class Backup {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -95,6 +95,7 @@ public class Backup {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
@@ -183,12 +184,12 @@ public class Backup {
 		this.descricao = descricao;
 	}
 
-	public Host getHost() {
-		return host;
+	public Estacao getEstacao() {
+		return estacao;
 	}
 
-	public void setHost(Host host) {
-		this.host = host;
+	public void setEstacao(Estacao estacao) {
+		this.estacao = estacao;
 	}
 
 	public List<Operacao> getOperacoes() {
@@ -233,7 +234,7 @@ public class Backup {
 
 	@JsonProperty("status")
 	public Operacao.Status getStatus() {
-		if (operacoes.size() > 0) {
+		if (operacoes != null && operacoes.size() > 0) {
 			Operacao ultimaOperacao = operacoes.get(0);
 			for (Operacao operacao : operacoes) {
 				if (operacao.getData().before(ultimaOperacao.getData())) {

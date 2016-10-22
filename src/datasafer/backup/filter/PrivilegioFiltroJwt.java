@@ -27,8 +27,8 @@ import datasafer.backup.model.Privilegio.Permissao;
 import datasafer.backup.model.Usuario;
 
 @Service
-@WebFilter("/gerenciamento/backup/*")
-public class BackupFiltroJwt implements Filter {
+@WebFilter("/gerenciamento/privilegio/*")
+public class PrivilegioFiltroJwt implements Filter {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
@@ -47,11 +47,16 @@ public class BackupFiltroJwt implements Filter {
 
 			if (permissoes != null) {
 				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
-						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_BACKUPS))
-						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
+						| (request.getMethod() == "GET"
+								&& permissoes.contains(Privilegio.Permissao.VISUALIZAR_PRIVILEGIOS))
+						| (request.getMethod() == "POST"
+								&& permissoes.contains(Privilegio.Permissao.INSERIR_PRIVILEGIOS))
+						| (request.getMethod() == "PUT"
+								&& permissoes.contains(Privilegio.Permissao.MODIFICAR_PRIVILEGIOS))
 						| (request.getMethod() == "DELETE"
-								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_BACKUPS))) {
+								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_PRIVILEGIOS))
+
+				) {
 					chain.doFilter(req, resp);
 				}
 			} else {
@@ -65,12 +70,13 @@ public class BackupFiltroJwt implements Filter {
 	}
 
 	@Override
+	public void destroy() {
+
+	}
+
+	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
 		SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(this, filterConfig.getServletContext());
 	}
 
-	@Override
-	public void destroy() {
-
-	}
 }

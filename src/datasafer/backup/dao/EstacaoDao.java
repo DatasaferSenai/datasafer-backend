@@ -10,22 +10,21 @@ import javax.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.model.Backup;
-import datasafer.backup.model.Host;
+import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 
 @Repository
-public class HostDao {
+public class EstacaoDao {
 
 	@PersistenceContext
 	private EntityManager manager;
 
 	// @Transactional
-	public Host obter(String login_proprietario, String nome_host) {
-		TypedQuery<Host> query = manager.createQuery(
-				"SELECT h FROM Host h WHERE h.proprietario.login = :login_proprietario AND h.nome = :nome_host", Host.class);
+	public Estacao obter(String login_proprietario, String nome_estacao) {
+		TypedQuery<Estacao> query = manager.createQuery(
+				"SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao", Estacao.class);
 		query.setParameter("login_proprietario", login_proprietario);
-		query.setParameter("nome_host", nome_host);
+		query.setParameter("nome_estacao", nome_estacao);
 		try {
 			return query.getSingleResult();
 		} catch (Exception e) {
@@ -35,38 +34,38 @@ public class HostDao {
 	}
 	
 	@Transactional
-	public void modificar(String login_solicitante, Host host) {
+	public void modificar(String login_solicitante, Estacao estacao) {
+		
+		estacao.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
 		
 		if (login_solicitante != null) {
 			TypedQuery<Usuario> query = manager
 					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class);
 			query.setParameter("login_solicitante", login_solicitante);
 
-			host.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
-			host.setModificadoPor(query.getSingleResult());
+			estacao.setModificadoPor(query.getSingleResult());
 
 		} else {
-			host.setModificadoEm(null);
-			host.setModificadoPor(null);
+			estacao.setModificadoPor(null);
 		}
 		
-		manager.merge(host);
+		manager.merge(estacao);
 	}
 
 	@Transactional
-	public void inserir(String login_solicitante, String login_proprietario, Host host) {
+	public void inserir(String login_solicitante, String login_proprietario, Estacao estacao) {
+		
+		estacao.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
 		
 		if(login_solicitante != null){
 			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
 					Usuario.class);
 			query.setParameter("login_solicitante", login_solicitante);
 			
-			host.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
-			host.setInseridoPor(query.getSingleResult());
+			estacao.setInseridoPor(query.getSingleResult());
 			
 		} else {
-			host.setInseridoEm(null);
-			host.setInseridoPor(null);
+			estacao.setInseridoPor(null);
 		}
 		
 		if(login_proprietario != null){
@@ -74,22 +73,22 @@ public class HostDao {
 					Usuario.class);
 			query.setParameter("login_proprietario", login_proprietario);
 			
-			host.setProprietario(query.getSingleResult());
+			estacao.setProprietario(query.getSingleResult());
 		}
 		else {
-			host.setProprietario(null);
+			estacao.setProprietario(null);
 		}
 		
-		manager.persist(host);
+		manager.persist(estacao);
 	}
 	
 	@Transactional
-	public void excluir(String login_proprietario, String nome_host) {
+	public void excluir(String login_proprietario, String nome_estacao) {
 		
-		TypedQuery<Host> query = manager.createQuery(
-				"SELECT h FROM Host h WHERE h.proprietario.login = :login_proprietario AND h.nome = :nome_host", Host.class);
+		TypedQuery<Estacao> query = manager.createQuery(
+				"SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao", Estacao.class);
 		query.setParameter("login_proprietario", login_proprietario);
-		query.setParameter("nome_host", nome_host);
+		query.setParameter("nome_estacao", nome_estacao);
 		
 		manager.remove(query.getSingleResult());
 	}

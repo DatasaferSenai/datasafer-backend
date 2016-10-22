@@ -1,7 +1,10 @@
 package datasafer.backup.controller;
 
+import java.util.Calendar;
 import java.util.List;
+import java.util.TimeZone;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -12,9 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWTVerifier;
+
 import datasafer.backup.dao.BackupDao;
-import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.model.Backup;
+import datasafer.backup.model.Backup.Frequencia;
 import datasafer.backup.model.Operacao;
 
 @RestController
@@ -22,14 +27,26 @@ public class BackupRestController {
 
 	@Autowired
 	private BackupDao backupDao;
-	@Autowired
-	private PrivilegioDao privilegioDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserirBackup(@RequestHeader(name = "usuario") String login_usuario,
-			@RequestHeader(name = "host") String nome_host, @RequestBody Backup backup) {
+	public ResponseEntity<Void> inserirBackup(@RequestHeader(name = "Authorization") String token,
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestBody String corpo_backup) {
 		try {
-			backupDao.inserir(null,login_usuario, nome_host, backup);
+			JSONObject job = new JSONObject(corpo_backup);
+
+			Backup backup = new Backup();
+			backup.setNome(job.getString("nome"));
+			backup.setDescricao(job.getString("descricao"));
+			backup.setPasta(job.getString("pasta"));
+			backup.setFrequencia(Frequencia.valueOf(job.getString("frequencia")));
+			// backup.setIntervalo(job.getString("intervalo"));
+			// backup.setInicio(job.getString("inicio"));
+			backup.setInicio(Calendar.getInstance(TimeZone.getDefault()).getTime());
+
+			backupDao.inserir(null,
+					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+					nome_estacao, backup);
+
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -38,10 +55,12 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Backup> obter(@RequestHeader(name = "usuario") String login_usuario,
-			@RequestHeader(name = "host") String nome_host, @RequestHeader(name = "backup") String nome_backup) {
+	public ResponseEntity<Backup> obter(@RequestHeader(name = "Authorization") String token,
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter(login_usuario, nome_host, nome_backup);
+			Backup backup = backupDao.obter(
+					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+					nome_estacao, nome_backup);
 			if (backup != null) {
 				return ResponseEntity.ok().body(backup);
 			} else {
@@ -54,10 +73,12 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Operacao>> listarOperacoes(@RequestHeader(name = "usuario") String login_usuario,
-			@RequestHeader(name = "host") String nome_host, @RequestHeader(name = "backup") String nome_backup) {
+	public ResponseEntity<List<Operacao>> listarOperacoes(@RequestHeader(name = "Authorization") String token,
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter(login_usuario, nome_host, nome_backup);
+			Backup backup = backupDao.obter(
+					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+					nome_estacao, nome_backup);
 			if (backup != null) {
 				return ResponseEntity.ok().body(backup.getOperacoes());
 			} else {

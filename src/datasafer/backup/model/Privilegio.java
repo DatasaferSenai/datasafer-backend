@@ -16,8 +16,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @JsonIgnoreProperties({ "id", "usuarios","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
@@ -27,14 +29,14 @@ public class Privilegio {
 	public enum Permissao {
 		ADMINISTRADOR("Administrador"),
 
-		VISUALIZAR_PRIVILEGIOS("Visualizar privilegios"), CRIAR_PRIVILEGIOS("Criar privilegios"), MODIFICAR_PRIVILEGIOS(
+		VISUALIZAR_PRIVILEGIOS("Visualizar privilegios"), INSERIR_PRIVILEGIOS("Criar privilegios"), MODIFICAR_PRIVILEGIOS(
 				"Modificar privilegios"), EXCLUIR_PRIVILEGIOS("Excluir privilegios"),
 
 		VISUALIZAR_USUARIOS("Visualizar usuários"), INSERIR_USUARIOS("Inserir usuários"), MODIFICAR_USUARIOS(
 				"Modificar usuários"), EXCLUIR_USUARIOS("Excluir usuários"),
 
-		VISUALIZAR_HOSTS("Visualizar hosts"), INSERIR_HOSTS("Inserir hosts"), MODIFICAR_HOSTS(
-				"Modificar hosts"), EXCLUIR_HOSTS("Excluir hosts"),
+		VISUALIZAR_HOSTS("Visualizar estacaos"), INSERIR_HOSTS("Inserir estacaos"), MODIFICAR_HOSTS(
+				"Modificar estacaos"), EXCLUIR_HOSTS("Excluir estacaos"),
 
 		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS(
 				"Modificar backups"), EXCLUIR_BACKUPS("Excluir backups"),
@@ -73,6 +75,7 @@ public class Privilegio {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -81,6 +84,7 @@ public class Privilegio {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -89,6 +93,7 @@ public class Privilegio {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;

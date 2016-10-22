@@ -15,13 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import datasafer.backup.dao.BackupDao;
-import datasafer.backup.dao.HostDao;
+import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Backup.Frequencia;
-import datasafer.backup.model.Host;
+import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Privilegio.Permissao;
 import datasafer.backup.model.Usuario;
@@ -33,7 +34,7 @@ public class Inicializador {
 	@Autowired
 	private UsuarioDao usuarioDao;
 	@Autowired
-	private HostDao hostDao;
+	private EstacaoDao estacaoDao;
 	@Autowired
 	private BackupDao backupDao;
 	@Autowired
@@ -50,19 +51,16 @@ public class Inicializador {
 
 	private void verificaAdmin() {
 
-		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
-		
 		Privilegio privilegio_admin = privilegioDao.obter("Administrador");
 		if (privilegio_admin == null) {
 			privilegio_admin = new Privilegio();
 			privilegio_admin.setNome("Administrador");
-			privilegio_admin.setInseridoEm(agora);
 			Set<Permissao> permissoes = new HashSet<Permissao>();
 			for (Permissao p : Permissao.values())
 				permissoes.add(p);
 			privilegio_admin.setPermissoes(permissoes);
 
-			privilegioDao.inserir(null,null,privilegio_admin);
+			privilegioDao.inserir(null, null, privilegio_admin);
 		}
 
 		Usuario usuario_admin = usuarioDao.obter("admin");
@@ -70,13 +68,13 @@ public class Inicializador {
 			usuario_admin = new Usuario();
 
 			usuario_admin.setArmazenamento(0L);
-			usuario_admin.setHosts(null);
+			usuario_admin.setEstacaos(null);
 			usuario_admin.setLogin("admin");
 			usuario_admin.setNome("Administrador");
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
-			
-			usuarioDao.inserir(null,null, usuario_admin);
+
+			usuarioDao.inserir(null, null, usuario_admin);
 
 			usuarioDao.modificarPrivilegio("admin", privilegio_admin);
 		}
@@ -84,41 +82,36 @@ public class Inicializador {
 
 	private void populaPrivilegios() {
 
-		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
-
 		Privilegio gerenciador = privilegioDao.obter("Gerenciador");
 		if (gerenciador == null) {
 			gerenciador = new Privilegio();
 			gerenciador.setNome("Gerenciador");
-			gerenciador.setInseridoEm(agora);
 			gerenciador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS,
 					Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_USUARIOS,
 					Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_USUARIOS,
 					Permissao.MODIFICAR_HOSTS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
 					Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioDao.inserir("admin","admin",gerenciador);
+			privilegioDao.inserir("admin", "admin", gerenciador);
 		}
 
 		Privilegio operador = privilegioDao.obter("Operador");
 		if (operador == null) {
 			operador = new Privilegio();
 			operador.setNome("Operador");
-			operador.setInseridoEm(agora);
 			operador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_BACKUPS,
 					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioDao.inserir("admin","admin",operador);
+			privilegioDao.inserir("admin", "admin", operador);
 		}
 
 		Privilegio visualizacao = privilegioDao.obter("Visualização");
 		if (visualizacao == null) {
 			visualizacao = new Privilegio();
 			visualizacao.setNome("Visualização");
-			visualizacao.setInseridoEm(agora);
 			visualizacao.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES)));
-			privilegioDao.inserir("admin","admin",visualizacao);
+			privilegioDao.inserir("admin", "admin", visualizacao);
 		}
 	}
 
@@ -144,19 +137,17 @@ public class Inicializador {
 				usuario.setSenha(login);
 				usuario.setStatus(Status.ATIVO);
 
-				usuarioDao.inserir("admin","admin", usuario);
+				usuarioDao.inserir("admin", "admin", usuario);
 
 				Privilegio privilegio_giovanni = privilegioDao.obter("Gerenciador");
 				usuarioDao.modificarPrivilegio(login, privilegio_giovanni);
 
-				populaHosts(login);
+				populaEstacaos(login);
 			}
 		}
 	}
 
-	public void populaHosts(String login_usuario) {
-
-		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
+	public void populaEstacaos(String login_usuario) {
 
 		List<String> tiposDispositivos = Arrays.asList("PC", "Desktop", "Computador", "Notebook", "Netbook", "Laptop");
 		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escritório", "Banheiro", "Quarto",
@@ -172,24 +163,21 @@ public class Inicializador {
 			int nome_index = gerador.nextInt(nomesDispositivos.size());
 			int separador_index = gerador.nextInt(separadores.size());
 
-			String nome_host = tiposDispositivos.get(tipo_index) + separadores.get(separador_index)
+			String nome_estacao = tiposDispositivos.get(tipo_index) + separadores.get(separador_index)
 					+ nomesDispositivos.get(nome_index);
 
-			Host host = hostDao.obter(login_usuario, nome_host);
-			if (host == null) {
-				host = new Host();
-				host.setInseridoEm(agora);
-				host.setNome(nome_host);
-				hostDao.inserir("admin",login_usuario, host);
-				
-				populaBackups(login_usuario,nome_host);
+			Estacao estacao = estacaoDao.obter(login_usuario, nome_estacao);
+			if (estacao == null) {
+				estacao = new Estacao();
+				estacao.setNome(nome_estacao);
+				estacaoDao.inserir("admin", login_usuario, estacao);
+
+				populaBackups(login_usuario, nome_estacao);
 			}
 		}
 	}
 
-	public void populaBackups(String login_usuario, String nome_host) {
-
-		Date agora = Calendar.getInstance(TimeZone.getDefault()).getTime();
+	public void populaBackups(String login_usuario, String nome_estacao) {
 
 		List<String> nomes_backups = Arrays.asList("Meus arquivos", "Minhas fotos", "Arquivos", "Fotos", "Imagens",
 				"Meus videos", "Videos", "Midia", "Programas", "Importante", "Coisas importantes",
@@ -198,7 +186,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(20);
+		int quantidade = gerador.nextInt(10);
 
 		for (int n = 0; n < quantidade; n++) {
 			int nomeIndex = gerador.nextInt(nomes_backups.size());
@@ -209,21 +197,48 @@ public class Inicializador {
 			String nomeBackup = nomes_backups.get(nomeIndex);
 			Frequencia frequencia = Frequencia.values()[frequenciaIndex];
 
-			Backup backup = backupDao.obter(login_usuario, nome_host, nomeBackup);
+			Backup backup = backupDao.obter(login_usuario, nome_estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
-				backup.setInseridoEm(agora);
 				backup.setNome(nomeBackup);
 				backup.setFrequencia(frequencia);
-				if(frequencia == Frequencia.INTERVALO){
+				if (frequencia == Frequencia.INTERVALO) {
 					backup.setIntervalo(intervalo);
 				}
-				backup.setInicio(new Date(agora.getTime() + (1000 * 60 * 60 * 24 * inicio)));
+				backup.setInicio(new Date(Calendar.getInstance(TimeZone.getDefault()).getTime().getTime()
+						+ (1000 * 60 * 60 * 24 * inicio)));
 				backup.setPasta("C:\\" + nomeBackup.toLowerCase().replace(' ', '_'));
-				
-				backupDao.inserir("admin",login_usuario, nome_host, backup);
+
+				backupDao.inserir("admin", login_usuario, nome_estacao, backup);
+
+				populaOperacoes(login_usuario, nome_estacao, backup.getNome());
 			}
 		}
+	}
+
+	public void populaOperacoes(String login_usuario, String nome_estacao, String nome_backup) {
+
+		Random gerador = new Random();
+
+		int quantidade = gerador.nextInt(5);
+
+		for (int n = 0; n < quantidade; n++) {
+
+			Date data = new Date(
+					Calendar.getInstance(TimeZone.getDefault()).getTime().getTime() + gerador.nextInt(365));
+
+			Operacao operacao = operacaoDao.obter(login_usuario, nome_estacao, nome_estacao, data);
+			if (operacao == null) {
+				operacao = new Operacao();
+				operacao.setData(new Date(
+						Calendar.getInstance(TimeZone.getDefault()).getTime().getTime() + gerador.nextInt(365)));
+				operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
+				operacao.setTamanho((long) gerador.nextInt(10000000)); 
+				operacaoDao.inserir("admin", login_usuario, nome_estacao, nome_backup, operacao);
+
+			}
+		}
+
 	}
 
 }

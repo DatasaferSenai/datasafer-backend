@@ -51,8 +51,7 @@ public class Operacao {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	// @JsonFormat(shape = Shape.STRING, pattern = "yyyy-mm-dd hh:MM:ss")
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@Column(nullable = false)
 	private Date data;
 
@@ -67,6 +66,7 @@ public class Operacao {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -75,6 +75,7 @@ public class Operacao {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -83,6 +84,7 @@ public class Operacao {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;

@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTSigner;
+import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.dao.UsuarioDao;
-import datasafer.backup.model.Host;
+import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 
 @RestController
@@ -30,7 +31,7 @@ public class UsuarioRestController {
 	private UsuarioDao usuarioDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_superior,
+	public ResponseEntity<String> inserir(@RequestHeader(name = "Authorization") String token,
 			@RequestBody String corpo_usuario) {
 		try {
 			JSONObject job = new JSONObject(corpo_usuario);
@@ -38,6 +39,10 @@ public class UsuarioRestController {
 			usuario.setNome(job.getString("nome"));
 			usuario.setLogin(job.getString("login"));
 			usuario.setSenha(job.getString("senha"));
+			usuario.setArmazenamento(job.getLong("armazenamento"));
+			
+//			SimpleDateFormat formatter = new SimpleDateFormat ("dd/mm/yyyy hh:MM:ss");
+//			(formatter.format(job.getString("inicio")));
 			//usuarioDao.inserir(login_superior, usuario);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
@@ -46,14 +51,39 @@ public class UsuarioRestController {
 		}
 	}
 
+//	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+//	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "usuario") String login_usuario) {
+//		try {
+//			Usuario usuario = usuarioDao.obter(login_usuario);
+//			if (usuario != null) {
+//				JSONObject job = new JSONObject();
+//				job.put("nome", usuario.getNome());
+//				job.put("operacoes", usuario.getOperacoes());
+//				job.put("armazenamento", usuario.getArmazenamento());
+//				job.put("ocupado", usuario.getOcupado());
+//				job.put("privilegio", usuario.getPrivilegio().getNome());
+//				return ResponseEntity.ok().body(job.toString());
+//			} else {
+//				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//		}
+//	}
+	
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> obterUsuario(@RequestHeader(name = "usuario") String login_usuario) {
+	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token) {
 		try {
-			Usuario usuario = usuarioDao.obter(login_usuario);
+			Usuario usuario = usuarioDao
+					.obter((String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"));
 			if (usuario != null) {
 				JSONObject job = new JSONObject();
 				job.put("nome", usuario.getNome());
 				job.put("operacoes", usuario.getOperacoes());
+				job.put("armazenamento", usuario.getArmazenamento());
+				job.put("ocupado", usuario.getOcupado());
+				job.put("privilegio", usuario.getPrivilegio().getNome());
 				return ResponseEntity.ok().body(job.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -64,12 +94,12 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario/hosts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Host>> listarOperacoes(@RequestHeader(name = "usuario") String login_usuario) {
+	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<List<Estacao>> listarEstacoes(@RequestHeader(name = "Authorization") String token) {
 		try {
-			Usuario usuario = usuarioDao.obter(login_usuario);
+			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"));
 			if (usuario != null) {
-				return ResponseEntity.ok().body(usuario.getHosts());
+				return ResponseEntity.ok().body(usuario.getEstacaos());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -80,8 +110,14 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> logar(@RequestBody Usuario usuario) {
+	public ResponseEntity<String> logar(@RequestBody String corpo_usuario) {
 		try {
+			JSONObject job = new JSONObject(corpo_usuario);
+			Usuario usuario = new Usuario();
+			usuario.setLogin(job.getString("login"));
+			usuario.setSenha(job.getString("senha"));
+			boolean expira = job.getBoolean("expira");
+			
 			usuario = usuarioDao.logar(usuario);
 			if (usuario != null) {
 				// data de emissão do token
@@ -90,18 +126,15 @@ public class UsuarioRestController {
 				JWTSigner signer = new JWTSigner(SECRET);
 				HashMap<String, Object> claims = new HashMap<>();
 				claims.put("iat", iat);
-				claims.put("exp", exp);
+				claims.put("exp", expira ? exp : Long.MAX_VALUE);
 				claims.put("iss", ISSUER);
 				claims.put("login_usuario", usuario.getLogin());
 
 				String jwt = signer.sign(claims);
 
-				JSONObject token = new JSONObject();
-				token.put("token", jwt);
-
-				return ResponseEntity.ok().body(token.toString());
+				return ResponseEntity.status(HttpStatus.OK).body(new JSONObject().put("token", jwt).toString());
 			} else {
-				return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new JSONObject().put("erro", "Usuário ou senha inválidos").toString());
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

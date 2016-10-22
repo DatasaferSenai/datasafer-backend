@@ -27,8 +27,8 @@ import datasafer.backup.model.Privilegio.Permissao;
 import datasafer.backup.model.Usuario;
 
 @Service
-@WebFilter("/gerenciamento/backup/*")
-public class BackupFiltroJwt implements Filter {
+@WebFilter("/gerenciamento/estacao/*")
+public class EstacaoFiltroJwt implements Filter {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
@@ -39,7 +39,6 @@ public class BackupFiltroJwt implements Filter {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-
 		try {
 			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)
 					.verify(request.getHeader("Authorization")).get("login_usuario"));
@@ -47,18 +46,21 @@ public class BackupFiltroJwt implements Filter {
 
 			if (permissoes != null) {
 				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
-						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_BACKUPS))
-						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
-						| (request.getMethod() == "DELETE"
-								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_BACKUPS))) {
+						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_HOSTS))
+						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_HOSTS))
+						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_HOSTS))
+						| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_HOSTS))
+
+				) {
 					chain.doFilter(req, resp);
 				}
 			} else {
 				response.sendError(HttpStatus.FORBIDDEN.value(),
 						"O usuário não possui permissão para realizar a operação solicitada");
 			}
-		} catch (Exception e) {
+		} catch (
+
+		Exception e) {
 			e.printStackTrace();
 			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}

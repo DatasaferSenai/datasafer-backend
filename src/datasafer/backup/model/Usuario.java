@@ -25,13 +25,16 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@JsonIgnoreProperties({ "id", "hosts","superior","privilegio","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
+@JsonIgnoreProperties({ "id", "estacaos", "superior", "privilegio", "inseridoEm", "inseridoPor", "modificadoEm",
+		"modificadoPor", "excluidoEm", "excluidoPor" })
 @Entity
 public class Usuario {
 
@@ -59,7 +62,7 @@ public class Usuario {
 	private String nome;
 
 	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Host> hosts;
+	private List<Estacao> estacoes;
 
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
@@ -67,7 +70,7 @@ public class Usuario {
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(nullable = false)
 	private String senha;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
@@ -75,14 +78,15 @@ public class Usuario {
 	@Column(nullable = false)
 	private Long armazenamento;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "privilegio_id")
 	private Privilegio privilegio;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -91,6 +95,7 @@ public class Usuario {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -99,6 +104,7 @@ public class Usuario {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
@@ -187,12 +193,12 @@ public class Usuario {
 		this.nome = nome;
 	}
 
-	public List<Host> getHosts() {
-		return hosts;
+	public List<Estacao> getEstacaos() {
+		return estacoes;
 	}
 
-	public void setHosts(List<Host> hosts) {
-		this.hosts = hosts;
+	public void setEstacaos(List<Estacao> estacaos) {
+		this.estacoes = estacaos;
 	}
 
 	public String getLogin() {
@@ -240,7 +246,7 @@ public class Usuario {
 		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
 		for (Operacao.Status s : Operacao.Status.values()) {
 			Integer count = 0;
-			for (Host h : this.getHosts()) {
+			for (Estacao h : this.getEstacaos()) {
 				for (Backup b : h.getBackups()) {
 					for (Operacao p : b.getOperacoes()) {
 						if (p.getStatus() == s) {
@@ -252,5 +258,28 @@ public class Usuario {
 			map.put(s, count);
 		}
 		return map;
+	}
+
+	@JsonProperty("ocupado")
+	public Long getOcupado() {
+		Long soma = 0L;
+		for (Estacao e : this.getEstacaos()) {
+			for (Backup b : e.getBackups()) {
+				List<Operacao> operacoes = b.getOperacoes();
+				if (operacoes != null && operacoes.size() > 0) {
+					Operacao ultimaOperacao = operacoes.get(0);
+					for (Operacao operacao : operacoes) {
+						if (operacao.getData().before(ultimaOperacao.getData())
+								&& operacao.getStatus() == Operacao.Status.SUCESSO) {
+							ultimaOperacao = operacao;
+						}
+					}
+					if (ultimaOperacao != null) {
+						soma += ultimaOperacao.getTamanho();
+					}
+				}
+			}
+		}
+		return soma;
 	}
 }

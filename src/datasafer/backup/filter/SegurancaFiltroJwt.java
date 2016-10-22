@@ -1,7 +1,6 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,16 +14,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import com.auth0.jwt.JWTVerifier;
 
-import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.controller.UsuarioRestController;
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
-@WebFilter("/Datasafer/gerenciamento/*")
-public class LoginFiltroJwt implements Filter {
+@Service
+@WebFilter("/gerenciamento/*")
+public class SegurancaFiltroJwt implements Filter {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
@@ -40,33 +42,18 @@ public class LoginFiltroJwt implements Filter {
 			return;
 		}
 
-		String token = request.getHeader("Authorization");
-		String login_usuario = request.getHeader("usuario");
+		String token = null;
 		try {
-			JWTVerifier verifier = new JWTVerifier(UsuarioRestController.SECRET);
-			Map<String, Object> claims = verifier.verify(token);
-
-			Usuario solicitador = usuarioDao.obter((String) claims.get("login_usuario"));
-			Usuario usuario = usuarioDao.obter(login_usuario);
-
-			if (solicitador == null || solicitador.getExcluidoEm() != null || solicitador.getExcluidoPor() != null) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Solicitador inválido ou não encontrado");
-			}
-			if (solicitador.getStatus() != Status.ATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), solicitador.getStatus().toString());
-			}
-			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuario inválido ou não encontrado");
-			}
-
-			for (Usuario superior = usuario.getSuperior(); superior != null; superior = superior.getSuperior()) {
-				System.out.println("superior = " + superior.getNome());
-				if (superior == solicitador) {
-					chain.doFilter(req, resp);
-				}
-			}
+			token = request.getHeader("Authorization");
+			Usuario usuario = usuarioDao.obter((String)  new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"));
 			
-			response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não está relacionado ao solicitador");
+			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Solicitador inválido ou não encontrado");
+			} else if (usuario.getStatus() != Status.ATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus().toString());
+			} else {
+				chain.doFilter(req, resp);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,7 +63,7 @@ public class LoginFiltroJwt implements Filter {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 			}
 		}
-
+		
 	}
 
 	@Override
@@ -85,8 +72,8 @@ public class LoginFiltroJwt implements Filter {
 	}
 
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
-
+	public void init(FilterConfig filterConfig) throws ServletException {
+		SpringBeanAutowiringSupport.processInjectionBasedOnServletContext(this, filterConfig.getServletContext());
 	}
 
 }

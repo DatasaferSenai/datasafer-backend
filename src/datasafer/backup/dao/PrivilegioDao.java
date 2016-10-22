@@ -22,15 +22,15 @@ public class PrivilegioDao {
 	@Transactional
 	public void inserir(String login_solicitante, String login_proprietario, Privilegio privilegio) {
 
+		privilegio.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+		
 		if (login_solicitante != null) {
 			TypedQuery<Usuario> query = manager
 					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class);
 			query.setParameter("login_solicitante", login_solicitante);
 
-			privilegio.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
 			privilegio.setInseridoPor(query.getSingleResult());
 		} else {
-			privilegio.setInseridoEm(null);
 			privilegio.setInseridoPor(null);
 		}
 
@@ -50,16 +50,16 @@ public class PrivilegioDao {
 	@Transactional
 	public void modificar(String login_solicitante, Privilegio privilegio) {
 		
+		privilegio.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+		
 		if(login_solicitante != null){
 			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
 					Usuario.class);
 			query.setParameter("login_solicitante", login_solicitante);
 			
-			privilegio.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
 			privilegio.setModificadoPor(query.getSingleResult());
 			
 		} else {
-			privilegio.setModificadoEm(null);
 			privilegio.setModificadoPor(null);
 		}
 		
