@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "backup" })
+@JsonIgnoreProperties({ "id", "backup","proprietario","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
 @Entity
 public class Operacao {
 

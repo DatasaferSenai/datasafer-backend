@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 /**
  * Representa uma estação ou "host"
  */
-@JsonIgnoreProperties({ "id", "usuario", "backups" })
+@JsonIgnoreProperties({ "id", "usuario","backups", "proprietario","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
 @Entity
 public class Host {
 

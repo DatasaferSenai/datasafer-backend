@@ -32,10 +32,15 @@ public class UsuarioRestController {
 	private UsuarioBo usuarioBo;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_usuario,
-			@RequestBody Usuario novo_usuario) {
+	public ResponseEntity<String> inserirUsuario(@RequestHeader(name = "usuario") String login_superior,
+			@RequestBody String corpo_usuario) {
 		try {
-			usuarioBo.inserirUsuario(login_usuario, novo_usuario);
+			JSONObject job = new JSONObject(corpo_usuario);
+			Usuario usuario = new Usuario();
+			usuario.setNome(job.getString("nome"));
+			usuario.setLogin(job.getString("login"));;
+			usuario.setSenha(job.getString("senha"));;
+			usuarioBo.inserirUsuario(login_superior, usuario);
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -44,11 +49,14 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Usuario> obterUsuario(@RequestHeader(name = "usuario") String login_usuario) {
+	public ResponseEntity<String> obterUsuario(@RequestHeader(name = "usuario") String login_usuario) {
 		try {
 			Usuario usuario = usuarioBo.obterUsuario(login_usuario);
 			if (usuario != null) {
-				return ResponseEntity.ok().body(usuario);
+				JSONObject job = new JSONObject();
+				job.put("nome", usuario.getNome());
+				job.put("operacoes", usuario.getOperacoes());
+				return ResponseEntity.ok().body(job.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

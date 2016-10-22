@@ -62,7 +62,7 @@ public class Inicializador {
 				permissoes.add(p);
 			privilegio_admin.setPermissoes(permissoes);
 
-			privilegioBo.inserirPrivilegio(privilegio_admin);
+			privilegioBo.inserirPrivilegio(null,privilegio_admin);
 		}
 
 		Usuario usuario_admin = usuarioBo.obterUsuario("admin");
@@ -98,7 +98,7 @@ public class Inicializador {
 					Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_USUARIOS,
 					Permissao.MODIFICAR_HOSTS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
 					Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioBo.inserirPrivilegio(gerenciador);
+			privilegioBo.inserirPrivilegio("admin",gerenciador);
 		}
 
 		Privilegio operador = privilegioBo.obterPrivilegio("Operador");
@@ -109,7 +109,7 @@ public class Inicializador {
 			operador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_BACKUPS,
 					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_BACKUPS)));
-			privilegioBo.inserirPrivilegio(operador);
+			privilegioBo.inserirPrivilegio("admin",operador);
 		}
 
 		Privilegio visualizacao = privilegioBo.obterPrivilegio("Visualização");
@@ -119,7 +119,7 @@ public class Inicializador {
 			visualizacao.setInseridoEm(agora);
 			visualizacao.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS,
 					Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES)));
-			privilegioBo.inserirPrivilegio(visualizacao);
+			privilegioBo.inserirPrivilegio("admin",visualizacao);
 		}
 	}
 

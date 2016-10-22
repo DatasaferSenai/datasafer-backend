@@ -31,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@JsonIgnoreProperties({ "id", "hosts" })
+@JsonIgnoreProperties({ "id", "hosts","superior","privilegio","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
 @Entity
 public class Usuario {
 

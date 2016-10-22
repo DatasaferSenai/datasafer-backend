@@ -20,7 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "usuarios" })
+@JsonIgnoreProperties({ "id", "usuarios","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
 @Entity
 public class Privilegio {
 
