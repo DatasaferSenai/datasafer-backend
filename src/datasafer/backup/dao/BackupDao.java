@@ -20,6 +20,21 @@ public class BackupDao {
 	@PersistenceContext
 	private EntityManager manager;
 
+	// @Transactional
+	public Backup obter(String login_proprietario, String nome_estacao, String nome_backup) {
+		TypedQuery<Backup> query = manager.createQuery(
+				"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
+				Backup.class);
+		query.setParameter("login_proprietario", login_proprietario);
+		query.setParameter("nome_estacao", nome_estacao);
+		query.setParameter("nome_backup", nome_backup);
+		try {
+			return query.getSingleResult();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
 	@Transactional
 	public void inserir(String login_solicitante, String login_proprietario, String nome_estacao, Backup backup) {
 
@@ -44,21 +59,6 @@ public class BackupDao {
 		backup.setEstacao(query.getSingleResult());
 		
 		manager.persist(backup);
-	}
-
-	// @Transactional
-	public Backup obter(String login_proprietario, String nome_estacao, String nome_backup) {
-		TypedQuery<Backup> query = manager.createQuery(
-				"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
-				Backup.class);
-		query.setParameter("login_proprietario", login_proprietario);
-		query.setParameter("nome_estacao", nome_estacao);
-		query.setParameter("nome_backup", nome_backup);
-		try {
-			return query.getSingleResult();
-		} catch (Exception e) {
-			return null;
-		}
 	}
 
 	@Transactional

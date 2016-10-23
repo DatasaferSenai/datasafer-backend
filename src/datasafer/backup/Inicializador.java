@@ -214,7 +214,7 @@ public class Inicializador {
 					}
 					backup.setIntervalo(cal.getTime());
 				}
-				
+
 				backup.setInicio(new Date(Calendar.getInstance(TimeZone.getDefault()).getTime().getTime()
 						+ (1000 * 60 * 60 * 24 * inicio)));
 				backup.setPasta("C:\\" + nomeBackup.toLowerCase().replace(' ', '_'));

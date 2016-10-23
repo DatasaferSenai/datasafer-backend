@@ -25,6 +25,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -113,6 +114,30 @@ public class Usuario {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 
+	@Column(nullable = true)
+	private Integer tentativas;
+	
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = true)
+	private Date ultimaTentativa;
+	
+	public List<Estacao> getEstacoes() {
+		return estacoes;
+	}
+
+	public void setEstacoes(List<Estacao> estacoes) {
+		this.estacoes = estacoes;
+	}
+
+	public Integer getTentativas() {
+		return tentativas;
+	}
+
+	public void setTentativas(Integer tentativas) {
+		this.tentativas = tentativas;
+	}
+	
 	public Usuario getSuperior() {
 		return superior;
 	}

@@ -42,13 +42,14 @@ public class SegurancaFiltroJwt implements Filter {
 			return;
 		}
 
+		
 		String token = null;
 		try {
 			token = request.getHeader("Authorization");
 			Usuario usuario = usuarioDao.obter((String)  new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"));
 			
 			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Solicitador inválido ou não encontrado");
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 			} else if (usuario.getStatus() != Status.ATIVO) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus().toString());
 			} else {
