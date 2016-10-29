@@ -25,14 +25,14 @@ public class EstacaoRestController {
 	private EstacaoDao estacaoDao;
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Estacao> obter(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao) {
+	public ResponseEntity<Estacao> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao) {
 		try {
-			Estacao estacao = estacaoDao.obter(
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			Estacao estacao = estacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																										.get("login_usuario"),
 					nome_estacao);
 			if (estacao != null) {
-				return ResponseEntity.ok().body(estacao);
+				return ResponseEntity	.ok()
+										.body(estacao);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -43,11 +43,11 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token,
-			@RequestBody Estacao estacao) {
+	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token, @RequestBody Estacao estacao) {
 		try {
-			estacaoDao.inserir(null,
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"), estacao);
+			estacaoDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																							.get("login_usuario"),
+					estacao);
 			if (estacao != null) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			} else {
@@ -63,11 +63,12 @@ public class EstacaoRestController {
 	public ResponseEntity<List<Backup>> listarBackups(@RequestHeader(name = "Authorization") String token,
 			@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
-			Estacao estacao = estacaoDao.obter(
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			Estacao estacao = estacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																										.get("login_usuario"),
 					nome_estacao);
 			if (estacao != null) {
-				return ResponseEntity.ok().body(estacao.getBackups());
+				return ResponseEntity	.ok()
+										.body(estacao.getBackups());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

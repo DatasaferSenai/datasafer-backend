@@ -25,15 +25,15 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 /**
  * Representa uma estação ou "estacao"
  */
-@JsonIgnoreProperties({ "id", "usuario","backups", "proprietario","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
+@JsonIgnoreProperties({ "id", "usuario", "backups", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
 @Entity
 public class Estacao {
 
 	// ---------------------------------------------------------------------------------------------------
 
-//	@ManyToOne
-//	@JoinColumn(name = "usuario_id")
-//	private Usuario usuario;
+	// @ManyToOne
+	// @JoinColumn(name = "usuario_id")
+	// private Usuario usuario;
 
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
@@ -153,13 +153,13 @@ public class Estacao {
 		this.nome = nome;
 	}
 
-//	public Usuario getUsuario() {
-//		return usuario;
-//	}
-//
-//	public void setUsuario(Usuario usuario) {
-//		this.usuario = usuario;
-//	}
+	// public Usuario getUsuario() {
+	// return usuario;
+	// }
+	//
+	// public void setUsuario(Usuario usuario) {
+	// this.usuario = usuario;
+	// }
 
 	public List<Backup> getBackups() {
 		return backups;

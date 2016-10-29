@@ -34,15 +34,15 @@ public class EstacaoFiltroJwt implements Filter {
 	private UsuarioDao usuarioDao;
 
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 		try {
-			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)
-					.verify(request.getHeader("Authorization")).get("login_usuario"));
-			Set<Permissao> permissoes = usuario.getPrivilegio().getPermissoes();
+			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(request.getHeader("Authorization"))
+																										.get("login_usuario"));
+			Set<Permissao> permissoes = usuario	.getPrivilegio()
+												.getPermissoes();
 
 			if (permissoes != null) {
 				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
@@ -55,8 +55,7 @@ public class EstacaoFiltroJwt implements Filter {
 					chain.doFilter(req, resp);
 				}
 			} else {
-				response.sendError(HttpStatus.FORBIDDEN.value(),
-						"O usuário não possui permissão para realizar a operação solicitada");
+				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 			}
 		} catch (
 

@@ -1,6 +1,7 @@
 package datasafer.backup.dao;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
@@ -22,60 +23,67 @@ public class PrivilegioDao {
 	@Transactional
 	public void inserir(String login_solicitante, String login_proprietario, Privilegio privilegio) {
 
-		privilegio.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
-		
-		if (login_solicitante != null) {
-			TypedQuery<Usuario> query = manager
-					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class);
-			query.setParameter("login_solicitante", login_solicitante);
+		privilegio.setInseridoEm(Calendar	.getInstance(TimeZone.getDefault())
+											.getTime());
+		privilegio.setInseridoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
 
-			privilegio.setInseridoPor(query.getSingleResult());
-		} else {
-			privilegio.setInseridoPor(null);
-		}
-
-		if (login_proprietario != null) {
-			TypedQuery<Usuario> query = manager
-					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_proprietario", Usuario.class);
-			query.setParameter("login_proprietario", login_proprietario);
-
-			privilegio.setProprietario(query.getSingleResult());
-		} else {
-			privilegio.setProprietario(null);
-		}
+		privilegio.setProprietario(
+				login_proprietario == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_proprietario", Usuario.class)
+															.setParameter("login_proprietario", login_proprietario)
+															.getSingleResult());
 
 		manager.persist(privilegio);
 	}
 
 	@Transactional
 	public void modificar(String login_solicitante, Privilegio privilegio) {
-		
-		privilegio.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
-		
-		if(login_solicitante != null){
-			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
-					Usuario.class);
-			query.setParameter("login_solicitante", login_solicitante);
-			
-			privilegio.setModificadoPor(query.getSingleResult());
-			
-		} else {
-			privilegio.setModificadoPor(null);
-		}
-		
+
+		privilegio.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
+											.getTime());
+		privilegio.setModificadoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
+
 		manager.merge(privilegio);
 	}
 
 	// @Transactional
 	public Privilegio obter(String nome_privilegio) {
-		TypedQuery<Privilegio> query = manager.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio",
-				Privilegio.class);
-		query.setParameter("nome_privilegio", nome_privilegio);
 		try {
-			return query.getSingleResult();
+			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio", Privilegio.class)
+							.setParameter("nome_privilegio", nome_privilegio)
+							.getSingleResult();
 		} catch (Exception e) {
 			return null;
 		}
+	}
+
+
+	@Transactional
+	public void atribuir(String login_solicitante, String login_usuario, String nome_privilegio) {
+
+		Usuario usuario = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
+									.setParameter("login_usuario", login_usuario)
+									.getSingleResult();
+
+		usuario.setModificadoEm(Calendar.getInstance(TimeZone.getDefault())
+										.getTime());
+		usuario.setModificadoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
+
+		Privilegio privilegio = manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio", Privilegio.class)
+										.setParameter("nome_privilegio", nome_privilegio)
+										.getSingleResult();
+
+		usuario.setPrivilegio(privilegio);
+
+		manager.merge(usuario);
 	}
 
 }

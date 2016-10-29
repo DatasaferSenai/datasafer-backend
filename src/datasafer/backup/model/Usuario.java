@@ -34,14 +34,12 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
 
-@JsonIgnoreProperties({ "id", "estacaos", "superior", "privilegio", "inseridoEm", "inseridoPor", "modificadoEm",
-		"modificadoPor", "excluidoEm", "excluidoPor" })
+@JsonIgnoreProperties({ "id", "estacaos", "superior", "privilegio", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
 @Entity
 public class Usuario {
 
 	public enum Status {
-		ATIVO("Ativo"), SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"), SUSPENSO_TENTATIVAS(
-				"Suspenso por excesso de tentativas");
+		ATIVO("Ativo"), SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"), SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
 
 		private String descricao;
 
@@ -62,6 +60,9 @@ public class Usuario {
 	@Column(length = 40, nullable = false)
 	private String nome;
 
+	@Column(length = 50, nullable = true)
+	private String email;
+
 	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Estacao> estacoes;
 
@@ -77,7 +78,7 @@ public class Usuario {
 	private Status status;
 
 	@Column(nullable = false)
-	private Long armazenamento;
+	private long armazenamento;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "privilegio_id")
@@ -115,13 +116,29 @@ public class Usuario {
 	private Usuario excluidoPor;
 
 	@Column(nullable = true)
-	private Integer tentativas;
-	
+	private int tentativas = 0;
+
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date ultimaTentativa;
-	
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Date getUltimaTentativa() {
+		return ultimaTentativa;
+	}
+
+	public void setUltimaTentativa(Date ultimaTentativa) {
+		this.ultimaTentativa = ultimaTentativa;
+	}
+
 	public List<Estacao> getEstacoes() {
 		return estacoes;
 	}
@@ -137,7 +154,7 @@ public class Usuario {
 	public void setTentativas(Integer tentativas) {
 		this.tentativas = tentativas;
 	}
-	
+
 	public Usuario getSuperior() {
 		return superior;
 	}
@@ -218,10 +235,6 @@ public class Usuario {
 		this.nome = nome;
 	}
 
-	public List<Estacao> getEstacaos() {
-		return estacoes;
-	}
-
 	public void setEstacaos(List<Estacao> estacaos) {
 		this.estacoes = estacaos;
 	}
@@ -241,10 +254,10 @@ public class Usuario {
 	public void setSenha(String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(),
-					UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
+			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
 			SecretKey key = skf.generateSecret(spec);
-			this.senha = Base64.getEncoder().encodeToString(key.getEncoded());
+			this.senha = Base64	.getEncoder()
+								.encodeToString(key.getEncoded());
 		} catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
 			throw new RuntimeException(e);
 		}
@@ -271,7 +284,7 @@ public class Usuario {
 		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
 		for (Operacao.Status s : Operacao.Status.values()) {
 			Integer count = 0;
-			for (Estacao h : this.getEstacaos()) {
+			for (Estacao h : this.getEstacoes()) {
 				for (Backup b : h.getBackups()) {
 					for (Operacao p : b.getOperacoes()) {
 						if (p.getStatus() == s) {
@@ -288,13 +301,14 @@ public class Usuario {
 	@JsonProperty("ocupado")
 	public Long getOcupado() {
 		Long soma = 0L;
-		for (Estacao e : this.getEstacaos()) {
+		for (Estacao e : this.getEstacoes()) {
 			for (Backup b : e.getBackups()) {
 				List<Operacao> operacoes = b.getOperacoes();
 				if (operacoes != null && operacoes.size() > 0) {
 					Operacao ultimaOperacao = operacoes.get(0);
 					for (Operacao operacao : operacoes) {
-						if (operacao.getData().before(ultimaOperacao.getData())
+						if (operacao.getData()
+									.before(ultimaOperacao.getData())
 								&& operacao.getStatus() == Operacao.Status.SUCESSO) {
 							ultimaOperacao = operacao;
 						}

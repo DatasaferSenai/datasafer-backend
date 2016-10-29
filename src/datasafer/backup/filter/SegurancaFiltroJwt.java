@@ -32,26 +32,27 @@ public class SegurancaFiltroJwt implements Filter {
 	private UsuarioDao usuarioDao;
 
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-		if (request.getRequestURI().contains("login")) {
+		if (request	.getRequestURI()
+					.contains("login")) {
 			chain.doFilter(req, resp);
 			return;
 		}
 
-		
 		String token = null;
 		try {
 			token = request.getHeader("Authorization");
-			Usuario usuario = usuarioDao.obter((String)  new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"));
-			
+			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																										.get("login_usuario"));
+
 			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 			} else if (usuario.getStatus() != Status.ATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus().toString());
+				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus()
+																		.toString());
 			} else {
 				chain.doFilter(req, resp);
 			}
@@ -64,7 +65,7 @@ public class SegurancaFiltroJwt implements Filter {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 			}
 		}
-		
+
 	}
 
 	@Override

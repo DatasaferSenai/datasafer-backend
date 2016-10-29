@@ -1,16 +1,19 @@
 package datasafer.backup.dao;
 
+import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import datasafer.backup.model.Backup;
+import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 
@@ -22,11 +25,10 @@ public class UsuarioDao {
 
 	// @Transactional
 	public Usuario obter(String login_usuario) {
-		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
-				Usuario.class);
-		query.setParameter("login_usuario", login_usuario);
 		try {
-			return query.getSingleResult();
+			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
+							.setParameter("login_usuario", login_usuario)
+							.getSingleResult();
 		} catch (Exception e) {
 			return null;
 		}
@@ -35,28 +37,16 @@ public class UsuarioDao {
 	@Transactional
 	public void inserir(String login_solicitante, String login_superior, Usuario usuario) {
 
-		usuario.setInseridoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+		usuario.setInseridoEm(Calendar	.getInstance(TimeZone.getDefault())
+										.getTime());
+		usuario.setInseridoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
 
-		if (login_solicitante != null) {
-			TypedQuery<Usuario> query = manager
-					.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class);
-			query.setParameter("login_solicitante", login_solicitante);
-
-			usuario.setInseridoPor(query.getSingleResult());
-
-		} else {
-			usuario.setInseridoPor(null);
-		}
-
-		if (login_superior != null) {
-			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior",
-					Usuario.class);
-			query.setParameter("login_superior", login_superior);
-
-			usuario.setSuperior(query.getSingleResult());
-		} else {
-			usuario.setSuperior(null);
-		}
+		usuario.setSuperior(login_superior == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior", Usuario.class)
+																	.setParameter("login_superior", login_superior)
+																	.getSingleResult());
 
 		manager.persist(usuario);
 	}
@@ -64,34 +54,67 @@ public class UsuarioDao {
 	@Transactional
 	public void modificar(String login_solicitante, Usuario usuario) {
 
-		usuario.setModificadoEm(Calendar.getInstance(TimeZone.getDefault()).getTime());
+		Usuario usuario_attached = manager.merge(usuario);
 
-		if (login_solicitante != null) {
-			TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario",
-					Usuario.class);
-			query.setParameter("login_usuario", login_solicitante);
+		usuario_attached.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
+													.getTime());
+		usuario_attached.setModificadoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
 
-			usuario.setModificadoPor(query.getSingleResult());
-
-		} else {
-			usuario.setModificadoPor(null);
-		}
-
-		manager.merge(usuario);
-	}
-
-	@Transactional
-	public void modificarPrivilegio(String login_usuario, Privilegio privilegio) {
-		Usuario usuario = this.obter(login_usuario);
-		usuario.setPrivilegio(privilegio);
-		manager.merge(usuario);
 	}
 
 	// @Transactional
-	public List<Usuario> listaUsuarios() {
-		TypedQuery<Usuario> query = manager.createQuery("SELECT u FROM Usuario u", Usuario.class);
+	public List<Usuario> listarUsuarios(String login_superior) {
 		try {
-			return query.getResultList();
+			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.superior.login = :login_superior ", Usuario.class)
+							.setParameter("login_superior", login_superior)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// @Transactional
+	public List<Privilegio> listarPrivilegios(String login_proprietario) {
+		try {
+			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.proprietario.login = :login_proprietario", Privilegio.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// @Transactional
+	public List<Estacao> listarEstacoes(String login_proprietario) {
+		try {
+			return manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario", Estacao.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// @Transactional
+	public List<Backup> listarBackups(String login_proprietario) {
+		try {
+			return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario", Backup.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// @Transactional
+	public List<Operacao> listarOperacoes(String login_proprietario) {
+		try {
+			return manager	.createQuery("SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario", Operacao.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.getResultList();
 		} catch (Exception e) {
 			return null;
 		}
@@ -99,12 +122,11 @@ public class UsuarioDao {
 
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
-		TypedQuery<Usuario> query = manager.createQuery(
-				"SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class);
-		query.setParameter("login_usuario", usuario.getLogin());
-		query.setParameter("senha_usuario", usuario.getSenha());
 		try {
-			return query.getSingleResult();
+			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class)
+							.setParameter("login_usuario", usuario.getLogin())
+							.setParameter("senha_usuario", usuario.getSenha())
+							.getSingleResult();
 		} catch (Exception e) {
 			return null;
 		}

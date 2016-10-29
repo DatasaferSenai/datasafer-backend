@@ -34,33 +34,29 @@ public class OperacaoFiltroJwt implements Filter {
 	private UsuarioDao usuarioDao;
 
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
-			throws IOException, ServletException {
+	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
 		try {
-			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)
-					.verify(request.getHeader("Authorization")).get("login_usuario"));
-			Set<Permissao> permissoes = usuario.getPrivilegio().getPermissoes();
+			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(request.getHeader("Authorization"))
+																										.get("login_usuario"));
+			Set<Permissao> permissoes = usuario	.getPrivilegio()
+												.getPermissoes();
 
 			if (permissoes != null) {
 				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET"
-								&& permissoes.contains(Privilegio.Permissao.VISUALIZAR_OPERACOES))
+						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_OPERACOES))
 						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_OPERACOES))
-						| (request.getMethod() == "PUT"
-								&& permissoes.contains(Privilegio.Permissao.MODIFICAR_OPERACOES))
-						| (request.getMethod() == "DELETE"
-								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_OPERACOES))
+						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_OPERACOES))
+						| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_OPERACOES))
 
 				) {
 					chain.doFilter(req, resp);
 				}
 			} else {
-				response.sendError(HttpStatus.FORBIDDEN.value(),
-						"O usuário não possui permissão para realizar a operação solicitada");
+				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

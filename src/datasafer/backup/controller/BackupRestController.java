@@ -28,8 +28,8 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao, @RequestBody String corpo_backup) {
+	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
+			@RequestBody String corpo_backup) {
 		try {
 			JSONObject job = new JSONObject(corpo_backup);
 
@@ -41,8 +41,8 @@ public class BackupRestController {
 			backup.setIntervalo(new SimpleDateFormat("hh:MM:ss").parse(job.getString("intervalo")));
 			backup.setInicio(new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").parse(job.getString("inicio")));
 
-			backupDao.inserir(null,
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			backupDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																							.get("login_usuario"),
 					nome_estacao, backup);
 
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -53,14 +53,15 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Backup> obter(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup) {
+	public ResponseEntity<Backup> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
+			@RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter(
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																									.get("login_usuario"),
 					nome_estacao, nome_backup);
 			if (backup != null) {
-				return ResponseEntity.ok().body(backup);
+				return ResponseEntity	.ok()
+										.body(backup);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -74,11 +75,12 @@ public class BackupRestController {
 	public ResponseEntity<List<Operacao>> listarOperacoes(@RequestHeader(name = "Authorization") String token,
 			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter(
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																									.get("login_usuario"),
 					nome_estacao, nome_backup);
 			if (backup != null) {
-				return ResponseEntity.ok().body(backup.getOperacoes());
+				return ResponseEntity	.ok()
+										.body(backup.getOperacoes());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

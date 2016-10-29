@@ -23,15 +23,15 @@ public class OperacaoRestController {
 	private OperacaoDao operacaoDao;
 
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Operacao> obter(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup,
-			@RequestHeader(name = "operacao") Date data_operacao) {
+	public ResponseEntity<Operacao> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
+			@RequestHeader(name = "backup") String nome_backup, @RequestHeader(name = "operacao") Date data_operacao) {
 		try {
-			Operacao operacao = operacaoDao.obter(
-					(String) new JWTVerifier(UsuarioRestController.SECRET).verify(token).get("login_usuario"),
+			Operacao operacao = operacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET).verify(token)
+																										.get("login_usuario"),
 					nome_estacao, nome_backup, data_operacao);
 			if (operacao != null) {
-				return ResponseEntity.ok().body(operacao);
+				return ResponseEntity	.ok()
+										.body(operacao);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

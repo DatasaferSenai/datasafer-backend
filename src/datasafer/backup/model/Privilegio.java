@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "usuarios","inseridoEm","inseridoPor","modificadoEm","modificadoPor","excluidoEm","excluidoPor" })
+@JsonIgnoreProperties({ "id", "usuarios", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
 @Entity
 public class Privilegio {
 
@@ -32,17 +32,16 @@ public class Privilegio {
 		VISUALIZAR_PRIVILEGIOS("Visualizar privilegios"), INSERIR_PRIVILEGIOS("Criar privilegios"), MODIFICAR_PRIVILEGIOS(
 				"Modificar privilegios"), EXCLUIR_PRIVILEGIOS("Excluir privilegios"),
 
-		VISUALIZAR_USUARIOS("Visualizar usuários"), INSERIR_USUARIOS("Inserir usuários"), MODIFICAR_USUARIOS(
-				"Modificar usuários"), EXCLUIR_USUARIOS("Excluir usuários"),
+		VISUALIZAR_USUARIOS("Visualizar usuários"), INSERIR_USUARIOS("Inserir usuários"), MODIFICAR_USUARIOS("Modificar usuários"), EXCLUIR_USUARIOS(
+				"Excluir usuários"),
 
-		VISUALIZAR_HOSTS("Visualizar estacaos"), INSERIR_HOSTS("Inserir estacaos"), MODIFICAR_HOSTS(
-				"Modificar estacaos"), EXCLUIR_HOSTS("Excluir estacaos"),
+		VISUALIZAR_HOSTS("Visualizar estacaos"), INSERIR_HOSTS("Inserir estacaos"), MODIFICAR_HOSTS("Modificar estacaos"), EXCLUIR_HOSTS("Excluir estacaos"),
 
-		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS(
-				"Modificar backups"), EXCLUIR_BACKUPS("Excluir backups"),
+		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS("Modificar backups"), EXCLUIR_BACKUPS(
+				"Excluir backups"),
 
-		VISUALIZAR_OPERACOES("Visualizar operações"), INSERIR_OPERACOES("Inserir operações"), MODIFICAR_OPERACOES(
-				"Modificar operações"), EXCLUIR_OPERACOES("Excluir operações");
+		VISUALIZAR_OPERACOES("Visualizar operações"), INSERIR_OPERACOES("Inserir operações"), MODIFICAR_OPERACOES("Modificar operações"), EXCLUIR_OPERACOES(
+				"Excluir operações");
 
 		private String descricao;
 
