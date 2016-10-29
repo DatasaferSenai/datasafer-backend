@@ -1,7 +1,9 @@
 package datasafer.backup.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,7 +24,9 @@ import com.auth0.jwt.JWTSigner;
 import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -58,7 +62,11 @@ public class UsuarioRestController {
 			usuario.setSenha(jobj.getString("senha"));
 			usuario.setArmazenamento(jobj.getLong("armazenamento"));
 
-			usuarioDao.inserir(login_superior, login_superior, usuario);
+			try {
+				usuarioDao.inserir(login_solicitante, login_superior, usuario);
+			} catch (Exception e) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
 
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
@@ -120,12 +128,15 @@ public class UsuarioRestController {
 																										.get("login_usuario"));
 			if (usuario != null) {
 				JSONObject jobj = new JSONObject();
+
 				jobj.put("nome", usuario.getNome());
-				jobj.put("operacoes", usuario.getOperacoes());
 				jobj.put("armazenamento", usuario.getArmazenamento());
-				jobj.put("ocupado", usuario.getOcupado());
 				jobj.put("privilegio", usuario	.getPrivilegio()
 												.getNome());
+
+				// jobj.put("ocupado", usuario.getOcupado());
+				// jobj.put("operacoes", usuario.getOperacoes());
+
 				return ResponseEntity	.ok()
 										.body(jobj.toString());
 			} else {
@@ -140,19 +151,29 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> listarUsuarios(@RequestHeader(name = "Authorization") String token) {
 		try {
-			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"));
-			if (usuario != null) {
-				JSONObject jobj = new JSONObject();
-				jobj.put("nome", usuario.getNome());
-				jobj.put("email", usuario.getEmail());
-				jobj.put("operacoes", usuario.getOperacoes());
-				jobj.put("armazenamento", usuario.getArmazenamento());
-				jobj.put("ocupado", usuario.getOcupado());
-				jobj.put("privilegio", usuario	.getPrivilegio()
-												.getNome());
+			String login_superior = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																							.get("login_usuario");
+
+			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_superior);
+			if (usuarios != null) {
+
+				JSONArray jarray = new JSONArray();
+				for (Usuario u : usuarios) {
+					JSONObject jobj = new JSONObject();
+					jobj.put("nome", u.getNome());
+					jobj.put("email", u.getEmail());
+					jobj.put("armazenamento", u.getArmazenamento());
+					jobj.put("privilegio", u.getPrivilegio()
+											.getNome());
+
+					// jobj.put("operacoes", u.getOperacoes());
+					// jobj.put("ocupado", u.getOcupado());
+
+					jarray.put(jobj);
+				}
+
 				return ResponseEntity	.ok()
-										.body(jobj.toString());
+										.body(jarray.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -165,15 +186,85 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> listarEstacoes(@RequestHeader(name = "Authorization") String token) {
 		try {
-			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"));
-			if (usuario != null) {
+
+			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_proprietario);
+			if (estacoes != null) {
 				JSONArray jarray = new JSONArray();
-				for (Estacao e : usuario.getEstacoes()) {
+				for (Estacao e : estacoes) {
+
 					JSONObject jobj = new JSONObject();
 					jobj.put("nome", e.getNome());
 					jobj.put("descricao", e.getDescricao());
 					jobj.put("operacoes", e.getOperacoes());
+
+					jarray.put(jobj);
+				}
+				return ResponseEntity	.ok()
+										.body(jarray.toString());
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/gerenciamento/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> listarBackups(@RequestHeader(name = "Authorization") String token) {
+		try {
+
+			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			List<Backup> backups = usuarioDao.listarBackups(login_proprietario);
+			if (backups != null) {
+				JSONArray jarray = new JSONArray();
+				for (Backup b : backups) {
+					JSONObject jobj = new JSONObject();
+
+					jobj.put("nome", b.getNome());
+					jobj.put("descricao", b.getDescricao());
+					jobj.put("pasta", b.getPasta());
+					jobj.put("frequencia", b.getFrequencia()
+											.toString());
+					jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(b.getIntervalo()));
+					jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(b.getInicio()));
+
+					jarray.put(jobj);
+				}
+				return ResponseEntity	.ok()
+										.body(jarray.toString());
+			} else {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/gerenciamento/usuario/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token) {
+		try {
+
+			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_proprietario);
+			if (operacoes != null) {
+				JSONArray jarray = new JSONArray();
+				for (Operacao o : operacoes) {
+					JSONObject jobj = new JSONObject();
+
+					jobj.put("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(o.getData()));
+					jobj.put("status", o.getStatus()
+										.toString());
+					jobj.put("tamanho", o.getTamanho());
+
 					jarray.put(jobj);
 				}
 				return ResponseEntity	.ok()

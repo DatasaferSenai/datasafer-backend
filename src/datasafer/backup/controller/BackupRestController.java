@@ -2,6 +2,8 @@ package datasafer.backup.controller;
 
 import java.text.SimpleDateFormat;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,8 +30,8 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
-			@RequestBody String corpo_backup) {
+	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token,
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestBody String corpo_backup) {
 		try {
 			JSONObject jobj = new JSONObject(corpo_backup);
 
@@ -38,8 +40,8 @@ public class BackupRestController {
 			backup.setDescricao(jobj.getString("descricao"));
 			backup.setPasta(jobj.getString("pasta"));
 			backup.setFrequencia(Frequencia.valueOf(jobj.getString("frequencia")));
-			backup.setIntervalo(new SimpleDateFormat("hh:MM:ss").parse(jobj.getString("intervalo")));
-			backup.setInicio(new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").parse(jobj.getString("inicio")));
+			backup.setIntervalo(new SimpleDateFormat("HH:mm:ss").parse(jobj.getString("intervalo")));
+			backup.setInicio(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(jobj.getString("inicio")));
 
 			backupDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																							.get("login_usuario"),
@@ -67,8 +69,8 @@ public class BackupRestController {
 				jobj.put("pasta", backup.getPasta());
 				jobj.put("frequencia", backup	.getFrequencia()
 												.toString());
-				jobj.put("intervalo", new SimpleDateFormat("hh:MM:ss").format(backup.getIntervalo()));
-				jobj.put("inicio", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(backup.getInicio()));
+				jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(backup.getIntervalo()));
+				jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(backup.getInicio()));
 
 				return ResponseEntity	.ok()
 										.body(jobj.toString());
@@ -95,7 +97,7 @@ public class BackupRestController {
 				for (Operacao o : backup.getOperacoes()) {
 					JSONObject jobj = new JSONObject();
 
-					jobj.put("data", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(o.getData()));
+					jobj.put("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(o.getData()));
 					jobj.put("status", o.getStatus()
 										.toString());
 					jobj.put("tamanho", o.getTamanho());

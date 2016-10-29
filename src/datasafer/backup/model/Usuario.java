@@ -5,9 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -23,7 +20,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
@@ -62,9 +58,6 @@ public class Usuario {
 	@Column(length = 50, nullable = true)
 	private String email;
 
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Estacao> estacoes;
-
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
@@ -87,7 +80,7 @@ public class Usuario {
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -96,7 +89,7 @@ public class Usuario {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -105,7 +98,7 @@ public class Usuario {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
@@ -117,7 +110,7 @@ public class Usuario {
 	@Column(nullable = true)
 	private int tentativas = 0;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date ultimaTentativa;
@@ -136,14 +129,6 @@ public class Usuario {
 
 	public void setUltimaTentativa(Date ultimaTentativa) {
 		this.ultimaTentativa = ultimaTentativa;
-	}
-
-	public List<Estacao> getEstacoes() {
-		return estacoes;
-	}
-
-	public void setEstacoes(List<Estacao> estacoes) {
-		this.estacoes = estacoes;
 	}
 
 	public Integer getTentativas() {
@@ -234,10 +219,6 @@ public class Usuario {
 		this.nome = nome;
 	}
 
-	public void setEstacaos(List<Estacao> estacaos) {
-		this.estacoes = estacaos;
-	}
-
 	public String getLogin() {
 		return login;
 	}
@@ -278,49 +259,49 @@ public class Usuario {
 		this.armazenamento = armazenamento;
 	}
 
-	@JsonProperty("operacoes")
-	public Map<String, Integer> getOperacoes() {
-		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
-		int total = 0;
-		for (Operacao.Status s : Operacao.Status.values()) {
-			int contagem = 0;
-			for (Estacao h : this.getEstacoes()) {
-				for (Backup b : h.getBackups()) {
-					for (Operacao p : b.getOperacoes()) {
-						if (p.getStatus() == s) {
-							total++;
-							contagem++;
-						}
-					}
-				}
-			}
-			map.put(s.toString(), contagem);
-		}
-		map.put("Total", total);
-		return map;
-	}
-
-	@JsonProperty("ocupado")
-	public Long getOcupado() {
-		Long soma = 0L;
-		for (Estacao e : this.getEstacoes()) {
-			for (Backup b : e.getBackups()) {
-				List<Operacao> operacoes = b.getOperacoes();
-				if (operacoes != null && operacoes.size() > 0) {
-					Operacao ultimaOperacao = operacoes.get(0);
-					for (Operacao operacao : operacoes) {
-						if (operacao.getData()
-									.before(ultimaOperacao.getData())
-								&& operacao.getStatus() == Operacao.Status.SUCESSO) {
-							ultimaOperacao = operacao;
-						}
-					}
-					if (ultimaOperacao != null) {
-						soma += ultimaOperacao.getTamanho();
-					}
-				}
-			}
-		}
-		return soma;
-	}
+	// @JsonProperty("operacoes")
+	// public Map<String, Integer> getOperacoes() {
+	// Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+	// int total = 0;
+	// for (Operacao.Status s : Operacao.Status.values()) {
+	// int contagem = 0;
+	// for (Estacao h : this.getEstacoes()) {
+	// for (Backup b : h.getBackups()) {
+	// for (Operacao p : b.getOperacoes()) {
+	// if (p.getStatus() == s) {
+	// total++;
+	// contagem++;
+	// }
+	// }
+	// }
+	// }
+	// map.put(s.toString(), contagem);
+	// }
+	// map.put("Total", total);
+	// return map;
+	// }
+	//
+	// @JsonProperty("ocupado")
+	// public Long getOcupado() {
+	// Long soma = 0L;
+	// for (Estacao e : this.getEstacoes()) {
+	// for (Backup b : e.getBackups()) {
+	// List<Operacao> operacoes = b.getOperacoes();
+	// if (operacoes != null && operacoes.size() > 0) {
+	// Operacao ultimaOperacao = operacoes.get(0);
+	// for (Operacao operacao : operacoes) {
+	// if (operacao.getData()
+	// .before(ultimaOperacao.getData())
+	// && operacao.getStatus() == Operacao.Status.SUCESSO) {
+	// ultimaOperacao = operacao;
+	// }
+	// }
+	// if (ultimaOperacao != null) {
+	// soma += ultimaOperacao.getTamanho();
+	// }
+	// }
+	// }
+	// }
+	// return soma;
+	// }
 }

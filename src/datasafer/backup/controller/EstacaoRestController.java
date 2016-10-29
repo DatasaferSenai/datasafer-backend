@@ -3,6 +3,8 @@ package datasafer.backup.controller;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,16 +54,33 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token, @RequestBody Estacao estacao) {
+	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_estacao) {
 		try {
-			estacaoDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																							.get("login_usuario"),
-					estacao);
-			if (estacao != null) {
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			} else {
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			String login_proprietario;
+			try {
+				login_proprietario = req.getHeader("usuario");
+			} catch (Exception e) {
+				login_proprietario = login_solicitante;
+			}
+
+			JSONObject jobj = new JSONObject(corpo_estacao);
+
+			Estacao estacao = new Estacao();
+			estacao.setNome(jobj.getString("nome"));
+			estacao.setDescricao(jobj.getString("descricao"));
+
+			try {
+				estacaoDao.inserir(login_solicitante, login_proprietario, estacao);
+			} catch (Exception e) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
+
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -85,8 +104,8 @@ public class EstacaoRestController {
 					jobj.put("pasta", b.getPasta());
 					jobj.put("frequencia", b.getFrequencia()
 											.toString());
-					jobj.put("intervalo", new SimpleDateFormat("hh:MM:ss").format(b.getIntervalo()));
-					jobj.put("inicio", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(b.getInicio()));
+					jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(b.getIntervalo()));
+					jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(b.getInicio()));
 
 					jarray.put(jobj);
 				}
@@ -102,18 +121,27 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Operacao>> listarOperacoes(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao) {
+	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao) {
 		try {
-			Estacao estacao = estacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"),
-					nome_estacao);
-			if (estacao != null) {
 
+			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_proprietario, nome_estacao);
+			if (operacoes != null) {
+				JSONArray jarray = new JSONArray();
+				for (Operacao o : operacoes) {
+					JSONObject jobj = new JSONObject();
+
+					jobj.put("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(o.getData()));
+					jobj.put("status", o.getStatus()
+										.toString());
+					jobj.put("tamanho", o.getTamanho());
+
+					jarray.put(jobj);
+				}
 				return ResponseEntity	.ok()
-										.body(estacaoDao.listarOperacoes(estacao.getProprietario()
-																				.getLogin(),
-												estacao.getNome()));
+										.body(jarray.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

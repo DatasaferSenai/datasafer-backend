@@ -58,22 +58,20 @@ public class SegurancaFiltroJwt implements Filter {
 				claims = null;
 
 				if (token == null) {
-					response.sendError(HttpStatus.UNAUTHORIZED.value(), new JSONObject().put("erro", "Autorização nula")
-																						.toString());
+					response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 				} else {
-					response.sendError(HttpStatus.FORBIDDEN.value(), new JSONObject()	.put("erro", "Autorização inválida")
-																						.toString());
+					response.sendError(HttpStatus.FORBIDDEN.value(),"Autorização inválida");
 				}
 			}
 
 			if (claims != null) {
-				Usuario usuario = usuarioDao.obter((String) claims.get("login_usuario"));
+				Usuario solicitante = usuarioDao.obter((String) claims.get("login_usuario"));
 
-				if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
+				if (solicitante == null || solicitante.getExcluidoEm() != null || solicitante.getExcluidoPor() != null) {
 					response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
-				} else if (usuario.getStatus() != Status.ATIVO) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus()
-																			.toString());
+				} else if (solicitante.getStatus() != Status.ATIVO) {
+					response.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
+																				.toString());
 				} else {
 					chain.doFilter(req, resp);
 				}

@@ -61,7 +61,7 @@ public class Backup {
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date inicio;
 
@@ -69,7 +69,7 @@ public class Backup {
 	@Enumerated(EnumType.STRING)
 	private Frequencia frequencia;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss")
 	@Temporal(TemporalType.TIME)
 	@Column(nullable = true)
 	private Date intervalo;
@@ -81,7 +81,7 @@ public class Backup {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -90,7 +90,7 @@ public class Backup {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
@@ -99,7 +99,7 @@ public class Backup {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/mm/yyyy hh:MM:ss")
+	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;

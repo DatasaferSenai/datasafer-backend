@@ -35,7 +35,7 @@ public class OperacaoRestController {
 			if (operacao != null) {
 				JSONObject jobj = new JSONObject();
 
-				jobj.put("data", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(operacao.getData()));
+				jobj.put("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(operacao.getData()));
 				jobj.put("status", operacao	.getStatus()
 											.toString());
 				jobj.put("tamanho", operacao.getTamanho());

@@ -69,7 +69,6 @@ public class Inicializador {
 			usuario_sistema = new Usuario();
 
 			usuario_sistema.setArmazenamento(0L);
-			usuario_sistema.setEstacaos(null);
 			usuario_sistema.setLogin("sistema");
 			usuario_sistema.setNome("Sistema");
 			usuario_sistema.setSenha("sistema");
@@ -85,7 +84,6 @@ public class Inicializador {
 			usuario_admin = new Usuario();
 
 			usuario_admin.setArmazenamento(0L);
-			usuario_admin.setEstacaos(null);
 			usuario_admin.setLogin("admin");
 			usuario_admin.setNome("Administrador");
 			usuario_admin.setSenha("admin");
@@ -215,7 +213,7 @@ public class Inicializador {
 				if (frequencia == Frequencia.INTERVALO) {
 					Calendar cal = Calendar.getInstance();
 					try {
-						cal.setTime(new SimpleDateFormat("hh:MM:ss").parse("00:00:00"));
+						cal.setTime(new SimpleDateFormat("HH:mm:ss").parse("00:00:00"));
 						cal.set(Calendar.HOUR_OF_DAY, intervalo);
 					} catch (ParseException e) {
 						e.printStackTrace();
