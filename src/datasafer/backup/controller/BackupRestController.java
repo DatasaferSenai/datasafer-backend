@@ -35,6 +35,8 @@ public class BackupRestController {
 		try {
 			JSONObject jobj = new JSONObject(corpo_backup);
 
+			System.out.println("++++ BACKUP = " + corpo_backup);
+			
 			Backup backup = new Backup();
 			backup.setNome(jobj.getString("nome"));
 			backup.setDescricao(jobj.getString("descricao"));
