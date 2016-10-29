@@ -20,7 +20,6 @@ import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.dao.BackupDao;
 import datasafer.backup.model.Backup;
-import datasafer.backup.model.Backup.Frequencia;
 import datasafer.backup.model.Operacao;
 
 @RestController
@@ -35,13 +34,10 @@ public class BackupRestController {
 		try {
 			JSONObject jobj = new JSONObject(corpo_backup);
 
-			System.out.println("++++ BACKUP = " + corpo_backup);
-			
 			Backup backup = new Backup();
 			backup.setNome(jobj.getString("nome"));
 			backup.setDescricao(jobj.getString("descricao"));
 			backup.setPasta(jobj.getString("pasta"));
-			backup.setFrequencia(Frequencia.valueOf(jobj.getString("frequencia")));
 			backup.setIntervalo(new SimpleDateFormat("HH:mm:ss").parse(jobj.getString("intervalo")));
 			backup.setInicio(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(jobj.getString("inicio")));
 
@@ -69,8 +65,6 @@ public class BackupRestController {
 				jobj.put("nome", backup.getNome());
 				jobj.put("descricao", backup.getDescricao());
 				jobj.put("pasta", backup.getPasta());
-				jobj.put("frequencia", backup	.getFrequencia()
-												.toString());
 				jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(backup.getIntervalo()));
 				jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(backup.getInicio()));
 

@@ -22,7 +22,6 @@ import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
-import datasafer.backup.model.Backup.Frequencia;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Privilegio;
@@ -198,28 +197,24 @@ public class Inicializador {
 
 		for (int n = 0; n < quantidade; n++) {
 			int nomeIndex = gerador.nextInt(nomes_backups.size());
-			int frequenciaIndex = gerador.nextInt(Frequencia.values().length);
 			int intervalo = gerador.nextInt(11) + 1;
 			int inicio = gerador.nextInt(60);
 
 			String nomeBackup = nomes_backups.get(nomeIndex);
-			Frequencia frequencia = Frequencia.values()[frequenciaIndex];
 
 			Backup backup = backupDao.obter(login_usuario, nome_estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
-				backup.setFrequencia(frequencia);
-				if (frequencia == Frequencia.INTERVALO) {
-					Calendar cal = Calendar.getInstance();
-					try {
-						cal.setTime(new SimpleDateFormat("HH:mm:ss").parse("00:00:00"));
-						cal.set(Calendar.HOUR_OF_DAY, intervalo);
-					} catch (ParseException e) {
-						e.printStackTrace();
-					}
-					backup.setIntervalo(cal.getTime());
+
+				Calendar cal = Calendar.getInstance();
+				try {
+					cal.setTime(new SimpleDateFormat("HH:mm:ss").parse("00:00:00"));
+					cal.set(Calendar.HOUR_OF_DAY, intervalo);
+				} catch (ParseException e) {
+					e.printStackTrace();
 				}
+				backup.setIntervalo(cal.getTime());
 
 				backup.setInicio(new Date(Calendar	.getInstance(TimeZone.getDefault())
 													.getTime()

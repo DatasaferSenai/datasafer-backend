@@ -16,7 +16,6 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -60,7 +59,7 @@ public class SegurancaFiltroJwt implements Filter {
 				if (token == null) {
 					response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 				} else {
-					response.sendError(HttpStatus.FORBIDDEN.value(),"Autorização inválida");
+					response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 				}
 			}
 

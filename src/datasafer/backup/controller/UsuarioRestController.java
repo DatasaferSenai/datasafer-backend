@@ -1,6 +1,7 @@
 package datasafer.backup.controller;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -134,8 +135,24 @@ public class UsuarioRestController {
 				jobj.put("privilegio", usuario	.getPrivilegio()
 												.getNome());
 
-				// jobj.put("ocupado", usuario.getOcupado());
-				// jobj.put("operacoes", usuario.getOperacoes());
+				jobj.put("ocupado", usuarioDao	.listarOperacoes(usuario.getNome())
+												.stream()
+												.mapToLong(Operacao::getTamanho)
+												.sum());
+
+				JSONObject operacoes_jobj = new JSONObject();
+				Arrays	.asList(Operacao.Status.values())
+						.forEach(s -> {
+							try {
+								operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(usuario.getNome())
+																			.stream()
+																			.filter(o -> o.getStatus() == s)
+																			.count());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						});
+				jobj.put("operacoes",operacoes_jobj);
 
 				return ResponseEntity	.ok()
 										.body(jobj.toString());
@@ -229,8 +246,6 @@ public class UsuarioRestController {
 					jobj.put("nome", b.getNome());
 					jobj.put("descricao", b.getDescricao());
 					jobj.put("pasta", b.getPasta());
-					jobj.put("frequencia", b.getFrequencia()
-											.toString());
 					jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(b.getIntervalo()));
 					jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(b.getInicio()));
 

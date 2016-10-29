@@ -102,8 +102,6 @@ public class EstacaoRestController {
 					jobj.put("nome", b.getNome());
 					jobj.put("descricao", b.getDescricao());
 					jobj.put("pasta", b.getPasta());
-					jobj.put("frequencia", b.getFrequencia()
-											.toString());
 					jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(b.getIntervalo()));
 					jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(b.getInicio()));
 

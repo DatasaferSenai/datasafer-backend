@@ -6,8 +6,6 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -24,25 +22,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-@JsonIgnoreProperties({ "id", "estacao", "operacoes", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm",
-		"modificadoPor", "excluidoEm", "excluidoPor" })
+@JsonIgnoreProperties({ "id", "estacao", "operacoes", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm",
+		"excluidoPor" })
 @Entity
 public class Backup {
-
-	public enum Frequencia {
-		NAO("Não"), INTERVALO("Intervalo"), DIARIO("Diario"), SEMANAL("Semanal"), MENSAL("Mensal");
-
-		private String descricao;
-
-		private Frequencia(String descricao) {
-			this.descricao = descricao;
-		}
-
-		@Override
-		public String toString() {
-			return this.descricao;
-		}
-	};
 
 	@ManyToOne
 	@JoinColumn(name = "estacao_id")
@@ -64,10 +47,6 @@ public class Backup {
 	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date inicio;
-
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private Frequencia frequencia;
 
 	@JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss")
 	@Temporal(TemporalType.TIME)
@@ -212,14 +191,6 @@ public class Backup {
 		this.inicio = inicio;
 	}
 
-	public Frequencia getFrequencia() {
-		return frequencia;
-	}
-
-	public void setFrequencia(Frequencia frequencia) {
-		this.frequencia = frequencia;
-	}
-
 	public Date getIntervalo() {
 		return intervalo;
 	}
@@ -241,7 +212,8 @@ public class Backup {
 		if (operacoes != null && operacoes.size() > 0) {
 			Operacao ultimaOperacao = operacoes.get(0);
 			for (Operacao operacao : operacoes) {
-				if (operacao.getData().before(ultimaOperacao.getData())) {
+				if (operacao.getData()
+							.before(ultimaOperacao.getData())) {
 					ultimaOperacao = operacao;
 				}
 			}
