@@ -15,12 +15,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonIgnoreProperties({ "id", "backup", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
+import datasafer.backup.controller.deserializer.OperacaoDeserializer;
+import datasafer.backup.controller.serializer.OperacaoSerializer;
+
+@JsonDeserialize(using = OperacaoDeserializer.class)
+@JsonSerialize(using = OperacaoSerializer.class)
 @Entity
 public class Operacao {
 

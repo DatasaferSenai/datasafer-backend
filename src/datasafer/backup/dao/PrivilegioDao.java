@@ -50,10 +50,12 @@ public class PrivilegioDao {
 	}
 
 	// @Transactional
-	public Privilegio obter(String nome_privilegio) {
+	public Privilegio obter(String login_proprietario, String nome_privilegio) {
 		try {
-			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio", Privilegio.class)
+			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio AND p.proprietario.login := login_proprietario",
+					Privilegio.class)
 							.setParameter("nome_privilegio", nome_privilegio)
+							.setParameter("login_proprietario", login_proprietario)
 							.getSingleResult();
 		} catch (Exception e) {
 			return null;
@@ -61,7 +63,7 @@ public class PrivilegioDao {
 	}
 
 	@Transactional
-	public void atribuir(String login_solicitante, String login_usuario, String nome_privilegio) {
+	public void atribuir(String login_solicitante, String login_proprietario, String nome_privilegio, String login_usuario) {
 
 		Usuario usuario = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
 									.setParameter("login_usuario", login_usuario)
@@ -74,13 +76,14 @@ public class PrivilegioDao {
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
 
-		Privilegio privilegio = manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio", Privilegio.class)
+		usuario.setPrivilegio(manager	.createQuery(
+				"SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio AND p.proprietario.login = :login_proprietario",
+				Privilegio.class)
 										.setParameter("nome_privilegio", nome_privilegio)
-										.getSingleResult();
+										.setParameter("login_proprietario", login_proprietario)
+										.getSingleResult());
 
-		usuario.setPrivilegio(privilegio);
-
-		manager.merge(usuario);
+		// manager.persist(usuario);
 	}
 
 }

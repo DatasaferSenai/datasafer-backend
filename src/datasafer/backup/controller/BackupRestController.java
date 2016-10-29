@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,7 @@ import datasafer.backup.dao.BackupDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class BackupRestController {
 
@@ -32,18 +34,27 @@ public class BackupRestController {
 	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token,
 			@RequestHeader(name = "estacao") String nome_estacao, @RequestBody String corpo_backup) {
 		try {
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			String login_proprietario;
+			try {
+				login_proprietario = req.getHeader("usuario");
+			} catch (Exception e) {
+				login_proprietario = login_solicitante;
+			}
+
 			JSONObject jobj = new JSONObject(corpo_backup);
 
 			Backup backup = new Backup();
 			backup.setNome(jobj.getString("nome"));
 			backup.setDescricao(jobj.getString("descricao"));
 			backup.setPasta(jobj.getString("pasta"));
-			backup.setIntervalo(new SimpleDateFormat("HH:mm:ss").parse(jobj.getString("intervalo")));
+			backup.setIntervalo(jobj.getInt("intervalo"));
 			backup.setInicio(new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse(jobj.getString("inicio")));
 
-			backupDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																							.get("login_usuario"),
-					nome_estacao, backup);
+			backupDao.inserir(login_solicitante, login_proprietario, nome_estacao, backup);
 
 			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
@@ -56,9 +67,11 @@ public class BackupRestController {
 	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
 			@RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																									.get("login_usuario"),
-					nome_estacao, nome_backup);
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Backup backup = backupDao.obter(login_solicitante, nome_estacao, nome_backup);
 			if (backup != null) {
 				JSONObject jobj = new JSONObject();
 
@@ -84,10 +97,11 @@ public class BackupRestController {
 	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
 			@RequestHeader(name = "backup") String nome_backup) {
 		try {
-			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																									.get("login_usuario"),
-					nome_estacao, nome_backup);
 
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Backup backup = backupDao.obter(login_solicitante, nome_estacao, nome_backup);
 			if (backup != null) {
 				JSONArray jarray = new JSONArray();
 				for (Operacao o : backup.getOperacoes()) {

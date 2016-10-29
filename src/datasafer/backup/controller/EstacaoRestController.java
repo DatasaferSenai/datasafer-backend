@@ -1,6 +1,7 @@
 package datasafer.backup.controller;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,14 +34,30 @@ public class EstacaoRestController {
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao) {
 		try {
-			Estacao estacao = estacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"),
-					nome_estacao);
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Estacao estacao = estacaoDao.obter(login_solicitante, nome_estacao);
 			if (estacao != null) {
 				JSONObject jobj = new JSONObject();
 
 				jobj.put("nome", estacao.getNome());
 				jobj.put("descricao", estacao.getDescricao());
+
+				JSONObject operacoes_jobj = new JSONObject();
+				Arrays	.asList(Operacao.Status.values())
+						.forEach(s -> {
+							try {
+								operacoes_jobj.put(s.toString(), estacaoDao	.listarOperacoes(login_solicitante, nome_estacao)
+																			.stream()
+																			.filter(o -> o.getStatus() == s)
+																			.count());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						});
+				jobj.put("operacoes", operacoes_jobj);
 
 				return ResponseEntity	.ok()
 										.body(jobj.toString());
@@ -90,9 +107,11 @@ public class EstacaoRestController {
 	@RequestMapping(value = "/gerenciamento/estacao/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> listarBackups(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao) {
 		try {
-			Estacao estacao = estacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"),
-					nome_estacao);
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Estacao estacao = estacaoDao.obter(login_solicitante, nome_estacao);
 			if (estacao != null) {
 				JSONArray jarray = new JSONArray();
 
@@ -122,10 +141,10 @@ public class EstacaoRestController {
 	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
-			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_proprietario, nome_estacao);
+			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_solicitante, nome_estacao);
 			if (operacoes != null) {
 				JSONArray jarray = new JSONArray();
 				for (Operacao o : operacoes) {

@@ -17,15 +17,17 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-/**
- * Representa uma estação ou "estacao"
- */
-@JsonIgnoreProperties({ "id", "usuario", "backups", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
+import datasafer.backup.controller.deserializer.EstacaoDeserializer;
+import datasafer.backup.controller.serializer.EstacaoSerializer;
+
+@JsonDeserialize(using = EstacaoDeserializer.class)
+@JsonSerialize(using = EstacaoSerializer.class)
 @Entity
 public class Estacao {
 

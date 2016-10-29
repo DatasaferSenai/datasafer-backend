@@ -28,10 +28,11 @@ public class OperacaoRestController {
 	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
 			@RequestHeader(name = "backup") String nome_backup, @RequestHeader(name = "operacao") Date data_operacao) {
 		try {
-			Operacao operacao = operacaoDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET).verify(token)
-																										.get("login_usuario"),
-					nome_estacao, nome_backup, data_operacao);
 
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Operacao operacao = operacaoDao.obter(login_solicitante, nome_estacao, nome_backup, data_operacao);
 			if (operacao != null) {
 				JSONObject jobj = new JSONObject();
 

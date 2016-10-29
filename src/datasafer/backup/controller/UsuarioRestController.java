@@ -125,8 +125,11 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token) {
 		try {
-			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																										.get("login_usuario"));
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Usuario usuario = usuarioDao.obter(login_solicitante);
 			if (usuario != null) {
 				JSONObject jobj = new JSONObject();
 
@@ -152,7 +155,7 @@ public class UsuarioRestController {
 								e.printStackTrace();
 							}
 						});
-				jobj.put("operacoes",operacoes_jobj);
+				jobj.put("operacoes", operacoes_jobj);
 
 				return ResponseEntity	.ok()
 										.body(jobj.toString());
@@ -168,23 +171,40 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> listarUsuarios(@RequestHeader(name = "Authorization") String token) {
 		try {
-			String login_superior = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																							.get("login_usuario");
 
-			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_superior);
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_solicitante);
 			if (usuarios != null) {
 
 				JSONArray jarray = new JSONArray();
-				for (Usuario u : usuarios) {
+				for (Usuario usuario : usuarios) {
 					JSONObject jobj = new JSONObject();
-					jobj.put("nome", u.getNome());
-					jobj.put("email", u.getEmail());
-					jobj.put("armazenamento", u.getArmazenamento());
-					jobj.put("privilegio", u.getPrivilegio()
-											.getNome());
+					jobj.put("nome", usuario.getNome());
+					jobj.put("email", usuario.getEmail());
+					jobj.put("armazenamento", usuario.getArmazenamento());
+					jobj.put("privilegio", usuario	.getPrivilegio()
+													.getNome());
 
-					// jobj.put("operacoes", u.getOperacoes());
-					// jobj.put("ocupado", u.getOcupado());
+					jobj.put("ocupado", usuarioDao	.listarOperacoes(login_solicitante)
+													.stream()
+													.mapToLong(Operacao::getTamanho)
+													.sum());
+
+					JSONObject operacoes_jobj = new JSONObject();
+					Arrays	.asList(Operacao.Status.values())
+							.forEach(s -> {
+								try {
+									operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(usuario.getNome())
+																				.stream()
+																				.filter(o -> o.getStatus() == s)
+																				.count());
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							});
+					jobj.put("operacoes", operacoes_jobj);
 
 					jarray.put(jobj);
 				}
@@ -204,18 +224,31 @@ public class UsuarioRestController {
 	public ResponseEntity<String> listarEstacoes(@RequestHeader(name = "Authorization") String token) {
 		try {
 
-			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_proprietario);
+			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_solicitante);
 			if (estacoes != null) {
 				JSONArray jarray = new JSONArray();
-				for (Estacao e : estacoes) {
+				for (Estacao estacao : estacoes) {
 
 					JSONObject jobj = new JSONObject();
-					jobj.put("nome", e.getNome());
-					jobj.put("descricao", e.getDescricao());
-					jobj.put("operacoes", e.getOperacoes());
+					jobj.put("nome", estacao.getNome());
+					jobj.put("descricao", estacao.getDescricao());
+
+					JSONObject operacoes_jobj = new JSONObject();
+					Arrays	.asList(Operacao.Status.values())
+							.forEach(s -> {
+								try {
+									operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(login_solicitante)
+																				.stream()
+																				.filter(o -> o.getStatus() == s)
+																				.count());
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							});
+					jobj.put("operacoes", operacoes_jobj);
 
 					jarray.put(jobj);
 				}
@@ -234,10 +267,10 @@ public class UsuarioRestController {
 	public ResponseEntity<String> listarBackups(@RequestHeader(name = "Authorization") String token) {
 		try {
 
-			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Backup> backups = usuarioDao.listarBackups(login_proprietario);
+			List<Backup> backups = usuarioDao.listarBackups(login_solicitante);
 			if (backups != null) {
 				JSONArray jarray = new JSONArray();
 				for (Backup b : backups) {
@@ -266,10 +299,10 @@ public class UsuarioRestController {
 	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token) {
 		try {
 
-			String login_proprietario = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_proprietario);
+			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_solicitante);
 			if (operacoes != null) {
 				JSONArray jarray = new JSONArray();
 				for (Operacao o : operacoes) {

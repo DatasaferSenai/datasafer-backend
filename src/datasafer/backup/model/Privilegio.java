@@ -17,12 +17,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonIgnoreProperties({ "id", "usuarios", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
+import datasafer.backup.controller.deserializer.PrivilegioDeserializer;
+import datasafer.backup.controller.serializer.PrivilegioSerializer;
+
+@JsonDeserialize(using = PrivilegioDeserializer.class)
+@JsonSerialize(using = PrivilegioSerializer.class)
 @Entity
 public class Privilegio {
 
@@ -59,7 +64,7 @@ public class Privilegio {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 40, unique = true, nullable = false)
+	@Column(length = 40, unique = false, nullable = false)
 	private String nome;
 
 	@Column(length = 100, nullable = true)

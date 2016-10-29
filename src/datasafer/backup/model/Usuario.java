@@ -23,13 +23,17 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import datasafer.backup.controller.UsuarioRestController;
+import datasafer.backup.controller.deserializer.UsuarioDeserializer;
+import datasafer.backup.controller.serializer.UsuarioSerializer;
 
-@JsonIgnoreProperties({ "id", "estacaos", "superior", "privilegio", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm", "excluidoPor" })
+@JsonDeserialize(using = UsuarioDeserializer.class)
+@JsonSerialize(using = UsuarioSerializer.class)
 @Entity
 public class Usuario {
 
@@ -258,50 +262,4 @@ public class Usuario {
 	public void setArmazenamento(Long armazenamento) {
 		this.armazenamento = armazenamento;
 	}
-
-	// @JsonProperty("operacoes")
-	// public Map<String, Integer> getOperacoes() {
-	// Map<String, Integer> map = new LinkedHashMap<String, Integer>();
-	// int total = 0;
-	// for (Operacao.Status s : Operacao.Status.values()) {
-	// int contagem = 0;
-	// for (Estacao h : this.getEstacoes()) {
-	// for (Backup b : h.getBackups()) {
-	// for (Operacao p : b.getOperacoes()) {
-	// if (p.getStatus() == s) {
-	// total++;
-	// contagem++;
-	// }
-	// }
-	// }
-	// }
-	// map.put(s.toString(), contagem);
-	// }
-	// map.put("Total", total);
-	// return map;
-	// }
-	//
-	// @JsonProperty("ocupado")
-	// public Long getOcupado() {
-	// Long soma = 0L;
-	// for (Estacao e : this.getEstacoes()) {
-	// for (Backup b : e.getBackups()) {
-	// List<Operacao> operacoes = b.getOperacoes();
-	// if (operacoes != null && operacoes.size() > 0) {
-	// Operacao ultimaOperacao = operacoes.get(0);
-	// for (Operacao operacao : operacoes) {
-	// if (operacao.getData()
-	// .before(ultimaOperacao.getData())
-	// && operacao.getStatus() == Operacao.Status.SUCESSO) {
-	// ultimaOperacao = operacao;
-	// }
-	// }
-	// if (ultimaOperacao != null) {
-	// soma += ultimaOperacao.getTamanho();
-	// }
-	// }
-	// }
-	// }
-	// return soma;
-	// }
 }

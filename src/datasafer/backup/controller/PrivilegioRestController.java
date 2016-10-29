@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWTVerifier;
+
 import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.model.Privilegio;
 
@@ -20,9 +22,13 @@ public class PrivilegioRestController {
 	private PrivilegioDao privilegioDao;
 
 	@RequestMapping(value = "/gerenciamento/privilegio", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> obter(@RequestHeader(name = "privilegio") String nome_privilegio) {
+	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "privilegio") String nome_privilegio) {
 		try {
-			Privilegio privilegio = privilegioDao.obter(nome_privilegio);
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			Privilegio privilegio = privilegioDao.obter(login_solicitante, nome_privilegio);
 			if (privilegio != null) {
 				JSONObject jobj = new JSONObject();
 

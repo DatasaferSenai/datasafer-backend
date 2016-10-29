@@ -13,17 +13,19 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-@JsonIgnoreProperties({ "id", "estacao", "operacoes", "proprietario", "inseridoEm", "inseridoPor", "modificadoEm", "modificadoPor", "excluidoEm",
-		"excluidoPor" })
+import datasafer.backup.controller.deserializer.BackupDeserializer;
+import datasafer.backup.controller.serializer.BackupSerializer;
+
+@JsonDeserialize(using = BackupDeserializer.class)
+@JsonSerialize(using = BackupSerializer.class)
 @Entity
 public class Backup {
 
@@ -48,10 +50,8 @@ public class Backup {
 	@Column(nullable = false)
 	private Date inicio;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "HH:mm:ss")
-	@Temporal(TemporalType.TIME)
-	@Column(nullable = true)
-	private Date intervalo;
+	@Column(nullable = false)
+	private long intervalo;
 
 	@Column(nullable = false)
 	private String pasta;
@@ -191,11 +191,11 @@ public class Backup {
 		this.inicio = inicio;
 	}
 
-	public Date getIntervalo() {
+	public long getIntervalo() {
 		return intervalo;
 	}
 
-	public void setIntervalo(Date intervalo) {
+	public void setIntervalo(long intervalo) {
 		this.intervalo = intervalo;
 	}
 
