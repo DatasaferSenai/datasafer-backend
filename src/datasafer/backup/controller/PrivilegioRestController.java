@@ -24,13 +24,13 @@ public class PrivilegioRestController {
 		try {
 			Privilegio privilegio = privilegioDao.obter(nome_privilegio);
 			if (privilegio != null) {
-				JSONObject job = new JSONObject();
-				job.put(null, privilegio.getProprietario());
-				job.put(null, privilegio.getNome());
-				job.put(null, privilegio.getPermissoes());
+				JSONObject jobj = new JSONObject();
+
+				jobj.put("nome", privilegio.getNome());
+				jobj.put("permissoes", privilegio.getPermissoes());
 
 				return ResponseEntity	.ok()
-										.body(job.toString());
+										.body(jobj.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -39,29 +39,4 @@ public class PrivilegioRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-
-//	@RequestMapping(value = "/gerenciamento/privilegios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-//	public ResponseEntity<String> listar(@RequestHeader(name = "Authorization") String token) {
-//		try {
-//			List<Privilegio> privilegios = privilegioDao.listar((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-//																														.get("login_usuario"));
-//			if (privilegios != null) {
-//				JSONArray jarray = new JSONArray();
-//				for (Privilegio p : privilegios) {
-//					JSONObject job = new JSONObject();
-//					job.put("nome", p.getNome());
-//					job.put("permissoes", p.getPermissoes());
-//					jarray.put(job);
-//				}
-//				return ResponseEntity	.ok()
-//										.body(jarray.toString());
-//			} else {
-//				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//		}
-//	}
-
 }

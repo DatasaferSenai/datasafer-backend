@@ -6,7 +6,6 @@ import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,14 +49,14 @@ public class OperacaoDao {
 	@Transactional
 	public void modificar(String login_solicitante, Operacao operacao) {
 
+		operacao = manager.merge(operacao);
+
 		operacao.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
 											.getTime());
 		operacao.setModificadoPor(
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
-
-		manager.merge(operacao);
 	}
 
 	// @Transactional

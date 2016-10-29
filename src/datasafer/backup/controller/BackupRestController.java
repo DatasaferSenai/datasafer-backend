@@ -1,8 +1,8 @@
 package datasafer.backup.controller;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,15 +31,15 @@ public class BackupRestController {
 	public ResponseEntity<Void> inserir(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
 			@RequestBody String corpo_backup) {
 		try {
-			JSONObject job = new JSONObject(corpo_backup);
+			JSONObject jobj = new JSONObject(corpo_backup);
 
 			Backup backup = new Backup();
-			backup.setNome(job.getString("nome"));
-			backup.setDescricao(job.getString("descricao"));
-			backup.setPasta(job.getString("pasta"));
-			backup.setFrequencia(Frequencia.valueOf(job.getString("frequencia")));
-			backup.setIntervalo(new SimpleDateFormat("hh:MM:ss").parse(job.getString("intervalo")));
-			backup.setInicio(new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").parse(job.getString("inicio")));
+			backup.setNome(jobj.getString("nome"));
+			backup.setDescricao(jobj.getString("descricao"));
+			backup.setPasta(jobj.getString("pasta"));
+			backup.setFrequencia(Frequencia.valueOf(jobj.getString("frequencia")));
+			backup.setIntervalo(new SimpleDateFormat("hh:MM:ss").parse(jobj.getString("intervalo")));
+			backup.setInicio(new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").parse(jobj.getString("inicio")));
 
 			backupDao.inserir(null, (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																							.get("login_usuario"),
@@ -53,15 +53,26 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Backup> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
+	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
 			@RequestHeader(name = "backup") String nome_backup) {
 		try {
 			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																									.get("login_usuario"),
 					nome_estacao, nome_backup);
 			if (backup != null) {
+				JSONObject jobj = new JSONObject();
+
+				jobj.put("nome", backup.getNome());
+				jobj.put("descricao", backup.getDescricao());
+				jobj.put("pasta", backup.getPasta());
+				jobj.put("frequencia", backup	.getFrequencia()
+												.toString());
+				jobj.put("intervalo", new SimpleDateFormat("hh:MM:ss").format(backup.getIntervalo()));
+				jobj.put("inicio", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(backup.getInicio()));
+
 				return ResponseEntity	.ok()
-										.body(backup);
+										.body(jobj.toString());
+
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -72,15 +83,27 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Operacao>> listarOperacoes(@RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup) {
+	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token, @RequestHeader(name = "estacao") String nome_estacao,
+			@RequestHeader(name = "backup") String nome_backup) {
 		try {
 			Backup backup = backupDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																									.get("login_usuario"),
 					nome_estacao, nome_backup);
+
 			if (backup != null) {
+				JSONArray jarray = new JSONArray();
+				for (Operacao o : backup.getOperacoes()) {
+					JSONObject jobj = new JSONObject();
+
+					jobj.put("data", new SimpleDateFormat("dd/mm/yyyy hh:MM:ss").format(o.getData()));
+					jobj.put("status", o.getStatus()
+										.toString());
+					jobj.put("tamanho", o.getTamanho());
+
+					jarray.put(jobj);
+				}
 				return ResponseEntity	.ok()
-										.body(backup.getOperacoes());
+										.body(jarray.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

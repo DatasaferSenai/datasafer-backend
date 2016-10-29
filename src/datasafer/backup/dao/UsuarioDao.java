@@ -1,6 +1,5 @@
 package datasafer.backup.dao;
 
-import java.lang.reflect.Field;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -54,11 +53,11 @@ public class UsuarioDao {
 	@Transactional
 	public void modificar(String login_solicitante, Usuario usuario) {
 
-		Usuario usuario_attached = manager.merge(usuario);
+		usuario = manager.merge(usuario);
 
-		usuario_attached.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
-													.getTime());
-		usuario_attached.setModificadoPor(
+		usuario.setModificadoEm(Calendar.getInstance(TimeZone.getDefault())
+										.getTime());
+		usuario.setModificadoPor(
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
@@ -122,6 +121,7 @@ public class UsuarioDao {
 
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
+
 		try {
 			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class)
 							.setParameter("login_usuario", usuario.getLogin())

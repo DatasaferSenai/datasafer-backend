@@ -1,12 +1,10 @@
 package datasafer.backup.dao;
 
 import java.util.Calendar;
-import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,14 +39,14 @@ public class PrivilegioDao {
 	@Transactional
 	public void modificar(String login_solicitante, Privilegio privilegio) {
 
+		privilegio = manager.merge(privilegio);
+
 		privilegio.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
 											.getTime());
 		privilegio.setModificadoPor(
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
-
-		manager.merge(privilegio);
 	}
 
 	// @Transactional
@@ -61,7 +59,6 @@ public class PrivilegioDao {
 			return null;
 		}
 	}
-
 
 	@Transactional
 	public void atribuir(String login_solicitante, String login_usuario, String nome_privilegio) {

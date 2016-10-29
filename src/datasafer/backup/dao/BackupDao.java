@@ -1,19 +1,16 @@
 package datasafer.backup.dao;
 
 import java.util.Calendar;
-import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
-import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -64,15 +61,15 @@ public class BackupDao {
 	@Transactional
 	public void modificar(String login_solicitante, Backup backup) {
 
+		backup = manager.merge(backup);
+
 		backup.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
 										.getTime());
-		backup.setModificadoPor(login_solicitante == null ? null
-				: manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
-						Usuario.class)
-							.setParameter("login_solicitante", login_solicitante)
-							.getSingleResult());
+		backup.setModificadoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
 
-		manager.merge(backup);
 	}
-	
+
 }

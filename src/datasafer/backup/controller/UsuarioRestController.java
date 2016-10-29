@@ -2,7 +2,6 @@ package datasafer.backup.controller;
 
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +36,7 @@ public class UsuarioRestController {
 	private UsuarioDao usuarioDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
+	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
@@ -50,14 +49,14 @@ public class UsuarioRestController {
 				login_superior = login_solicitante;
 			}
 
-			JSONObject job = new JSONObject(corpo_usuario);
+			JSONObject jobj = new JSONObject(corpo_usuario);
 
 			Usuario usuario = new Usuario();
-			usuario.setNome(job.getString("nome"));
-			usuario.setEmail(job.getString("email"));
-			usuario.setLogin(job.getString("login"));
-			usuario.setSenha(job.getString("senha"));
-			usuario.setArmazenamento(job.getLong("armazenamento"));
+			usuario.setNome(jobj.getString("nome"));
+			usuario.setEmail(jobj.getString("email"));
+			usuario.setLogin(jobj.getString("login"));
+			usuario.setSenha(jobj.getString("senha"));
+			usuario.setArmazenamento(jobj.getLong("armazenamento"));
 
 			usuarioDao.inserir(login_superior, login_superior, usuario);
 
@@ -69,7 +68,7 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> modificar(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
+	public ResponseEntity<Void> modificar(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
@@ -84,22 +83,22 @@ public class UsuarioRestController {
 
 			Usuario usuario = usuarioDao.obter(login_usuario);
 			if (usuario != null) {
-				JSONObject job = new JSONObject(corpo_usuario);
+				JSONObject jobj = new JSONObject(corpo_usuario);
 
-				if (job.has("nome")) {
-					usuario.setNome(job.getString("nome"));
+				if (jobj.has("nome")) {
+					usuario.setNome(jobj.getString("nome"));
 				}
-				if (job.has("login")) {
-					usuario.setLogin(job.getString("login"));
+				if (jobj.has("login")) {
+					usuario.setLogin(jobj.getString("login"));
 				}
-				if (job.has("senha")) {
-					usuario.setSenha(job.getString("senha"));
+				if (jobj.has("senha")) {
+					usuario.setSenha(jobj.getString("senha"));
 				}
-				if (job.has("email")) {
-					usuario.setEmail(job.getString("email"));
+				if (jobj.has("email")) {
+					usuario.setEmail(jobj.getString("email"));
 				}
-				if (job.has("armazenamento")) {
-					usuario.setArmazenamento(job.getLong("armazenamento"));
+				if (jobj.has("armazenamento")) {
+					usuario.setArmazenamento(jobj.getLong("armazenamento"));
 				}
 
 				usuarioDao.modificar(login_solicitante, usuario);
@@ -120,15 +119,15 @@ public class UsuarioRestController {
 			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																										.get("login_usuario"));
 			if (usuario != null) {
-				JSONObject job = new JSONObject();
-				job.put("nome", usuario.getNome());
-				job.put("operacoes", usuario.getOperacoes());
-				job.put("armazenamento", usuario.getArmazenamento());
-				job.put("ocupado", usuario.getOcupado());
-				job.put("privilegio", usuario	.getPrivilegio()
+				JSONObject jobj = new JSONObject();
+				jobj.put("nome", usuario.getNome());
+				jobj.put("operacoes", usuario.getOperacoes());
+				jobj.put("armazenamento", usuario.getArmazenamento());
+				jobj.put("ocupado", usuario.getOcupado());
+				jobj.put("privilegio", usuario	.getPrivilegio()
 												.getNome());
 				return ResponseEntity	.ok()
-										.body(job.toString());
+										.body(jobj.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -144,16 +143,16 @@ public class UsuarioRestController {
 			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																										.get("login_usuario"));
 			if (usuario != null) {
-				JSONObject job = new JSONObject();
-				job.put("nome", usuario.getNome());
-				job.put("email", usuario.getEmail());
-				job.put("operacoes", usuario.getOperacoes());
-				job.put("armazenamento", usuario.getArmazenamento());
-				job.put("ocupado", usuario.getOcupado());
-				job.put("privilegio", usuario	.getPrivilegio()
+				JSONObject jobj = new JSONObject();
+				jobj.put("nome", usuario.getNome());
+				jobj.put("email", usuario.getEmail());
+				jobj.put("operacoes", usuario.getOperacoes());
+				jobj.put("armazenamento", usuario.getArmazenamento());
+				jobj.put("ocupado", usuario.getOcupado());
+				jobj.put("privilegio", usuario	.getPrivilegio()
 												.getNome());
 				return ResponseEntity	.ok()
-										.body(job.toString());
+										.body(jobj.toString());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -171,11 +170,11 @@ public class UsuarioRestController {
 			if (usuario != null) {
 				JSONArray jarray = new JSONArray();
 				for (Estacao e : usuario.getEstacoes()) {
-					JSONObject job = new JSONObject();
-					job.put("nome", e.getNome());
-					job.put("descricao", e.getDescricao());
-					job.put("operacoes", e.getOperacoes());
-					jarray.put(job);
+					JSONObject jobj = new JSONObject();
+					jobj.put("nome", e.getNome());
+					jobj.put("descricao", e.getDescricao());
+					jobj.put("operacoes", e.getOperacoes());
+					jarray.put(jobj);
 				}
 				return ResponseEntity	.ok()
 										.body(jarray.toString());
@@ -191,12 +190,17 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody String corpo_usuario) {
 		try {
-			JSONObject job = new JSONObject(corpo_usuario);
-			String login_usuario = job.getString("login");
-			String senha_usuario = job.getString("senha");
-			boolean expira = job.getBoolean("expira");
 
-			Usuario usuario = usuarioDao.obter(login_usuario);
+			JSONObject jobj = new JSONObject(corpo_usuario);
+
+			Usuario usuario = new Usuario();
+			usuario.setLogin(jobj.getString("login"));
+			usuario.setSenha(jobj.getString("senha"));
+
+			boolean expira = jobj.getBoolean("expira");
+
+			usuario = usuarioDao.logar(usuario);
+
 			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
 				return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
 										.body(new JSONObject()	.put("erro", "Usuário ou senha inválidos")
@@ -205,27 +209,26 @@ public class UsuarioRestController {
 				return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
 										.body(new JSONObject()	.put("erro", usuario.getStatus())
 																.toString());
-			} else if (usuario.getTentativas() == null || usuario.getTentativas() < 3) {
-				if (usuarioDao.logar(usuario) != null) {
-					long iat = System.currentTimeMillis() / 1000;
-					long exp = iat + EXPIRES_IN_SECONDS;
-					JWTSigner signer = new JWTSigner(SECRET);
-					HashMap<String, Object> claims = new HashMap<>();
-					claims.put("iat", iat);
-					claims.put("exp", expira ? exp : Long.MAX_VALUE);
-					claims.put("iss", ISSUER);
-					claims.put("login_usuario", login_usuario);
+			} else if (usuario.getTentativas() < 3) {
 
-					String jwt = signer.sign(claims);
+				long iat = System.currentTimeMillis() / 1000;
+				long exp = iat + EXPIRES_IN_SECONDS;
+				JWTSigner signer = new JWTSigner(SECRET);
+				HashMap<String, Object> claims = new HashMap<>();
+				claims.put("iat", iat);
+				claims.put("exp", expira ? exp : Long.MAX_VALUE);
+				claims.put("iss", ISSUER);
+				claims.put("login_usuario", usuario.getLogin());
 
-					usuario.setTentativas(0);
-					usuario.setUltimaTentativa(null);
-					usuarioDao.modificar("Sistema", usuario);
+				String jwt = signer.sign(claims);
 
-					return ResponseEntity	.status(HttpStatus.OK)
-											.body(new JSONObject()	.put("token", jwt)
-																	.toString());
-				}
+				usuario.setTentativas(0);
+				usuario.setUltimaTentativa(null);
+				usuarioDao.modificar("Sistema", usuario);
+
+				return ResponseEntity	.status(HttpStatus.OK)
+										.body(new JSONObject()	.put("token", jwt)
+																.toString());
 			}
 
 			usuario.setTentativas(usuario.getTentativas() == null ? 1 : usuario.getTentativas() + 1);

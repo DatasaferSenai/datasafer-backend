@@ -6,7 +6,6 @@ import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,15 +37,14 @@ public class EstacaoDao {
 	@Transactional
 	public void modificar(String login_solicitante, Estacao estacao) {
 
+		estacao = manager.merge(estacao);
+
 		estacao.setModificadoEm(Calendar.getInstance(TimeZone.getDefault())
 										.getTime());
-		estacao.setModificadoPor(login_solicitante == null ? null
-				: manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante",
-						Usuario.class)
-							.setParameter("login_solicitante", login_solicitante)
-							.getSingleResult());
-
-		manager.merge(estacao);
+		estacao.setModificadoPor(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
 	}
 
 	@Transactional
@@ -65,6 +63,32 @@ public class EstacaoDao {
 															.getSingleResult());
 
 		manager.persist(estacao);
+	}
+
+	// @Transactional
+	public List<Backup> listarBackups(String login_proprietario, String nome_estacao) {
+		try {
+			return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario", Backup.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.setParameter("nome_estacao", nome_estacao)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	// @Transactional
+	public List<Operacao> listarOperacoes(String login_proprietario, String nome_estacao) {
+		try {
+			return manager	.createQuery(
+					"SELECT o FROM Operacao o, (SELECT b FROM Backup b WHERE b.estacao.nome = :nome_estacao) b WHERE o.proprietario.login = :login_proprietario",
+					Operacao.class)
+							.setParameter("login_proprietario", login_proprietario)
+							.setParameter("nome_estacao", nome_estacao)
+							.getResultList();
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 }

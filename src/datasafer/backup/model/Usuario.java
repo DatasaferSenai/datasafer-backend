@@ -25,11 +25,10 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
@@ -280,21 +279,24 @@ public class Usuario {
 	}
 
 	@JsonProperty("operacoes")
-	public Map<Operacao.Status, Integer> getOperacoes() {
-		Map<Operacao.Status, Integer> map = new LinkedHashMap<Operacao.Status, Integer>();
+	public Map<String, Integer> getOperacoes() {
+		Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+		int total = 0;
 		for (Operacao.Status s : Operacao.Status.values()) {
-			Integer count = 0;
+			int contagem = 0;
 			for (Estacao h : this.getEstacoes()) {
 				for (Backup b : h.getBackups()) {
 					for (Operacao p : b.getOperacoes()) {
 						if (p.getStatus() == s) {
-							count++;
+							total++;
+							contagem++;
 						}
 					}
 				}
 			}
-			map.put(s, count);
+			map.put(s.toString(), contagem);
 		}
+		map.put("Total", total);
 		return map;
 	}
 
