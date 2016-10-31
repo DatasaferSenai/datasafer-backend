@@ -30,7 +30,7 @@ import datasafer.backup.controller.serializer.OperacaoSerializer;
 public class Operacao {
 
 	public enum Status {
-		SUCESSO("Sucesso"), EXECUTANDO("Executando"), FALHA("Falha"), AGENDADO("Agendado"), EXCLUIDO("Excluído");
+		SUCESSO("sucesso"), EXECUTANDO("executando"), FALHA("falha"), AGENDADO("agendado"), EXCLUIDO("excluído");
 
 		private String descricao;
 
@@ -44,19 +44,14 @@ public class Operacao {
 		}
 	};
 
-	// ---------------------------------------------------------------------------------------------------
-
 	@ManyToOne
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
-
-	// ---------------------------------------------------------------------------------------------------
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date data;
 
@@ -71,30 +66,21 @@ public class Operacao {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 

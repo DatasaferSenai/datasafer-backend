@@ -24,11 +24,13 @@ public class UsuarioDao {
 
 	// @Transactional
 	public Usuario obter(String login_usuario) {
-		try {
-			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
-							.setParameter("login_usuario", login_usuario)
-							.getSingleResult();
-		} catch (Exception e) {
+		List<Usuario> results = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
+										.setParameter("login_usuario", login_usuario)
+										.getResultList();
+
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}
@@ -66,68 +68,51 @@ public class UsuarioDao {
 
 	// @Transactional
 	public List<Usuario> listarUsuarios(String login_superior) {
-		try {
-			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.superior.login = :login_superior ", Usuario.class)
-							.setParameter("login_superior", login_superior)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT u FROM Usuario u WHERE u.superior.login = :login_superior ", Usuario.class)
+						.setParameter("login_superior", login_superior)
+						.getResultList();
 	}
 
 	// @Transactional
 	public List<Privilegio> listarPrivilegios(String login_proprietario) {
-		try {
-			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.proprietario.login = :login_proprietario", Privilegio.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.proprietario.login = :login_proprietario", Privilegio.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.getResultList();
+
 	}
 
 	// @Transactional
 	public List<Estacao> listarEstacoes(String login_proprietario) {
-		try {
-			return manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario", Estacao.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario", Estacao.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.getResultList();
+
 	}
 
 	// @Transactional
 	public List<Backup> listarBackups(String login_proprietario) {
-		try {
-			return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario", Backup.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario", Backup.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.getResultList();
+
 	}
 
 	// @Transactional
 	public List<Operacao> listarOperacoes(String login_proprietario) {
-		try {
-			return manager	.createQuery("SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario", Operacao.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario", Operacao.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.getResultList();
 	}
 
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
-
-		try {
-			return manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class)
-							.setParameter("login_usuario", usuario.getLogin())
-							.setParameter("senha_usuario", usuario.getSenha())
-							.getSingleResult();
-		} catch (Exception e) {
+		List<Usuario> results = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class)
+										.setParameter("login_usuario", usuario.getLogin())
+										.setParameter("senha_usuario", usuario.getSenha())
+										.getResultList();
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}

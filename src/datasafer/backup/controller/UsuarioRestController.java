@@ -1,7 +1,5 @@
 package datasafer.backup.controller;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
@@ -9,7 +7,6 @@ import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,27 +38,13 @@ public class UsuarioRestController {
 	private UsuarioDao usuarioDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
+	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody Usuario usuario) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_superior;
-			try {
-				login_superior = req.getHeader("usuario");
-			} catch (Exception e) {
-				login_superior = login_solicitante;
-			}
-
-			JSONObject jobj = new JSONObject(corpo_usuario);
-
-			Usuario usuario = new Usuario();
-			usuario.setNome(jobj.getString("nome"));
-			usuario.setEmail(jobj.getString("email"));
-			usuario.setLogin(jobj.getString("login"));
-			usuario.setSenha(jobj.getString("senha"));
-			usuario.setArmazenamento(jobj.getLong("armazenamento"));
+			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 			try {
 				usuarioDao.inserir(login_solicitante, login_superior, usuario);
@@ -83,12 +66,7 @@ public class UsuarioRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_usuario;
-			try {
-				login_usuario = req.getHeader("usuario");
-			} catch (Exception e) {
-				login_usuario = login_solicitante;
-			}
+			String login_usuario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 			Usuario usuario = usuarioDao.obter(login_usuario);
 			if (usuario != null) {
@@ -123,7 +101,7 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> obter(@RequestHeader(name = "Authorization") String token) {
+	public ResponseEntity<Usuario> obter(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
@@ -131,34 +109,8 @@ public class UsuarioRestController {
 
 			Usuario usuario = usuarioDao.obter(login_solicitante);
 			if (usuario != null) {
-				JSONObject jobj = new JSONObject();
-
-				jobj.put("nome", usuario.getNome());
-				jobj.put("armazenamento", usuario.getArmazenamento());
-				jobj.put("privilegio", usuario	.getPrivilegio()
-												.getNome());
-
-				jobj.put("ocupado", usuarioDao	.listarOperacoes(usuario.getNome())
-												.stream()
-												.mapToLong(Operacao::getTamanho)
-												.sum());
-
-				JSONObject operacoes_jobj = new JSONObject();
-				Arrays	.asList(Operacao.Status.values())
-						.forEach(s -> {
-							try {
-								operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(usuario.getNome())
-																			.stream()
-																			.filter(o -> o.getStatus() == s)
-																			.count());
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						});
-				jobj.put("operacoes", operacoes_jobj);
-
 				return ResponseEntity	.ok()
-										.body(jobj.toString());
+										.body(usuario);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -169,48 +121,18 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> listarUsuarios(@RequestHeader(name = "Authorization") String token) {
+	public ResponseEntity<List<Usuario>> listarUsuarios(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_solicitante);
+			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_superior);
 			if (usuarios != null) {
-
-				JSONArray jarray = new JSONArray();
-				for (Usuario usuario : usuarios) {
-					JSONObject jobj = new JSONObject();
-					jobj.put("nome", usuario.getNome());
-					jobj.put("email", usuario.getEmail());
-					jobj.put("armazenamento", usuario.getArmazenamento());
-					jobj.put("privilegio", usuario	.getPrivilegio()
-													.getNome());
-
-					jobj.put("ocupado", usuarioDao	.listarOperacoes(login_solicitante)
-													.stream()
-													.mapToLong(Operacao::getTamanho)
-													.sum());
-
-					JSONObject operacoes_jobj = new JSONObject();
-					Arrays	.asList(Operacao.Status.values())
-							.forEach(s -> {
-								try {
-									operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(usuario.getNome())
-																				.stream()
-																				.filter(o -> o.getStatus() == s)
-																				.count());
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							});
-					jobj.put("operacoes", operacoes_jobj);
-
-					jarray.put(jobj);
-				}
-
 				return ResponseEntity	.ok()
-										.body(jarray.toString());
+										.body(usuarios);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -221,39 +143,18 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> listarEstacoes(@RequestHeader(name = "Authorization") String token) {
+	public ResponseEntity<List<Estacao>> listarEstacoes(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_solicitante);
+			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_proprietario);
 			if (estacoes != null) {
-				JSONArray jarray = new JSONArray();
-				for (Estacao estacao : estacoes) {
-
-					JSONObject jobj = new JSONObject();
-					jobj.put("nome", estacao.getNome());
-					jobj.put("descricao", estacao.getDescricao());
-
-					JSONObject operacoes_jobj = new JSONObject();
-					Arrays	.asList(Operacao.Status.values())
-							.forEach(s -> {
-								try {
-									operacoes_jobj.put(s.toString(), usuarioDao	.listarOperacoes(login_solicitante)
-																				.stream()
-																				.filter(o -> o.getStatus() == s)
-																				.count());
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							});
-					jobj.put("operacoes", operacoes_jobj);
-
-					jarray.put(jobj);
-				}
 				return ResponseEntity	.ok()
-										.body(jarray.toString());
+										.body(estacoes);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -264,28 +165,18 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> listarBackups(@RequestHeader(name = "Authorization") String token) {
+	public ResponseEntity<List<Backup>> listarBackups(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Backup> backups = usuarioDao.listarBackups(login_solicitante);
+			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			List<Backup> backups = usuarioDao.listarBackups(login_proprietario);
 			if (backups != null) {
-				JSONArray jarray = new JSONArray();
-				for (Backup b : backups) {
-					JSONObject jobj = new JSONObject();
-
-					jobj.put("nome", b.getNome());
-					jobj.put("descricao", b.getDescricao());
-					jobj.put("pasta", b.getPasta());
-					jobj.put("intervalo", new SimpleDateFormat("HH:mm:ss").format(b.getIntervalo()));
-					jobj.put("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(b.getInicio()));
-
-					jarray.put(jobj);
-				}
 				return ResponseEntity	.ok()
-										.body(jarray.toString());
+										.body(backups);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -296,27 +187,18 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> listarOperacoes(@RequestHeader(name = "Authorization") String token) {
+	public ResponseEntity<List<Operacao>> listarOperacoes(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_solicitante);
+			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_proprietario);
 			if (operacoes != null) {
-				JSONArray jarray = new JSONArray();
-				for (Operacao o : operacoes) {
-					JSONObject jobj = new JSONObject();
-
-					jobj.put("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(o.getData()));
-					jobj.put("status", o.getStatus()
-										.toString());
-					jobj.put("tamanho", o.getTamanho());
-
-					jarray.put(jobj);
-				}
 				return ResponseEntity	.ok()
-										.body(jarray.toString());
+										.body(operacoes);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -363,7 +245,7 @@ public class UsuarioRestController {
 
 				usuario.setTentativas(0);
 				usuario.setUltimaTentativa(null);
-				usuarioDao.modificar("Sistema", usuario);
+				usuarioDao.modificar("system", usuario);
 
 				return ResponseEntity	.status(HttpStatus.OK)
 										.body(new JSONObject()	.put("token", jwt)
@@ -373,7 +255,7 @@ public class UsuarioRestController {
 			usuario.setTentativas(usuario.getTentativas() == null ? 1 : usuario.getTentativas() + 1);
 			usuario.setUltimaTentativa(Calendar	.getInstance(TimeZone.getDefault())
 												.getTime());
-			usuarioDao.modificar("Sistema", usuario);
+			usuarioDao.modificar("system", usuario);
 
 			return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
 									.body(new JSONObject()	.put("erro", "Usuário ou senha inválidos")

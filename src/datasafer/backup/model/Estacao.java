@@ -31,22 +31,14 @@ import datasafer.backup.controller.serializer.EstacaoSerializer;
 @Entity
 public class Estacao {
 
-	// ---------------------------------------------------------------------------------------------------
-
-	// @ManyToOne
-	// @JoinColumn(name = "usuario_id")
-	// private Usuario usuario;
-
-	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Backup> backups;
-
-	// ---------------------------------------------------------------------------------------------------
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 40, nullable = false)
+	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	private List<Backup> backups;
+	
+	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
 	@Column(length = 100, nullable = true)
@@ -56,30 +48,21 @@ public class Estacao {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 

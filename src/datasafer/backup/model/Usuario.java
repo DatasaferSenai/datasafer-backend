@@ -65,7 +65,6 @@ public class Usuario {
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
-	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(nullable = false)
 	private String senha;
 
@@ -84,38 +83,27 @@ public class Usuario {
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 
 	@Column(nullable = true)
 	private int tentativas = 0;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date ultimaTentativa;
 

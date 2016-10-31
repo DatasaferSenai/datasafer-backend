@@ -43,6 +43,7 @@ public class Inicializador {
 
 	@PostConstruct
 	private void Inicializa() {
+		System.out.println("==== Inicializando ====");
 		verificaAdmin();
 		populaUsuarios();
 	}
@@ -87,20 +88,18 @@ public class Inicializador {
 				permissoes.add(p);
 			privilegio_admin.setPermissoes(permissoes);
 
-			System.out.println(" +++ INSERINDO 1 +++ ");
 			privilegioDao.inserir("system", "system", privilegio_admin);
 		}
 
-		//privilegioDao.atribuir("system", "system", "Administrador", "admin");
-		//privilegioDao.atribuir(null, "system", "Administrador", "system");
+		privilegioDao.atribuir("system", "system", "Administrador", "admin");
+		privilegioDao.atribuir(null, "system", "Administrador", "system");
 	}
 
 	public void populaUsuarios() {
 
-		Date agora = Calendar	.getInstance(TimeZone.getDefault())
-								.getTime();
-
-		Privilegio gerenciador = privilegioDao.obter("system", "Gerenciador");
+		System.out.println(" ==== POPULA ==== ");
+		
+		Privilegio gerenciador = privilegioDao.obter("admin", "Gerenciador");
 		if (gerenciador == null) {
 			gerenciador = new Privilegio();
 			gerenciador.setNome("Gerenciador");
@@ -109,29 +108,26 @@ public class Inicializador {
 					Permissao.INSERIR_USUARIOS, Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_HOSTS,
 					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS)));
 			
-			System.out.println(" +++ INSERINDO 2 +++ ");
 			privilegioDao.inserir("system", "admin", gerenciador);
 		}
 
-		Privilegio operador = privilegioDao.obter("system", "Operador");
+		Privilegio operador = privilegioDao.obter("admin", "Operador");
 		if (operador == null) {
 			operador = new Privilegio();
 			operador.setNome("Operador");
 			operador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS, Permissao.VISUALIZAR_BACKUPS,
 					Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_BACKUPS)));
 			
-			System.out.println(" +++ INSERINDO 3 +++ ");
 			privilegioDao.inserir("system", "admin", operador);
 		}
 
-		Privilegio visualizacao = privilegioDao.obter("system", "Visualização");
+		Privilegio visualizacao = privilegioDao.obter("admin", "Visualização");
 		if (visualizacao == null) {
 			visualizacao = new Privilegio();
 			visualizacao.setNome("Visualização");
 			visualizacao.setPermissoes(
 					new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_HOSTS, Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES)));
 			
-			System.out.println(" +++ INSERINDO 4 +++ ");
 			privilegioDao.inserir("system", "admin", visualizacao);
 		}
 
@@ -149,7 +145,6 @@ public class Inicializador {
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
-				usuario.setInseridoEm(agora);
 				usuario.setArmazenamento(10000000L);
 				usuario.setLogin(login);
 				usuario.setSenha(login);
@@ -157,7 +152,7 @@ public class Inicializador {
 
 				usuarioDao.inserir("system", "admin", usuario);
 
-				//privilegioDao.atribuir("system", "admin", "Gerenciador", login);
+				privilegioDao.atribuir("system", "admin", "Gerenciador", login);
 
 				populaEstacaos(login);
 			}

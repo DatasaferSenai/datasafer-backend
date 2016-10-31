@@ -1,6 +1,7 @@
 package datasafer.backup.dao;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -21,15 +23,16 @@ public class BackupDao {
 
 	// @Transactional
 	public Backup obter(String login_proprietario, String nome_estacao, String nome_backup) {
-		try {
-			return manager	.createQuery(
-					"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
-					Backup.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.setParameter("nome_estacao", nome_estacao)
-							.setParameter("nome_backup", nome_backup)
-							.getSingleResult();
-		} catch (Exception e) {
+		List<Backup> results = manager	.createQuery(
+				"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.proprietario.login = :login_proprietario AND b.nome = :nome_backup",
+				Backup.class)
+										.setParameter("login_proprietario", login_proprietario)
+										.setParameter("nome_estacao", nome_estacao)
+										.setParameter("nome_backup", nome_backup)
+										.getResultList();
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}
@@ -70,6 +73,17 @@ public class BackupDao {
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
 
+	}
+
+	// @Transactional
+	public List<Operacao> listarOperacoes(String login_proprietario, String nome_estacao, String nome_backup) {
+		return manager	.createQuery(
+				"SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao AND o.backup.nome = :nome_backup ",
+				Operacao.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.setParameter("nome_estacao", nome_estacao)
+						.setParameter("nome_backup", nome_backup)
+						.getResultList();
 	}
 
 }

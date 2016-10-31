@@ -2,6 +2,7 @@ package datasafer.backup.dao;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
@@ -61,16 +62,17 @@ public class OperacaoDao {
 
 	// @Transactional
 	public Operacao obter(String login_proprietario, String nome_estacao, String nome_backup, Date data_operacao) {
-		try {
-			return manager	.createQuery(
-					"SELECT o FROM Operacao o WHERE o.backup.estacao.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao AND o.backup.nome = :nome_backup AND o.data = :data_operacao",
-					Operacao.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.setParameter("nome_estacao", nome_estacao)
-							.setParameter("nome_backup", nome_backup)
-							.setParameter("data_operacao", data_operacao)
-							.getSingleResult();
-		} catch (Exception e) {
+		List<Operacao> results = manager.createQuery(
+				"SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao AND o.backup.nome = :nome_backup AND o.data = :data_operacao",
+				Operacao.class)
+										.setParameter("login_proprietario", login_proprietario)
+										.setParameter("nome_estacao", nome_estacao)
+										.setParameter("nome_backup", nome_backup)
+										.setParameter("data_operacao", data_operacao)
+										.getResultList();
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}

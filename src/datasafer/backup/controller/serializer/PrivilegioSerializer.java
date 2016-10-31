@@ -9,23 +9,25 @@ import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import datasafer.backup.model.Privilegio;
 
-@SuppressWarnings("serial")
 public class PrivilegioSerializer extends StdSerializer<Privilegio> {
 
+	private static final long serialVersionUID = 1L;
+
 	public PrivilegioSerializer() {
-        this(null);
-    }
+		this(null);
+	}
 
 	public PrivilegioSerializer(Class<Privilegio> t) {
-        super(t);
-    }
+		super(t);
+	}
 
 	@Override
-	public void serialize(Privilegio value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
+	public void serialize(Privilegio privilegio, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
 		jgen.writeStartObject();
-//		jgen.writeNumberField("id", value.id);
-//		jgen.writeStringField("itemName", value.itemName);
-//		jgen.writeNumberField("owner", value.owner.id);
+
+		jgen.writeStringField("nome", privilegio.getNome());
+		jgen.writeObjectField("permissoes", privilegio.getPermissoes());
+
 		jgen.writeEndObject();
 	}
 }

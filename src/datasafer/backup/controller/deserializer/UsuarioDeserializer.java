@@ -4,13 +4,15 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import datasafer.backup.model.Usuario;
 
-@SuppressWarnings("serial")
 public class UsuarioDeserializer extends StdDeserializer<Usuario> {
+
+	private static final long serialVersionUID = 1L;
 
 	public UsuarioDeserializer() {
 		this(null);
@@ -23,6 +25,26 @@ public class UsuarioDeserializer extends StdDeserializer<Usuario> {
 	@Override
 	public Usuario deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
-		return null;
+		Usuario usuario = new Usuario();
+		while (jp.nextValue() != JsonToken.END_OBJECT) {
+			switch (jp.getCurrentName()) {
+				case "nome":
+					usuario.setNome(jp.getText());
+					break;
+				case "email":
+					usuario.setEmail(jp.getText());
+					break;
+				case "login":
+					usuario.setLogin(jp.getText());
+					break;
+				case "senha":
+					usuario.setSenha(jp.getText());
+					break;
+				case "armazenamento":
+					usuario.setArmazenamento(jp.getLongValue());
+					break;
+			}
+		}
+		return usuario;
 	}
 }

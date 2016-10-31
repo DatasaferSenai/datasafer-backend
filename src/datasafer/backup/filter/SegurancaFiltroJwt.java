@@ -37,18 +37,18 @@ public class SegurancaFiltroJwt implements Filter {
 	private UsuarioDao usuarioDao;
 
 	@Override
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
+	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 
-		HttpServletRequest request = (HttpServletRequest) req;
-		HttpServletResponse response = (HttpServletResponse) resp;
-		if (request	.getRequestURI()
-					.contains("login")) {
-			chain.doFilter(req, resp);
+		HttpServletRequest req = (HttpServletRequest) request;
+		HttpServletResponse resp = (HttpServletResponse) response;
+		if (req	.getRequestURI()
+				.contains("login")) {
+			chain.doFilter(request, response);
 			return;
 		}
 
 		try {
-			String token = request.getHeader("Authorization");
+			String token = req.getHeader("Authorization");
 
 			Map<String, Object> claims;
 			try {
@@ -57,28 +57,64 @@ public class SegurancaFiltroJwt implements Filter {
 				claims = null;
 
 				if (token == null) {
-					response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
+					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 				} else {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 				}
 			}
 
 			if (claims != null) {
-				Usuario solicitante = usuarioDao.obter((String) claims.get("login_usuario"));
+
+				String login_solicitante = (String) claims.get("login_usuario");
+
+				String login_proprietario;
+
+				if (req.getHeader("usuario") != null) {
+					login_proprietario = req.getHeader("usuario");
+				} else {
+					login_proprietario = login_solicitante;
+				}
+
+				Usuario solicitante = usuarioDao.obter(login_solicitante);
+				Usuario proprietario = usuarioDao.obter(login_proprietario);
 
 				if (solicitante == null || solicitante.getExcluidoEm() != null || solicitante.getExcluidoPor() != null) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (solicitante.getStatus() != Status.ATIVO) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
+					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
+																			.toString());
+				} else if (proprietario == null || proprietario.getExcluidoEm() != null || proprietario.getExcluidoPor() != null) {
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+				} else if (proprietario.getStatus() != Status.ATIVO) {
+					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()
 																				.toString());
 				} else {
-					chain.doFilter(req, resp);
+
+					boolean relacionados = false;
+					if (!solicitante.getLogin()
+									.equals(proprietario.getLogin())) {
+						for (Usuario superior = proprietario.getSuperior(); superior != null && superior != solicitante; superior = superior.getSuperior()) {
+							if (solicitante	.getLogin()
+											.equals(superior.getLogin())) {
+								relacionados = true;
+								break;
+							}
+						}
+					} else {
+						relacionados = true;
+					}
+
+					if (!relacionados) {
+						resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+					} else {
+						chain.doFilter(req, resp);
+					}
 				}
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			resp.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 
 	}

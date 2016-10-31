@@ -79,30 +79,21 @@ public class Privilegio {
 	@JoinColumn(name = "proprietario_id")
 	private Usuario proprietario;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
 	private Date inseridoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario inseridoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date modificadoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario modificadoPor;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "dd/MM/yyyy HH:mm:ss")
-	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private Date excluidoEm;
 
-	@JsonProperty(access = Access.READ_ONLY)
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 

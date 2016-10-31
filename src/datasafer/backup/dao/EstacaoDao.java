@@ -23,13 +23,14 @@ public class EstacaoDao {
 
 	// @Transactional
 	public Estacao obter(String login_proprietario, String nome_estacao) {
-		try {
-			return manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao", Estacao.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.setParameter("nome_estacao", nome_estacao)
-							.getSingleResult();
-		} catch (Exception e) {
-			e.printStackTrace();
+		List<Estacao> results = manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao",
+				Estacao.class)
+										.setParameter("login_proprietario", login_proprietario)
+										.setParameter("nome_estacao", nome_estacao)
+										.getResultList();
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}
@@ -67,28 +68,19 @@ public class EstacaoDao {
 
 	// @Transactional
 	public List<Backup> listarBackups(String login_proprietario, String nome_estacao) {
-		try {
-			return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao", Backup.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.setParameter("nome_estacao", nome_estacao)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao", Backup.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.setParameter("nome_estacao", nome_estacao)
+						.getResultList();
 	}
 
 	// @Transactional
 	public List<Operacao> listarOperacoes(String login_proprietario, String nome_estacao) {
-		try {
-			return manager	.createQuery(
-					"SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao",
-					Operacao.class)
-							.setParameter("login_proprietario", login_proprietario)
-							.setParameter("nome_estacao", nome_estacao)
-							.getResultList();
-		} catch (Exception e) {
-			return null;
-		}
+		return manager	.createQuery("SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao",
+				Operacao.class)
+						.setParameter("login_proprietario", login_proprietario)
+						.setParameter("nome_estacao", nome_estacao)
+						.getResultList();
 	}
 
 }

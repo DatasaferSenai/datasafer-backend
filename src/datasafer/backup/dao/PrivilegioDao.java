@@ -1,6 +1,7 @@
 package datasafer.backup.dao;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.TimeZone;
 
 import javax.persistence.EntityManager;
@@ -51,13 +52,15 @@ public class PrivilegioDao {
 
 	// @Transactional
 	public Privilegio obter(String login_proprietario, String nome_privilegio) {
-		try {
-			return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio AND p.proprietario.login := login_proprietario",
-					Privilegio.class)
-							.setParameter("nome_privilegio", nome_privilegio)
-							.setParameter("login_proprietario", login_proprietario)
-							.getSingleResult();
-		} catch (Exception e) {
+		List<Privilegio> results = manager	.createQuery(
+				"SELECT p FROM Privilegio p WHERE p.nome = :nome_privilegio AND p.proprietario.login = :login_proprietario", Privilegio.class)
+											.setParameter("nome_privilegio", nome_privilegio)
+											.setParameter("login_proprietario", login_proprietario)
+											.getResultList();
+
+		if (!results.isEmpty()) {
+			return results.get(0);
+		} else {
 			return null;
 		}
 	}
@@ -83,7 +86,7 @@ public class PrivilegioDao {
 										.setParameter("login_proprietario", login_proprietario)
 										.getSingleResult());
 
-		// manager.persist(usuario);
+		//manager.merge(usuario);
 	}
 
 }
