@@ -48,18 +48,14 @@ public class UsuarioFiltroJwt implements Filter {
 			Set<Permissao> permissoes = usuario	.getPrivilegio()
 												.getPermissoes();
 
-			if (permissoes != null) {
-				if (usuario	.getPrivilegio()
-							.getPermissoes()
-							.contains(Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
-						| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_USUARIOS))
-						| (request.getMethod() == "PUT" && permissoes.contains(Permissao.MODIFICAR_USUARIOS))
-						| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_USUARIOS))
+			if (permissoes != null
+					&& (permissoes.contains(Permissao.ADMINISTRADOR) || (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
+							|| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_USUARIOS))
+							|| (request.getMethod() == "PUT" && permissoes.contains(Permissao.MODIFICAR_USUARIOS))
+							|| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_USUARIOS)))
 
-				) {
-					chain.doFilter(req, resp);
-				}
+			) {
+				chain.doFilter(req, resp);
 			} else {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 			}

@@ -45,14 +45,13 @@ public class OperacaoFiltroJwt implements Filter {
 			Set<Permissao> permissoes = usuario	.getPrivilegio()
 												.getPermissoes();
 
-			if (permissoes != null) {
-				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_OPERACOES))
-						| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_OPERACOES))
-
-				) {
-					chain.doFilter(req, resp);
-				}
+			if (permissoes != null && (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
+					|| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_OPERACOES))
+					|| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_OPERACOES))
+					|| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_OPERACOES))
+					|| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_OPERACOES)))
+			) {
+				chain.doFilter(req, resp);
 			} else {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 			}

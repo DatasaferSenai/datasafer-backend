@@ -45,16 +45,14 @@ public class PrivilegioFiltroJwt implements Filter {
 			Set<Permissao> permissoes = usuario	.getPrivilegio()
 												.getPermissoes();
 
-			if (permissoes != null) {
-				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_PRIVILEGIOS))
-						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_PRIVILEGIOS))
-						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_PRIVILEGIOS))
-						| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_PRIVILEGIOS))
+			if (permissoes != null && (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
+					|| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_PRIVILEGIOS))
+					|| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_PRIVILEGIOS))
+					|| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_PRIVILEGIOS))
+					|| (request.getMethod() == "DELETE" && permissoes.contains(Privilegio.Permissao.EXCLUIR_PRIVILEGIOS)))
 
-				) {
-					chain.doFilter(req, resp);
-				}
+			) {
+				chain.doFilter(req, resp);
 			} else {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 			}

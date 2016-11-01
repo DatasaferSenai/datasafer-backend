@@ -103,10 +103,27 @@ public class Inicializador {
 		if (gerenciador == null) {
 			gerenciador = new Privilegio();
 			gerenciador.setNome("Gerenciador");
-			gerenciador.setPermissoes(new HashSet<Permissao>(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_PRIVILEGIOS,
-					Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_HOSTS, Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES,
-					Permissao.INSERIR_USUARIOS, Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_HOSTS,
-					Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS)));
+			gerenciador.setPermissoes(new HashSet<Permissao>(Arrays.asList(
+					Permissao.VISUALIZAR_PRIVILEGIOS, 
+					Permissao.VISUALIZAR_USUARIOS, 
+					Permissao.VISUALIZAR_HOSTS, 
+					Permissao.VISUALIZAR_BACKUPS, 
+					Permissao.VISUALIZAR_OPERACOES,
+					
+					Permissao.INSERIR_USUARIOS, 
+					Permissao.INSERIR_HOSTS, 
+					Permissao.INSERIR_BACKUPS, 
+					Permissao.INSERIR_OPERACOES, 
+					
+					Permissao.MODIFICAR_USUARIOS, 
+					Permissao.MODIFICAR_HOSTS,
+					Permissao.MODIFICAR_BACKUPS, 
+					Permissao.MODIFICAR_OPERACOES,
+					
+					Permissao.EXCLUIR_USUARIOS, 
+					Permissao.EXCLUIR_HOSTS, 
+					Permissao.EXCLUIR_BACKUPS,
+					Permissao.MODIFICAR_OPERACOES)));
 			
 			privilegioDao.inserir("system", "admin", gerenciador);
 		}

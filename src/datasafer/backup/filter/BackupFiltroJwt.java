@@ -46,12 +46,12 @@ public class BackupFiltroJwt implements Filter {
 			Set<Permissao> permissoes = usuario.getPrivilegio().getPermissoes();
 
 			if (permissoes != null) {
-				if (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
-						| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
-						| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_BACKUPS))
-						| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
-						| (request.getMethod() == "DELETE"
-								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_BACKUPS))) {
+				if (permissoes != null && (permissoes.contains(Privilegio.Permissao.ADMINISTRADOR)
+						|| (request.getMethod() == "GET" && permissoes.contains(Privilegio.Permissao.VISUALIZAR_BACKUPS))
+						|| (request.getMethod() == "POST" && permissoes.contains(Privilegio.Permissao.INSERIR_BACKUPS))
+						|| (request.getMethod() == "PUT" && permissoes.contains(Privilegio.Permissao.MODIFICAR_BACKUPS))
+						|| (request.getMethod() == "DELETE"
+								&& permissoes.contains(Privilegio.Permissao.EXCLUIR_BACKUPS)))) {
 					chain.doFilter(req, resp);
 				}
 			} else {

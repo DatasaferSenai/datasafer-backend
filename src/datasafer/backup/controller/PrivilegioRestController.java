@@ -19,7 +19,6 @@ import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.dao.PrivilegioDao;
 import datasafer.backup.model.Privilegio;
-import datasafer.backup.model.Usuario;
 
 @RestController
 public class PrivilegioRestController {
@@ -50,7 +49,7 @@ public class PrivilegioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/privilegio", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/gerenciamento/privilegio", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody Privilegio privilegio) {
 		try {
 
@@ -70,8 +69,8 @@ public class PrivilegioRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
-	@RequestMapping(value = "/gerenciamento/privilegio", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+
+	@RequestMapping(value = "/gerenciamento/privilegio", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> modificar(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_privilegio) {
 		try {
 
@@ -81,9 +80,9 @@ public class PrivilegioRestController {
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 			String nome_privilegio = req.getHeader("privilegio");
-			
+
 			Privilegio privilegio = privilegioDao.obter(login_proprietario, nome_privilegio);
-			if ( privilegio != null) {
+			if (privilegio != null) {
 				JSONObject jobj = new JSONObject(corpo_privilegio);
 
 				if (jobj.has("nome")) {
