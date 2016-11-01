@@ -36,7 +36,7 @@ public class BackupSerializer extends StdSerializer<Backup> {
 		jgen.writeNumberField("intervalo", backup.getIntervalo());
 		jgen.writeStringField("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(backup.getInicio()));
 
-		jgen.writeArrayFieldStart("operacoes");
+		jgen.writeObjectFieldStart("operacoes");
 		int contagem_total = 0;
 		for (Operacao.Status s : Operacao.Status.values()) {
 			int contagem = 0;
@@ -49,6 +49,8 @@ public class BackupSerializer extends StdSerializer<Backup> {
 			jgen.writeNumberField(s.toString(), contagem);
 		}
 		jgen.writeNumberField("total", contagem_total);
+		
+		jgen.writeEndObject();
 
 		jgen.writeEndObject();
 	}

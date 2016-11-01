@@ -38,7 +38,7 @@ public class Estacao {
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
 	
-	@Column(length = 40, unique = true, nullable = false)
+	@Column(length = 40, nullable = false)
 	private String nome;
 
 	@Column(length = 100, nullable = true)
