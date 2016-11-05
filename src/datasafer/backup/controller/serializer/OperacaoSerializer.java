@@ -27,7 +27,7 @@ public class OperacaoSerializer extends StdSerializer<Operacao> {
 		jgen.writeStartObject();
 
 		jgen.writeStringField("data", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(operacao.getData()));
-		jgen.writeStringField("status", operacao.getStatus());
+		jgen.writeObjectField("status", operacao.getStatus());
 		jgen.writeNumberField("tamanho", operacao.getTamanho());
 
 		jgen.writeEndObject();
