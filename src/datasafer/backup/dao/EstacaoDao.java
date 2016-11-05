@@ -22,10 +22,10 @@ public class EstacaoDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Estacao obter(String login_proprietario, String nome_estacao) {
-		List<Estacao> results = manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao",
+	public Estacao obter(String login_gerenciador, String nome_estacao) {
+		List<Estacao> results = manager	.createQuery("SELECT e FROM Estacao e WHERE e.gerenciador.login = :login_proprietario AND e.nome = :nome_estacao",
 				Estacao.class)
-										.setParameter("login_proprietario", login_proprietario)
+										.setParameter("login_proprietario", login_gerenciador)
 										.setParameter("nome_estacao", nome_estacao)
 										.getResultList();
 		if (!results.isEmpty()) {

@@ -36,10 +36,10 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 
 		jgen.writeStringField("nome", usuario.getNome());
 		jgen.writeNumberField("armazenamento", usuario.getArmazenamento());
-		jgen.writeStringField("privilegio", usuario	.getPrivilegio()
-													.getNome());
+		jgen.writeObjectField("permissoes", usuario.getPermissoes());
 
-		List<Backup> backups = usuarioDao.listarBackups(usuario.getLogin());
+		List<Backup> backups = usuario.getBackups();
+
 		long armazenamento_ocupado = 0;
 		for (Backup b : backups) {
 			Operacao ultimaOperacao = null;
@@ -61,16 +61,18 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 
 		jgen.writeObjectFieldStart("operacoes");
 		int contagem_total = 0;
-		List<Operacao> operacoes = usuarioDao.listarOperacoes(usuario.getLogin());
-		for (Operacao.Status s : Operacao.Status.values()) {
-			int contagem = 0;
-			for (Operacao o : operacoes) {
-				if (o.getStatus() == s) {
-					contagem++;
+		for (Backup b : backups) {
+			List<Operacao> operacoes = b.getOperacoes();
+			for (Operacao.Status s : Operacao.Status.values()) {
+				int contagem = 0;
+				for (Operacao o : operacoes) {
+					if (o.getStatus() == s) {
+						contagem++;
+					}
 				}
+				jgen.writeNumberField(s.toString(), contagem);
+				contagem_total += contagem;
 			}
-			jgen.writeNumberField(s.toString(), contagem);
-			contagem_total += contagem;
 		}
 		jgen.writeNumberField("total", contagem_total);
 		jgen.writeEndObject();

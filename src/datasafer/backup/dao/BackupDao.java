@@ -24,7 +24,7 @@ public class BackupDao {
 	// @Transactional
 	public Backup obter(String login_proprietario, String nome_estacao, String nome_backup) {
 		List<Backup> results = manager	.createQuery(
-				"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.proprietario.login = :login_proprietario AND b.nome = :nome_backup",
+				"SELECT b FROM Backup b WHERE b.estacao.nome = :nome_estacao AND b.proprietario.login = :login_proprietario AND b.nome = :nome_backup",
 				Backup.class)
 										.setParameter("login_proprietario", login_proprietario)
 										.setParameter("nome_estacao", nome_estacao)
@@ -53,8 +53,7 @@ public class BackupDao {
 															.getSingleResult());
 
 		backup.setEstacao(
-				manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario AND e.nome = :nome_estacao", Estacao.class)
-						.setParameter("login_proprietario", login_proprietario)
+				manager	.createQuery("SELECT e FROM Estacao e WHERE e.nome = :nome_estacao", Estacao.class)
 						.setParameter("nome_estacao", nome_estacao)
 						.getSingleResult());
 

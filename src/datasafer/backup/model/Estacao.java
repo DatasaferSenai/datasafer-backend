@@ -16,10 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -37,16 +34,16 @@ public class Estacao {
 
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
-	
-	@Column(length = 40, nullable = false)
+
+	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "proprietario_id")
-	private Usuario proprietario;
+	@JoinColumn(name = "gerenciador_id")
+	private Usuario gerenciador;
 
 	@Column(nullable = false)
 	private Date inseridoEm;
@@ -66,12 +63,20 @@ public class Estacao {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private Usuario excluidoPor;
 
+	public Usuario getGerenciador() {
+		return gerenciador;
+	}
+
+	public void setGerenciador(Usuario gerenciador) {
+		this.gerenciador = gerenciador;
+	}
+	
 	public Usuario getProprietario() {
-		return proprietario;
+		return gerenciador;
 	}
 
 	public void setProprietario(Usuario proprietario) {
-		this.proprietario = proprietario;
+		this.gerenciador = proprietario;
 	}
 
 	public Date getInseridoEm() {

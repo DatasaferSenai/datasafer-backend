@@ -31,13 +31,8 @@ public class OperacaoDao {
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
 
-		operacao.setProprietario(
-				login_proprietario == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_proprietario", Usuario.class)
-															.setParameter("login_proprietario", login_proprietario)
-															.getSingleResult());
-
 		operacao.setBackup(manager	.createQuery(
-				"SELECT b FROM Backup b WHERE b.estacao.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
+				"SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
 				Backup.class)
 									.setParameter("login_proprietario", login_proprietario)
 									.setParameter("nome_estacao", nome_estacao)
@@ -63,7 +58,7 @@ public class OperacaoDao {
 	// @Transactional
 	public Operacao obter(String login_proprietario, String nome_estacao, String nome_backup, Date data_operacao) {
 		List<Operacao> results = manager.createQuery(
-				"SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao AND o.backup.nome = :nome_backup AND o.data = :data_operacao",
+				"SELECT o FROM Operacao o WHERE o.backup.proprietario.login = :login_proprietario AND o.backup.estacao.nome = :nome_estacao AND o.backup.nome = :nome_backup AND o.data = :data_operacao",
 				Operacao.class)
 										.setParameter("login_proprietario", login_proprietario)
 										.setParameter("nome_estacao", nome_estacao)

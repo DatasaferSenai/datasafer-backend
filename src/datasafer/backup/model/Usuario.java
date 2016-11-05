@@ -5,12 +5,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -20,11 +23,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -52,18 +52,53 @@ public class Usuario {
 		}
 	};
 
+	public enum Permissao {
+		ADMINISTRADOR("Administrador"),
+
+		VISUALIZAR_PRIVILEGIOS("Visualizar privilegios"), INSERIR_PRIVILEGIOS("Criar privilegios"), MODIFICAR_PRIVILEGIOS(
+				"Modificar privilegios"), EXCLUIR_PRIVILEGIOS("Excluir privilegios"),
+
+		VISUALIZAR_USUARIOS("Visualizar usuários"), INSERIR_USUARIOS("Inserir usuários"), MODIFICAR_USUARIOS("Modificar usuários"), EXCLUIR_USUARIOS(
+				"Excluir usuários"),
+
+		VISUALIZAR_HOSTS("Visualizar estacaos"), INSERIR_HOSTS("Inserir estacaos"), MODIFICAR_HOSTS("Modificar estacaos"), EXCLUIR_HOSTS("Excluir estacaos"),
+
+		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS("Modificar backups"), EXCLUIR_BACKUPS(
+				"Excluir backups"),
+
+		VISUALIZAR_OPERACOES("Visualizar operações"), INSERIR_OPERACOES("Inserir operações"), MODIFICAR_OPERACOES("Modificar operações"), EXCLUIR_OPERACOES(
+				"Excluir operações");
+
+		private String descricao;
+
+		private Permissao(String descricao) {
+			this.descricao = descricao;
+		}
+
+		@Override
+		public String toString() {
+			return this.descricao;
+		}
+	}
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
+	@Column(length = 20, unique = true, nullable = false)
+	private String login;
+
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Estacao> estacoes;
+
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Backup> backups;
 
 	@Column(length = 40, nullable = false)
 	private String nome;
 
 	@Column(length = 50, nullable = true)
 	private String email;
-
-	@Column(length = 20, unique = true, nullable = false)
-	private String login;
 
 	@Column(nullable = false)
 	private String senha;
@@ -75,9 +110,15 @@ public class Usuario {
 	@Column(nullable = false)
 	private long armazenamento;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "privilegio_id")
-	private Privilegio privilegio;
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> permissoes;
+
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> delegacoes;
 
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "superior_id")
@@ -187,12 +228,36 @@ public class Usuario {
 		this.excluidoPor = excluidoPor;
 	}
 
-	public Privilegio getPrivilegio() {
-		return privilegio;
+	public List<Estacao> getEstacoes() {
+		return estacoes;
 	}
 
-	public void setPrivilegio(Privilegio privilegio) {
-		this.privilegio = privilegio;
+	public void setEstacoes(List<Estacao> estacoes) {
+		this.estacoes = estacoes;
+	}
+
+	public List<Backup> getBackups() {
+		return backups;
+	}
+
+	public void setBackups(List<Backup> backups) {
+		this.backups = backups;
+	}
+
+	public Set<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(Set<Permissao> permissoes) {
+		this.permissoes = permissoes;
+	}
+
+	public void setArmazenamento(long armazenamento) {
+		this.armazenamento = armazenamento;
+	}
+
+	public void setTentativas(int tentativas) {
+		this.tentativas = tentativas;
 	}
 
 	public Long getId() {
@@ -249,5 +314,13 @@ public class Usuario {
 
 	public void setArmazenamento(Long armazenamento) {
 		this.armazenamento = armazenamento;
+	}
+
+	public Set<Permissao> getDelegacoes() {
+		return delegacoes;
+	}
+
+	public void setDelegacoes(Set<Permissao> delegacoes) {
+		this.delegacoes = delegacoes;
 	}
 }

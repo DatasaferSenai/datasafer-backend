@@ -22,8 +22,8 @@ import com.auth0.jwt.JWTVerifier;
 
 import datasafer.backup.controller.UsuarioRestController;
 import datasafer.backup.dao.UsuarioDao;
-import datasafer.backup.model.Privilegio.Permissao;
 import datasafer.backup.model.Usuario;
+import datasafer.backup.model.Usuario.Permissao;
 
 @Service
 @WebFilter("/gerenciamento/usuario/*")
@@ -45,8 +45,7 @@ public class UsuarioFiltroJwt implements Filter {
 		try {
 			Usuario usuario = usuarioDao.obter((String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(request.getHeader("Authorization"))
 																										.get("login_usuario"));
-			Set<Permissao> permissoes = usuario	.getPrivilegio()
-												.getPermissoes();
+			Set<Permissao> permissoes = usuario.getPermissoes();
 
 			if (permissoes != null
 					&& (permissoes.contains(Permissao.ADMINISTRADOR) || (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_USUARIOS))

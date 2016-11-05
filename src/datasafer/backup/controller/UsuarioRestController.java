@@ -186,28 +186,6 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Operacao>> listarOperacoes(HttpServletRequest req, @RequestHeader(name = "Authorization") String token) {
-		try {
-
-			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																								.get("login_usuario");
-
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
-
-			List<Operacao> operacoes = usuarioDao.listarOperacoes(login_proprietario);
-			if (operacoes != null) {
-				return ResponseEntity	.ok()
-										.body(operacoes);
-			} else {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
 	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> logar(@RequestBody String corpo_usuario) {
 		try {

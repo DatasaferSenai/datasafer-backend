@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
-import datasafer.backup.model.Privilegio;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -74,14 +73,6 @@ public class UsuarioDao {
 	}
 
 	// @Transactional
-	public List<Privilegio> listarPrivilegios(String login_proprietario) {
-		return manager	.createQuery("SELECT p FROM Privilegio p WHERE p.proprietario.login = :login_proprietario", Privilegio.class)
-						.setParameter("login_proprietario", login_proprietario)
-						.getResultList();
-
-	}
-
-	// @Transactional
 	public List<Estacao> listarEstacoes(String login_proprietario) {
 		return manager	.createQuery("SELECT e FROM Estacao e WHERE e.proprietario.login = :login_proprietario", Estacao.class)
 						.setParameter("login_proprietario", login_proprietario)
@@ -96,14 +87,7 @@ public class UsuarioDao {
 						.getResultList();
 
 	}
-
-	// @Transactional
-	public List<Operacao> listarOperacoes(String login_proprietario) {
-		return manager	.createQuery("SELECT o FROM Operacao o WHERE o.proprietario.login = :login_proprietario", Operacao.class)
-						.setParameter("login_proprietario", login_proprietario)
-						.getResultList();
-	}
-
+	
 	// @Transactional
 	public Usuario logar(Usuario usuario) {
 		List<Usuario> results = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario AND u.senha = :senha_usuario", Usuario.class)

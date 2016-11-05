@@ -35,9 +35,9 @@ public class EstacaoRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			Estacao estacao = estacaoDao.obter(login_proprietario, nome_estacao);
+			Estacao estacao = estacaoDao.obter(login_gerenciador, nome_estacao);
 			if (estacao != null) {
 				return ResponseEntity	.ok()
 										.body(estacao);
@@ -56,10 +56,10 @@ public class EstacaoRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 			try {
-				estacaoDao.inserir(login_solicitante, login_proprietario, estacao);
+				estacaoDao.inserir(login_solicitante, login_gerenciador, estacao);
 			} catch (Exception e) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -80,9 +80,9 @@ public class EstacaoRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Backup> backups = estacaoDao.listarBackups(login_proprietario, nome_estacao);
+			List<Backup> backups = estacaoDao.listarBackups(login_gerenciador, nome_estacao);
 			if (backups != null) {
 				return ResponseEntity	.ok()
 										.body(backups);
@@ -103,9 +103,9 @@ public class EstacaoRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_proprietario, nome_estacao);
+			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_gerenciador, nome_estacao);
 			if (operacoes != null) {
 				return ResponseEntity	.ok()
 										.body(operacoes);
