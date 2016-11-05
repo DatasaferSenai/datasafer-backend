@@ -2,6 +2,7 @@ package datasafer.backup.controller.serializer;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
@@ -36,11 +37,26 @@ public class BackupSerializer extends StdSerializer<Backup> {
 		jgen.writeNumberField("intervalo", backup.getIntervalo());
 		jgen.writeStringField("inicio", new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(backup.getInicio()));
 
+		List<Operacao> operacoes = backup.getOperacoes();
+
+		Operacao ultimaOperacao = null;
+		for (Operacao o : operacoes) {
+			if (ultimaOperacao == null) {
+				ultimaOperacao = o;
+			} else {
+				if (o	.getData()
+						.before(ultimaOperacao.getData())) {
+					ultimaOperacao = o;
+				}
+			}
+		}
+		jgen.writeObjectField("ultimaOperacao", ultimaOperacao);
+
 		jgen.writeObjectFieldStart("operacoes");
 		int contagem_total = 0;
 		for (Operacao.Status s : Operacao.Status.values()) {
 			int contagem = 0;
-			for (Operacao o : backup.getOperacoes()) {
+			for (Operacao o : operacoes) {
 				contagem_total++;
 				if (o.getStatus() == s) {
 					contagem++;
@@ -49,7 +65,7 @@ public class BackupSerializer extends StdSerializer<Backup> {
 			jgen.writeNumberField(s.toString(), contagem);
 		}
 		jgen.writeNumberField("total", contagem_total);
-		
+
 		jgen.writeEndObject();
 
 		jgen.writeEndObject();

@@ -42,7 +42,7 @@ public class Registro {
 	@Column(nullable = true)
 	private Date data;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Usuario solicitante;
 
 	public Long getId() {

@@ -52,7 +52,7 @@ public class Backup {
 	@Column(nullable = false)
 	private String pasta;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "priorietario_id")
 	private Usuario proprietario;
 

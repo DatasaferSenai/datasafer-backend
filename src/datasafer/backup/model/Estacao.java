@@ -37,7 +37,7 @@ public class Estacao {
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "gerenciador_id")
 	private Usuario gerenciador;
 

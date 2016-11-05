@@ -38,7 +38,7 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 		jgen.writeNumberField("armazenamento", usuario.getArmazenamento());
 		jgen.writeObjectField("permissoes", usuario.getPermissoes());
 
-		List<Backup> backups = usuario.getBackups();
+		List<Backup> backups = usuarioDao.obterBackups(usuario);
 
 		long armazenamento_ocupado = 0;
 		for (Backup b : backups) {

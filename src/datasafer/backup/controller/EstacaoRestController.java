@@ -31,10 +31,12 @@ public class EstacaoRestController {
 			@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
-			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																								.get("login_usuario");
+			// String login_solicitante = (String) new
+			// JWTVerifier(UsuarioRestController.SECRET)
+			// .verify(token).get("login_usuario");
 
-			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			// String login_gerenciador = req.getHeader("usuario") != null ?
+			// req.getHeader("usuario") : login_solicitante;
 
 			Estacao estacao = estacaoDao.obter(nome_estacao);
 			if (estacao != null) {
@@ -76,10 +78,12 @@ public class EstacaoRestController {
 			@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
-			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																								.get("login_usuario");
+			/// String login_solicitante = (String) new
+			/// JWTVerifier(UsuarioRestController.SECRET)
+			/// .verify(token).get("login_usuario");
 
-			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			// String login_gerenciador = req.getHeader("usuario") != null ?
+			// req.getHeader("usuario") : login_solicitante;
 
 			Estacao estacao = estacaoDao.obter(nome_estacao);
 			if (estacao != null) {

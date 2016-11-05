@@ -1,7 +1,6 @@
 package datasafer.backup.dao;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -12,6 +11,7 @@ import javax.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import datasafer.backup.model.Backup;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
@@ -47,13 +47,13 @@ public class UsuarioDao {
 									.getTime());
 		registro.setTipo(Tipo.INSERIDO);
 
-		List<Registro> registros = usuario	.getRegistros();
-		if(registros == null){
+		List<Registro> registros = usuario.getRegistros();
+		if (registros == null) {
 			registros = new ArrayList<Registro>();
 		}
 		registros.add(registro);
 		usuario.setRegistros(registros);
-		
+
 		usuario.setSuperior(login_superior == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior", Usuario.class)
 																	.setParameter("login_superior", login_superior)
 																	.getSingleResult());
@@ -75,7 +75,8 @@ public class UsuarioDao {
 									.getTime());
 		registro.setTipo(Tipo.MODIFICADO);
 
-		usuario.setRegistros(new ArrayList<Registro>(Arrays.asList(registro)));
+		usuario	.getRegistros()
+				.add(registro);
 	}
 
 	// @Transactional
@@ -90,4 +91,11 @@ public class UsuarioDao {
 			return null;
 		}
 	}
+
+	@Transactional(readOnly = true)
+	public List<Backup> obterBackups(Usuario usuario) {
+		usuario = manager.merge(usuario);
+		return usuario.getBackups();
+	}
+
 }
