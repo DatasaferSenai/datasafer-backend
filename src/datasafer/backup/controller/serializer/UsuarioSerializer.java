@@ -3,14 +3,11 @@ package datasafer.backup.controller.serializer;
 import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
@@ -18,9 +15,6 @@ import datasafer.backup.model.Usuario;
 public class UsuarioSerializer extends StdSerializer<Usuario> {
 
 	private static final long serialVersionUID = 1L;
-
-	@Autowired
-	UsuarioDao usuarioDao;
 
 	public UsuarioSerializer() {
 		this(null);
@@ -34,11 +28,15 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 	public void serialize(Usuario usuario, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonProcessingException {
 		jgen.writeStartObject();
 
+		jgen.writeStringField("login", usuario.getLogin());
 		jgen.writeStringField("nome", usuario.getNome());
 		jgen.writeObjectField("permissoes", usuario.getPermissoes());
+
+		Usuario superior = usuario.getSuperior();
+		jgen.writeStringField("superior", superior == null ? null : superior.getLogin());
 		jgen.writeObjectField("delegacoes", usuario.getDelegacoes());
 
-		List<Backup> backups = usuario.getBackups(); // usuarioDao.obterBackups(usuario);
+		List<Backup> backups = usuario.getBackups();
 
 		long armazenamento_ocupado = 0;
 		for (Backup b : backups) {
@@ -62,7 +60,6 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 		jgen.writeNumberField("ocupado", armazenamento_ocupado);
 
 		jgen.writeObjectFieldStart("operacoes");
-		int contagem_total = 0;
 		for (Backup b : backups) {
 			List<Operacao> operacoes = b.getOperacoes();
 			for (Operacao.Status s : Operacao.Status.values()) {
@@ -73,7 +70,13 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 					}
 				}
 				jgen.writeNumberField(s.toString(), contagem);
-				contagem_total += contagem;
+			}
+		}
+		int contagem_total = 0;
+		for (Backup b : backups) {
+			List<Operacao> operacoes = b.getOperacoes();
+			if (operacoes != null) {
+				contagem_total += operacoes.size();
 			}
 		}
 		jgen.writeNumberField("total", contagem_total);

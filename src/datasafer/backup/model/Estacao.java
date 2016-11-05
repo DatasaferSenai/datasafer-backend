@@ -16,14 +16,9 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-import datasafer.backup.controller.deserializer.EstacaoDeserializer;
-import datasafer.backup.controller.serializer.EstacaoSerializer;
-
-@JsonDeserialize(using = EstacaoDeserializer.class)
-@JsonSerialize(using = EstacaoSerializer.class)
+@JsonIgnoreProperties({ "id", "proprietario", "estacao", "operacoes", "registros" })
 @Entity
 public class Estacao {
 

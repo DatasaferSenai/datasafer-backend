@@ -35,8 +35,6 @@ import datasafer.backup.controller.UsuarioRestController;
 import datasafer.backup.controller.deserializer.UsuarioDeserializer;
 import datasafer.backup.controller.serializer.UsuarioSerializer;
 
-@JsonDeserialize(using = UsuarioDeserializer.class)
-@JsonSerialize(using = UsuarioSerializer.class)
 @Entity
 public class Usuario {
 

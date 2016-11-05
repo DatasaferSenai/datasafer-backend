@@ -17,15 +17,10 @@ import javax.persistence.OneToMany;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import datasafer.backup.controller.deserializer.BackupDeserializer;
-import datasafer.backup.controller.serializer.BackupSerializer;
-
-@JsonDeserialize(using = BackupDeserializer.class)
-@JsonSerialize(using = BackupSerializer.class)
+@JsonIgnoreProperties({ "id", "proprietario", "estacao", "operacoes", "registros" })
 @Entity
 public class Backup {
 
@@ -159,5 +154,4 @@ public class Backup {
 		this.registros = registros;
 	}
 
-	
 }

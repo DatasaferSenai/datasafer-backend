@@ -1,5 +1,6 @@
 package datasafer.backup.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -8,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class EstacaoRestController {
 
@@ -78,17 +81,25 @@ public class EstacaoRestController {
 			@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
-			/// String login_solicitante = (String) new
-			/// JWTVerifier(UsuarioRestController.SECRET)
-			/// .verify(token).get("login_usuario");
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
 
-			// String login_gerenciador = req.getHeader("usuario") != null ?
-			// req.getHeader("usuario") : login_solicitante;
+			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 			Estacao estacao = estacaoDao.obter(nome_estacao);
 			if (estacao != null) {
+
+				List<Backup> backups = new ArrayList<Backup>();
+				for (Backup b : estacao.getBackups()) {
+					if (b	.getProprietario()
+							.getLogin()
+							.equals(login_proprietario)) {
+						backups.add(b);
+					}
+				}
+
 				return ResponseEntity	.ok()
-										.body(estacao.getBackups());
+										.body(backups);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

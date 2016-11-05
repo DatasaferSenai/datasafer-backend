@@ -1,7 +1,11 @@
 package datasafer.backup.controller.deserializer;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,12 +13,17 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Permissao;
 
+@Component
 public class UsuarioDeserializer extends StdDeserializer<Usuario> {
 
 	private static final long serialVersionUID = 1L;
+
+	@Autowired
+	UsuarioDao usuarioDao;
 
 	public UsuarioDeserializer() {
 		this(null);
@@ -35,8 +44,21 @@ public class UsuarioDeserializer extends StdDeserializer<Usuario> {
 					break;
 				case "permissoes":
 					@SuppressWarnings("unchecked")
-					Set<Permissao> permissoes = (Set<Permissao>) jp.getEmbeddedObject();
-					usuario.setPermissoes(permissoes);
+					Set<String> valoresPermissoes = jp.readValueAs(Set.class);
+					Set<Permissao> permissoes = new HashSet<Permissao>();
+					for(String o : valoresPermissoes){
+						permissoes.add(Permissao.valueOf(o));
+					}
+					usuario.setDelegacoes(permissoes);
+					break;
+				case "delegacoes":
+					@SuppressWarnings("unchecked")
+					Set<String> valoresDelegacoes = jp.readValueAs(Set.class);
+					Set<Permissao> delegacoes = new HashSet<Permissao>();
+					for(String o : valoresDelegacoes){
+						delegacoes.add(Permissao.valueOf(o));
+					}
+					usuario.setDelegacoes(delegacoes);
 					break;
 				case "email":
 					usuario.setEmail(jp.getText());

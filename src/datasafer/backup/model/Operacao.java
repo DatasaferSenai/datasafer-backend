@@ -25,8 +25,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import datasafer.backup.controller.deserializer.OperacaoDeserializer;
 import datasafer.backup.controller.serializer.OperacaoSerializer;
 
-@JsonDeserialize(using = OperacaoDeserializer.class)
-@JsonSerialize(using = OperacaoSerializer.class)
 @Entity
 public class Operacao {
 

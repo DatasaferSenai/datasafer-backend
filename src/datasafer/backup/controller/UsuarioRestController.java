@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class UsuarioRestController {
 	public static final String SECRET = "J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO";
@@ -45,9 +47,37 @@ public class UsuarioRestController {
 
 			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			try {
-				usuarioDao.inserir(login_solicitante, login_superior, usuario);
-			} catch (Exception e) {
+			if (usuario != null) {
+				try {
+					usuarioDao.inserir(login_solicitante, login_superior, usuario);
+				} catch (Exception e) {
+					e.printStackTrace();
+					return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				}
+			} else {
+
+			}
+
+			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Void> deletar(HttpServletRequest req, @RequestHeader(name = "Authorization") String token, @RequestBody String corpo_usuario) {
+		try {
+
+			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
+																								.get("login_usuario");
+
+			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			Usuario usuario = usuarioDao.obter(new JSONObject(corpo_usuario).getString("login"));
+			if (usuario != null) {
+				usuarioDao.excluir(login_solicitante, login_superior, usuario);
+			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
@@ -128,7 +158,6 @@ public class UsuarioRestController {
 
 			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			
 			Usuario usuario = usuarioDao.obter(login_superior);
 			if (usuario != null) {
 				return ResponseEntity	.ok()
@@ -173,8 +202,13 @@ public class UsuarioRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
+			System.out.println(" @@@@ login_solicitante = " + login_solicitante);
+			System.out.println(" @@@@ login_proprietario = " + login_proprietario);
+
 			Usuario usuario = usuarioDao.obter(login_proprietario);
+
 			if (usuario != null) {
+				System.out.println(" @@@@ usuario = " + usuario.getNome());
 				return ResponseEntity	.ok()
 										.body(usuario.getBackups());
 			} else {
@@ -202,7 +236,7 @@ public class UsuarioRestController {
 
 			if (usuario == null) {
 				return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
-										.body(new JSONObject()	.put("erro", "Usuário ou senha inválidos")
+										.body(new JSONObject()	.put("erro", "UsuÃ¡rio ou senha invÃ¡lidos")
 																.toString());
 			} else if (usuario.getStatus() != Status.ATIVO) {
 				return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
@@ -236,7 +270,7 @@ public class UsuarioRestController {
 			usuarioDao.modificar("system", usuario);
 
 			return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
-									.body(new JSONObject()	.put("erro", "Usuário ou senha inválidos")
+									.body(new JSONObject()	.put("erro", "UsuÃ¡rio ou senha invÃ¡lidos")
 															.toString());
 
 		} catch (Exception e) {

@@ -1,6 +1,7 @@
 package datasafer.backup.dao;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.TimeZone;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Registro.Tipo;
+import datasafer.backup.model.Usuario.Status;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -46,18 +48,33 @@ public class UsuarioDao {
 									.getTime());
 		registro.setTipo(Tipo.INSERIDO);
 
-		List<Registro> registros = usuario.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
-		}
-		registros.add(registro);
-		usuario.setRegistros(registros);
+		usuario.setRegistros(new ArrayList<Registro>(Arrays.asList(registro)));
 
 		usuario.setSuperior(login_superior == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior", Usuario.class)
 																	.setParameter("login_superior", login_superior)
 																	.getSingleResult());
-
+		usuario.setStatus(Status.ATIVO);
+		
 		manager.persist(usuario);
+	}
+
+	@Transactional
+	public void excluir(String login_solicitante, String login_superior, Usuario usuario) {
+
+		usuario = manager.merge(usuario);
+
+		Registro registro = new Registro();
+		registro.setSolicitante(
+				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
+															.setParameter("login_solicitante", login_solicitante)
+															.getSingleResult());
+		registro.setData(Calendar	.getInstance(TimeZone.getDefault())
+									.getTime());
+		registro.setTipo(Tipo.EXCLUIDO);
+
+		usuario	.getRegistros()
+				.add(registro);
+
 	}
 
 	@Transactional
