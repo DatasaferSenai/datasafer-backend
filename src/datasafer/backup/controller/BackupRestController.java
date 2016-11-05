@@ -81,10 +81,10 @@ public class BackupRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Operacao> operacoes = backupDao.listarOperacoes(login_proprietario, nome_estacao, nome_backup);
-			if (operacoes != null) {
+			Backup backup = backupDao.obter(login_proprietario, nome_estacao, nome_backup);
+			if (backup != null) {
 				return ResponseEntity	.ok()
-										.body(operacoes);
+										.body(backup.getOperacoes());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}

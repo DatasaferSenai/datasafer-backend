@@ -1,6 +1,7 @@
 package datasafer.backup.model;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -13,6 +14,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -40,10 +42,6 @@ public class Operacao {
 		}
 	};
 
-	@ManyToOne
-	@JoinColumn(name = "backup_id")
-	private Backup backup;
-
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
@@ -51,78 +49,19 @@ public class Operacao {
 	@Column(nullable = false)
 	private Date data;
 
+	@ManyToOne
+	@JoinColumn(name = "backup_id")
+	private Backup backup;
+
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Registro> registros;
+
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
 	@Column(nullable = false)
 	private Long tamanho;
-
-	@Column(nullable = false)
-	private Date inseridoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario inseridoPor;
-
-	@Column(nullable = true)
-	private Date modificadoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario modificadoPor;
-
-	@Column(nullable = true)
-	private Date excluidoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario excluidoPor;
-
-	public Date getInseridoEm() {
-		return inseridoEm;
-	}
-
-	public void setInseridoEm(Date inseridoEm) {
-		this.inseridoEm = inseridoEm;
-	}
-
-	public Usuario getInseridoPor() {
-		return inseridoPor;
-	}
-
-	public void setInseridoPor(Usuario inseridoPor) {
-		this.inseridoPor = inseridoPor;
-	}
-
-	public Date getModificadoEm() {
-		return modificadoEm;
-	}
-
-	public void setModificadoEm(Date modificadoEm) {
-		this.modificadoEm = modificadoEm;
-	}
-
-	public Usuario getModificadoPor() {
-		return modificadoPor;
-	}
-
-	public void setModificadoPor(Usuario modificadoPor) {
-		this.modificadoPor = modificadoPor;
-	}
-
-	public Date getExcluidoEm() {
-		return excluidoEm;
-	}
-
-	public void setExcluidoEm(Date excluidoEm) {
-		this.excluidoEm = excluidoEm;
-	}
-
-	public Usuario getExcluidoPor() {
-		return excluidoPor;
-	}
-
-	public void setExcluidoPor(Usuario excluidoPor) {
-		this.excluidoPor = excluidoPor;
-	}
 
 	public Long getId() {
 		return id;
@@ -163,4 +102,13 @@ public class Operacao {
 	public void setTamanho(Long tamanho) {
 		this.tamanho = tamanho;
 	}
+
+	public List<Registro> getRegistros() {
+		return registros;
+	}
+
+	public void setRegistros(List<Registro> registros) {
+		this.registros = registros;
+	}
+
 }

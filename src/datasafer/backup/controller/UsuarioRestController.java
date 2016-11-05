@@ -24,7 +24,6 @@ import com.auth0.jwt.JWTVerifier;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
-import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -129,10 +128,11 @@ public class UsuarioRestController {
 
 			String login_superior = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Usuario> usuarios = usuarioDao.listarUsuarios(login_superior);
-			if (usuarios != null) {
+			
+			Usuario usuario = usuarioDao.obter(login_superior);
+			if (usuario != null) {
 				return ResponseEntity	.ok()
-										.body(usuarios);
+										.body(usuario.getColaboradores());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -149,12 +149,12 @@ public class UsuarioRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Estacao> estacoes = usuarioDao.listarEstacoes(login_proprietario);
-			if (estacoes != null) {
+			Usuario usuario = usuarioDao.obter(login_gerenciador);
+			if (usuario != null) {
 				return ResponseEntity	.ok()
-										.body(estacoes);
+										.body(usuario.getEstacoes());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -173,10 +173,10 @@ public class UsuarioRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Backup> backups = usuarioDao.listarBackups(login_proprietario);
-			if (backups != null) {
+			Usuario usuario = usuarioDao.obter(login_proprietario);
+			if (usuario != null) {
 				return ResponseEntity	.ok()
-										.body(backups);
+										.body(usuario.getBackups());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
@@ -200,7 +200,7 @@ public class UsuarioRestController {
 
 			usuario = usuarioDao.logar(usuario);
 
-			if (usuario == null || usuario.getExcluidoEm() != null || usuario.getExcluidoPor() != null) {
+			if (usuario == null) {
 				return ResponseEntity	.status(HttpStatus.UNAUTHORIZED)
 										.body(new JSONObject()	.put("erro", "Usuário ou senha inválidos")
 																.toString());

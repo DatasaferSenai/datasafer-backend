@@ -56,23 +56,8 @@ public class Backup {
 	@JoinColumn(name = "priorietario_id")
 	private Usuario proprietario;
 
-	@Column(nullable = false)
-	private Date inseridoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario inseridoPor;
-
-	@Column(nullable = true)
-	private Date modificadoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario modificadoPor;
-
-	@Column(nullable = true)
-	private Date excluidoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario excluidoPor;
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Registro> registros;
 
 	public Usuario getProprietario() {
 		return proprietario;
@@ -80,54 +65,6 @@ public class Backup {
 
 	public void setProprietario(Usuario proprietario) {
 		this.proprietario = proprietario;
-	}
-
-	public Date getInseridoEm() {
-		return inseridoEm;
-	}
-
-	public void setInseridoEm(Date inseridoEm) {
-		this.inseridoEm = inseridoEm;
-	}
-
-	public Usuario getInseridoPor() {
-		return inseridoPor;
-	}
-
-	public void setInseridoPor(Usuario inseridoPor) {
-		this.inseridoPor = inseridoPor;
-	}
-
-	public Date getModificadoEm() {
-		return modificadoEm;
-	}
-
-	public void setModificadoEm(Date modificadoEm) {
-		this.modificadoEm = modificadoEm;
-	}
-
-	public Usuario getModificadoPor() {
-		return modificadoPor;
-	}
-
-	public void setModificadoPor(Usuario modificadoPor) {
-		this.modificadoPor = modificadoPor;
-	}
-
-	public Date getExcluidoEm() {
-		return excluidoEm;
-	}
-
-	public void setExcluidoEm(Date excluidoEm) {
-		this.excluidoEm = excluidoEm;
-	}
-
-	public Usuario getExcluidoPor() {
-		return excluidoPor;
-	}
-
-	public void setExcluidoPor(Usuario excluidoPor) {
-		this.excluidoPor = excluidoPor;
 	}
 
 	public Long getId() {
@@ -209,4 +146,13 @@ public class Backup {
 		return null;
 	}
 
+	public List<Registro> getRegistros() {
+		return registros;
+	}
+
+	public void setRegistros(List<Registro> registros) {
+		this.registros = registros;
+	}
+
+	
 }

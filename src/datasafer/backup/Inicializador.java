@@ -60,7 +60,7 @@ public class Inicializador {
 			for (Permissao p : Permissao.values())
 				permissoes.add(p);
 			usuario_sistema.setPermissoes(permissoes);
-			
+
 			usuarioDao.inserir(null, null, usuario_sistema);
 
 		}
@@ -79,7 +79,7 @@ public class Inicializador {
 			for (Permissao p : Permissao.values())
 				permissoes.add(p);
 			usuario_admin.setPermissoes(permissoes);
-			
+
 			usuarioDao.inserir("system", "system", usuario_admin);
 
 		}
@@ -107,27 +107,27 @@ public class Inicializador {
 				usuario.setLogin(login);
 				usuario.setSenha(login);
 				usuario.setStatus(Status.ATIVO);
-				
+
 				Set<Permissao> permissoes = new HashSet<Permissao>();
-				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_USUARIOS,
-						Permissao.VISUALIZAR_HOSTS, Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES,
+				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_HOSTS,
+						Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES,
 
 						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
 
 						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_HOSTS, Permissao.MODIFICAR_BACKUPS, Permissao.MODIFICAR_OPERACOES,
 
 						Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS, Permissao.MODIFICAR_OPERACOES));
-				
+
 				usuario.setPermissoes(permissoes);
-				
+
 				usuarioDao.inserir("system", "admin", usuario);
 
-				populaEstacaos(login);
+				populaEstacoes(login);
 			}
 		}
 	}
 
-	public void populaEstacaos(String login_usuario) {
+	public void populaEstacoes(String login_usuario) {
 
 		List<String> tiposDispositivos = Arrays.asList("PC", "Desktop", "Computador", "Notebook", "Netbook", "Laptop");
 		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escritório", "Banheiro", "Quarto", "Sala");
@@ -144,7 +144,7 @@ public class Inicializador {
 
 			String nome_estacao = tiposDispositivos.get(tipo_index) + separadores.get(separador_index) + nomesDispositivos.get(nome_index);
 
-			Estacao estacao = estacaoDao.obter(login_usuario, nome_estacao);
+			Estacao estacao = estacaoDao.obter(nome_estacao);
 			if (estacao == null) {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);

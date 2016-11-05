@@ -88,11 +88,31 @@ public class Usuario {
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@JoinColumn(name = "superior_id")
+	private Usuario superior;
+
+	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Usuario> colaboradores;
+
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Estacao> estacoes;
 
 	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Backup> backups;
+
+	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Registro> registros;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> permissoes;
+
+	@ElementCollection(fetch = FetchType.LAZY)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> delegacoes;
 
 	@Column(length = 40, nullable = false)
 	private String nome;
@@ -110,43 +130,19 @@ public class Usuario {
 	@Column(nullable = false)
 	private long armazenamento;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> permissoes;
-
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> delegacoes;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "superior_id")
-	private Usuario superior;
-
-	@Column(nullable = false)
-	private Date inseridoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario inseridoPor;
-
-	@Column(nullable = true)
-	private Date modificadoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario modificadoPor;
-
-	@Column(nullable = true)
-	private Date excluidoEm;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	private Usuario excluidoPor;
-
 	@Column(nullable = true)
 	private int tentativas = 0;
 
 	@Column(nullable = true)
 	private Date ultimaTentativa;
+
+	public List<Usuario> getColaboradores() {
+		return colaboradores;
+	}
+
+	public void setColaboradores(List<Usuario> colaboradores) {
+		this.colaboradores = colaboradores;
+	}
 
 	public String getEmail() {
 		return email;
@@ -178,54 +174,6 @@ public class Usuario {
 
 	public void setSuperior(Usuario superior) {
 		this.superior = superior;
-	}
-
-	public Date getInseridoEm() {
-		return inseridoEm;
-	}
-
-	public void setInseridoEm(Date inseridoEm) {
-		this.inseridoEm = inseridoEm;
-	}
-
-	public Usuario getInseridoPor() {
-		return inseridoPor;
-	}
-
-	public void setInseridoPor(Usuario inseridoPor) {
-		this.inseridoPor = inseridoPor;
-	}
-
-	public Date getModificadoEm() {
-		return modificadoEm;
-	}
-
-	public void setModificadoEm(Date modificadoEm) {
-		this.modificadoEm = modificadoEm;
-	}
-
-	public Usuario getModificadoPor() {
-		return modificadoPor;
-	}
-
-	public void setModificadoPor(Usuario modificadoPor) {
-		this.modificadoPor = modificadoPor;
-	}
-
-	public Date getExcluidoEm() {
-		return excluidoEm;
-	}
-
-	public void setExcluidoEm(Date excluidoEm) {
-		this.excluidoEm = excluidoEm;
-	}
-
-	public Usuario getExcluidoPor() {
-		return excluidoPor;
-	}
-
-	public void setExcluidoPor(Usuario excluidoPor) {
-		this.excluidoPor = excluidoPor;
 	}
 
 	public List<Estacao> getEstacoes() {
@@ -323,4 +271,15 @@ public class Usuario {
 	public void setDelegacoes(Set<Permissao> delegacoes) {
 		this.delegacoes = delegacoes;
 	}
+
+	public List<Registro> getRegistros() {
+		return registros;
+	}
+
+	public void setRegistros(List<Registro> registros) {
+		this.registros = registros;
+	}
+	
+	
 }
+

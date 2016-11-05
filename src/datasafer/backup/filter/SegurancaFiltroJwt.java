@@ -78,12 +78,12 @@ public class SegurancaFiltroJwt implements Filter {
 				Usuario solicitante = usuarioDao.obter(login_solicitante);
 				Usuario proprietario = usuarioDao.obter(login_proprietario);
 
-				if (solicitante == null || solicitante.getExcluidoEm() != null || solicitante.getExcluidoPor() != null) {
+				if (solicitante == null) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (solicitante.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
 																			.toString());
-				} else if (proprietario == null || proprietario.getExcluidoEm() != null || proprietario.getExcluidoPor() != null) {
+				} else if (proprietario == null) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (proprietario.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()

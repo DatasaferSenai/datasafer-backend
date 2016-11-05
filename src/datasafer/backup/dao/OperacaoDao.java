@@ -1,5 +1,7 @@
 package datasafer.backup.dao;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -13,7 +15,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
+import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
+import datasafer.backup.model.Registro.Tipo;
 
 @Repository
 public class OperacaoDao {
@@ -24,12 +28,16 @@ public class OperacaoDao {
 	@Transactional
 	public void inserir(String login_solicitante, String login_proprietario, String nome_estacao, String nome_backup, Operacao operacao) {
 
-		operacao.setInseridoEm(Calendar	.getInstance(TimeZone.getDefault())
-										.getTime());
-		operacao.setInseridoPor(
+		Registro registro = new Registro();
+		registro.setSolicitante(
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
+		registro.setData(Calendar	.getInstance(TimeZone.getDefault())
+									.getTime());
+		registro.setTipo(Tipo.INSERIDO);
+
+		operacao.setRegistros(new ArrayList<Registro>(Arrays.asList(registro)));
 
 		operacao.setBackup(manager	.createQuery(
 				"SELECT b FROM Backup b WHERE b.proprietario.login = :login_proprietario AND b.estacao.nome = :nome_estacao AND b.nome = :nome_backup",
@@ -47,12 +55,17 @@ public class OperacaoDao {
 
 		operacao = manager.merge(operacao);
 
-		operacao.setModificadoEm(Calendar	.getInstance(TimeZone.getDefault())
-											.getTime());
-		operacao.setModificadoPor(
+		Registro registro = new Registro();
+		registro.setSolicitante(
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
+		registro.setData(Calendar	.getInstance(TimeZone.getDefault())
+									.getTime());
+		registro.setTipo(Tipo.MODIFICADO);
+
+		operacao.getRegistros()
+				.add(registro);
 	}
 
 	// @Transactional

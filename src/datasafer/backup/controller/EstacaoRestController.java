@@ -19,7 +19,6 @@ import com.auth0.jwt.JWTVerifier;
 import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
-import datasafer.backup.model.Operacao;
 
 @RestController
 public class EstacaoRestController {
@@ -37,7 +36,7 @@ public class EstacaoRestController {
 
 			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			Estacao estacao = estacaoDao.obter(login_gerenciador, nome_estacao);
+			Estacao estacao = estacaoDao.obter(nome_estacao);
 			if (estacao != null) {
 				return ResponseEntity	.ok()
 										.body(estacao);
@@ -82,33 +81,10 @@ public class EstacaoRestController {
 
 			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			List<Backup> backups = estacaoDao.listarBackups(login_gerenciador, nome_estacao);
-			if (backups != null) {
+			Estacao estacao = estacaoDao.obter(nome_estacao);
+			if (estacao != null) {
 				return ResponseEntity	.ok()
-										.body(backups);
-			} else {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@RequestMapping(value = "/gerenciamento/estacao/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Operacao>> listarOperacoes(HttpServletRequest req, @RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao) {
-		try {
-
-			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
-																								.get("login_usuario");
-
-			String login_gerenciador = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
-
-			List<Operacao> operacoes = estacaoDao.listarOperacoes(login_gerenciador, nome_estacao);
-			if (operacoes != null) {
-				return ResponseEntity	.ok()
-										.body(operacoes);
+										.body(estacao.getBackups());
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
