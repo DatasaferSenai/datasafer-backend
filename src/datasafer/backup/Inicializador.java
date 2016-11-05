@@ -109,14 +109,10 @@ public class Inicializador {
 				usuario.setStatus(Status.ATIVO);
 
 				Set<Permissao> permissoes = new HashSet<Permissao>();
-				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_PRIVILEGIOS, Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_HOSTS,
-						Permissao.VISUALIZAR_BACKUPS, Permissao.VISUALIZAR_OPERACOES,
-
-						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_HOSTS, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
-
-						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_HOSTS, Permissao.MODIFICAR_BACKUPS, Permissao.MODIFICAR_OPERACOES,
-
-						Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_HOSTS, Permissao.EXCLUIR_BACKUPS, Permissao.MODIFICAR_OPERACOES));
+				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
+						Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS,
+						Permissao.INSERIR_OPERACOES, Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
+						Permissao.EXCLUIR_BACKUPS));
 
 				usuario.setPermissoes(permissoes);
 

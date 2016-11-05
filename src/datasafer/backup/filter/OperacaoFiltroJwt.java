@@ -46,7 +46,6 @@ public class OperacaoFiltroJwt implements Filter {
 			if (permissoes != null
 					&& (permissoes.contains(Permissao.ADMINISTRADOR) || (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_OPERACOES))
 							|| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_OPERACOES))
-							|| (request.getMethod() == "PUT" && permissoes.contains(Permissao.MODIFICAR_OPERACOES))
 							|| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_OPERACOES)))) {
 				chain.doFilter(req, resp);
 			} else {

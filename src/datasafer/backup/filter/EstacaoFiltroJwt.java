@@ -43,10 +43,9 @@ public class EstacaoFiltroJwt implements Filter {
 			Set<Permissao> permissoes = usuario.getPermissoes();
 
 			if (permissoes != null
-					&& (permissoes.contains(Permissao.ADMINISTRADOR) || (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_HOSTS))
-							|| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_HOSTS))
-							|| (request.getMethod() == "PUT" && permissoes.contains(Permissao.MODIFICAR_HOSTS))
-							|| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_HOSTS)))
+					&& (permissoes.contains(Permissao.ADMINISTRADOR) || (request.getMethod() == "GET" && permissoes.contains(Permissao.VISUALIZAR_ESTACOES))
+							|| (request.getMethod() == "POST" && permissoes.contains(Permissao.INSERIR_ESTACOES))
+							|| (request.getMethod() == "DELETE" && permissoes.contains(Permissao.EXCLUIR_ESTACOES)))
 
 			) {
 				chain.doFilter(req, resp);

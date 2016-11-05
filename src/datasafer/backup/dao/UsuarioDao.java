@@ -11,7 +11,6 @@ import javax.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.model.Backup;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
@@ -91,11 +90,4 @@ public class UsuarioDao {
 			return null;
 		}
 	}
-
-	@Transactional(readOnly = true)
-	public List<Backup> obterBackups(Usuario usuario) {
-		usuario = manager.merge(usuario);
-		return usuario.getBackups();
-	}
-
 }

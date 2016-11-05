@@ -35,10 +35,10 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 		jgen.writeStartObject();
 
 		jgen.writeStringField("nome", usuario.getNome());
-		jgen.writeNumberField("armazenamento", usuario.getArmazenamento());
 		jgen.writeObjectField("permissoes", usuario.getPermissoes());
+		jgen.writeObjectField("delegacoes", usuario.getDelegacoes());
 
-		List<Backup> backups = usuarioDao.obterBackups(usuario);
+		List<Backup> backups = usuario.getBackups(); // usuarioDao.obterBackups(usuario);
 
 		long armazenamento_ocupado = 0;
 		for (Backup b : backups) {
@@ -57,6 +57,8 @@ public class UsuarioSerializer extends StdSerializer<Usuario> {
 				armazenamento_ocupado += ultimaOperacao.getTamanho();
 			}
 		}
+
+		jgen.writeNumberField("armazenamento", usuario.getArmazenamento());
 		jgen.writeNumberField("ocupado", armazenamento_ocupado);
 
 		jgen.writeObjectFieldStart("operacoes");

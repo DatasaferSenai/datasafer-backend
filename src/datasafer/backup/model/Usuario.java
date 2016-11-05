@@ -25,6 +25,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -55,19 +58,15 @@ public class Usuario {
 	public enum Permissao {
 		ADMINISTRADOR("Administrador"),
 
-		VISUALIZAR_PRIVILEGIOS("Visualizar privilegios"), INSERIR_PRIVILEGIOS("Criar privilegios"), MODIFICAR_PRIVILEGIOS(
-				"Modificar privilegios"), EXCLUIR_PRIVILEGIOS("Excluir privilegios"),
-
 		VISUALIZAR_USUARIOS("Visualizar usuários"), INSERIR_USUARIOS("Inserir usuários"), MODIFICAR_USUARIOS("Modificar usuários"), EXCLUIR_USUARIOS(
 				"Excluir usuários"),
 
-		VISUALIZAR_HOSTS("Visualizar estacaos"), INSERIR_HOSTS("Inserir estacaos"), MODIFICAR_HOSTS("Modificar estacaos"), EXCLUIR_HOSTS("Excluir estacaos"),
+		VISUALIZAR_ESTACOES("Visualizar estacaos"), INSERIR_ESTACOES("Inserir estacaos"), EXCLUIR_ESTACOES("Excluir estacaos"),
 
 		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS("Modificar backups"), EXCLUIR_BACKUPS(
 				"Excluir backups"),
 
-		VISUALIZAR_OPERACOES("Visualizar operações"), INSERIR_OPERACOES("Inserir operações"), MODIFICAR_OPERACOES("Modificar operações"), EXCLUIR_OPERACOES(
-				"Excluir operações");
+		VISUALIZAR_OPERACOES("Visualizar operações"), INSERIR_OPERACOES("Inserir operações"), EXCLUIR_OPERACOES("Excluir operações");
 
 		private String descricao;
 
@@ -92,16 +91,20 @@ public class Usuario {
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
-	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Usuario> colaboradores;
 
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Estacao> estacoes;
 
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
 
-	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Registro> registros;
 
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -279,7 +282,5 @@ public class Usuario {
 	public void setRegistros(List<Registro> registros) {
 		this.registros = registros;
 	}
-	
-	
-}
 
+}
