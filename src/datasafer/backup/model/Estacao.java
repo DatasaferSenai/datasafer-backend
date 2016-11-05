@@ -41,6 +41,7 @@ public class Estacao {
 	@JoinColumn(name = "gerenciador_id")
 	private Usuario gerenciador;
 
+	@JoinColumn(name = "estacao_id")
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Registro> registros;
 

@@ -53,6 +53,7 @@ public class Operacao {
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
 
+	@JoinColumn(name = "operacao_id")
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Registro> registros;
 

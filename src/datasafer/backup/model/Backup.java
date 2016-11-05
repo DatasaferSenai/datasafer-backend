@@ -56,6 +56,7 @@ public class Backup {
 	@JoinColumn(name = "priorietario_id")
 	private Usuario proprietario;
 
+	@JoinColumn(name = "backup_id")
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Registro> registros;
 
