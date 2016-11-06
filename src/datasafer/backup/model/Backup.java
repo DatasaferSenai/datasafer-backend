@@ -1,6 +1,7 @@
 package datasafer.backup.model;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -14,26 +15,36 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-@JsonIgnoreProperties({ "id", "proprietario", "estacao", "operacoes", "registros" })
 @Entity
 public class Backup {
 
+	@JsonIgnore
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@JsonIgnore
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "priorietario_id")
+	private Usuario proprietario;
+
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "estacao_id")
 	private Estacao estacao;
 
+	@JsonIgnore
 	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Operacao> operacoes;
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "backup_id")
+	private List<Registro> registros;
 
 	@Column(length = 40, nullable = false)
 	private String nome;
@@ -41,6 +52,7 @@ public class Backup {
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date inicio;
 
@@ -50,14 +62,40 @@ public class Backup {
 	@Column(nullable = false)
 	private String pasta;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "priorietario_id")
-	private Usuario proprietario;
+	@JsonProperty("ultimaOperacao")
+	public Operacao getUltimaOperacao() {
+		Operacao ultimaOperacao = null;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@JoinColumn(name = "backup_id")
-	private List<Registro> registros;
+		for (Operacao o : this.getOperacoes()) {
+			if (ultimaOperacao == null) {
+				ultimaOperacao = o;
+			} else {
+				if (o	.getData()
+						.before(ultimaOperacao.getData())) {
+					ultimaOperacao = o;
+				}
+			}
+		}
+
+		return ultimaOperacao;
+	}
+
+	@JsonProperty("operacoes")
+	public HashMap<Operacao.Status, Integer> getContagemOperacoes() {
+		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
+
+		for (Operacao.Status s : Operacao.Status.values()) {
+			int contagem = 0;
+			for (Operacao o : this.getOperacoes()) {
+				if (o.getStatus() == s) {
+					contagem++;
+				}
+			}
+			operacoes.put(s, contagem);
+		}
+
+		return operacoes;
+	}
 
 	public Usuario getProprietario() {
 		return proprietario;
@@ -129,21 +167,6 @@ public class Backup {
 
 	public void setPasta(String pasta) {
 		this.pasta = pasta;
-	}
-
-	@JsonProperty("status")
-	public Operacao.Status getStatus() {
-		if (operacoes != null && operacoes.size() > 0) {
-			Operacao ultimaOperacao = operacoes.get(0);
-			for (Operacao operacao : operacoes) {
-				if (operacao.getData()
-							.before(ultimaOperacao.getData())) {
-					ultimaOperacao = operacao;
-				}
-			}
-			return ultimaOperacao.getStatus();
-		}
-		return null;
 	}
 
 	public List<Registro> getRegistros() {

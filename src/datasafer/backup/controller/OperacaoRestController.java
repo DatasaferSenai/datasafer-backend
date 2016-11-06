@@ -50,11 +50,10 @@ public class OperacaoRestController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
-	
+
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token,
-			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup,
-			@RequestBody Operacao operacao) {
+			@RequestHeader(name = "estacao") String nome_estacao, @RequestHeader(name = "backup") String nome_backup, @RequestBody Operacao operacao) {
 		try {
 
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
@@ -62,10 +61,10 @@ public class OperacaoRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			if (operacao != null) {
+			try {
 				operacaoDao.inserir(login_solicitante, login_proprietario, nome_estacao, nome_backup, operacao);
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			} else {
+			} catch (Exception e) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {

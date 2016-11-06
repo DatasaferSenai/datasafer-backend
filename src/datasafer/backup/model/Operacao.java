@@ -16,14 +16,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-
-import datasafer.backup.controller.deserializer.OperacaoDeserializer;
-import datasafer.backup.controller.serializer.OperacaoSerializer;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 public class Operacao {
@@ -43,28 +37,31 @@ public class Operacao {
 		}
 	};
 
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(nullable = false)
-	private Date data;
-
+	@JsonIgnore
 	@ManyToOne
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "operacao_id")
 	private List<Registro> registros;
+
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@Column(nullable = false)
+	private Date data;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
 	@Column(nullable = false)
-	private Long tamanho;
+	private long tamanho;
 
 	public Long getId() {
 		return id;

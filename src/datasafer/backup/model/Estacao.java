@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.HashMap;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -13,21 +14,30 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties({ "id", "proprietario", "estacao", "operacoes", "registros" })
 @Entity
 public class Estacao {
 
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@JsonIgnore
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@JoinColumn(name = "gerenciador_id")
+	private Usuario gerenciador;
+
+	@JsonIgnore
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "estacao_id")
+	private List<Registro> registros;
 
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
@@ -35,14 +45,23 @@ public class Estacao {
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	@JoinColumn(name = "gerenciador_id")
-	private Usuario gerenciador;
+	@JsonProperty("backups")
+	public HashMap<Operacao.Status, Integer> getContagemBackups() {
+		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@JoinColumn(name = "estacao_id")
-	private List<Registro> registros;
+		for (Operacao.Status s : Operacao.Status.values()) {
+			int contagem = 0;
+			for (Backup b : this.getBackups()) {
+				Operacao ultimaOperacao = b.getUltimaOperacao();
+				if (ultimaOperacao != null && ultimaOperacao.getStatus() == s) {
+					contagem++;
+				}
+			}
+			operacoes.put(s, contagem);
+		}
+
+		return operacoes;
+	}
 
 	public Usuario getGerenciador() {
 		return gerenciador;

@@ -5,6 +5,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.JWTVerifier;
 
-import datasafer.backup.dao.BackupDao;
+import datasafer.backup.bo.BackupBo;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 
@@ -26,7 +28,7 @@ import datasafer.backup.model.Operacao;
 public class BackupRestController {
 
 	@Autowired
-	private BackupDao backupDao;
+	private BackupBo backupBo;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Void> inserir(HttpServletRequest req, @RequestHeader(name = "Authorization") String token,
@@ -38,9 +40,15 @@ public class BackupRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			backupDao.inserir(login_solicitante, login_proprietario, nome_estacao, backup);
+			try {
+				backupBo.inserir(login_solicitante, login_proprietario, nome_estacao, backup);
+				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+			} catch (DataRetrievalFailureException e) {
+				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+			} catch (DataIntegrityViolationException e) {
+				return new ResponseEntity<>(HttpStatus.CONFLICT);
+			}
 
-			return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -57,14 +65,12 @@ public class BackupRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			Backup backup = backupDao.obter(login_proprietario, nome_estacao, nome_backup);
-			if (backup != null) {
-				return ResponseEntity	.ok()
-										.body(backup);
-
-			} else {
+			try {
+				return new ResponseEntity<>(backupBo.obter(login_proprietario, nome_estacao, nome_backup), HttpStatus.OK);
+			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -81,13 +87,14 @@ public class BackupRestController {
 
 			String login_proprietario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
-			Backup backup = backupDao.obter(login_proprietario, nome_estacao, nome_backup);
-			if (backup != null) {
-				return ResponseEntity	.ok()
-										.body(backup.getOperacoes());
-			} else {
+			try {
+				return new ResponseEntity<>(backupBo.obter(login_proprietario, nome_estacao, nome_backup)
+													.getOperacoes(),
+						HttpStatus.OK);
+			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

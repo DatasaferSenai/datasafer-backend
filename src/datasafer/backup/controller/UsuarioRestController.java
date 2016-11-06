@@ -136,7 +136,9 @@ public class UsuarioRestController {
 			String login_solicitante = (String) new JWTVerifier(UsuarioRestController.SECRET)	.verify(token)
 																								.get("login_usuario");
 
-			Usuario usuario = usuarioDao.obter(login_solicitante);
+			String login_usuario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+
+			Usuario usuario = usuarioDao.obter(login_usuario);
 			if (usuario != null) {
 				return ResponseEntity	.ok()
 										.body(usuario);

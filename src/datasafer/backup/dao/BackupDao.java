@@ -48,6 +48,7 @@ public class BackupDao {
 				login_solicitante == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
 															.setParameter("login_solicitante", login_solicitante)
 															.getSingleResult());
+
 		registro.setData(Calendar	.getInstance(TimeZone.getDefault())
 									.getTime());
 		registro.setTipo(Tipo.INSERIDO);

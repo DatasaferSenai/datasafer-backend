@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Base64;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -25,21 +26,20 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.controller.UsuarioRestController;
-import datasafer.backup.controller.deserializer.UsuarioDeserializer;
-import datasafer.backup.controller.serializer.UsuarioSerializer;
 
 @Entity
 public class Usuario {
 
 	public enum Status {
-		ATIVO("Ativo"), SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"), SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
+		ATIVO("Ativo"),
+		SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"),
+		SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
 
 		private String descricao;
 
@@ -56,15 +56,23 @@ public class Usuario {
 	public enum Permissao {
 		ADMINISTRADOR("Administrador"),
 
-		VISUALIZAR_USUARIOS("Visualizar usu·rios"), INSERIR_USUARIOS("Inserir usu·rios"), MODIFICAR_USUARIOS("Modificar usu·rios"), EXCLUIR_USUARIOS(
-				"Excluir usu·rios"),
+		VISUALIZAR_USUARIOS("Visualizar usu√°rios"),
+		INSERIR_USUARIOS("Inserir usu√°rios"),
+		MODIFICAR_USUARIOS("Modificar usu√°rios"),
+		EXCLUIR_USUARIOS("Excluir usu√°rios"),
 
-		VISUALIZAR_ESTACOES("Visualizar estacaos"), INSERIR_ESTACOES("Inserir estacaos"), EXCLUIR_ESTACOES("Excluir estacaos"),
+		VISUALIZAR_ESTACOES("Visualizar estacaos"),
+		INSERIR_ESTACOES("Inserir estacaos"),
+		EXCLUIR_ESTACOES("Excluir estacaos"),
 
-		VISUALIZAR_BACKUPS("Visualizar backups"), INSERIR_BACKUPS("Inserir backups"), MODIFICAR_BACKUPS("Modificar backups"), EXCLUIR_BACKUPS(
-				"Excluir backups"),
+		VISUALIZAR_BACKUPS("Visualizar backups"),
+		INSERIR_BACKUPS("Inserir backups"),
+		MODIFICAR_BACKUPS("Modificar backups"),
+		EXCLUIR_BACKUPS("Excluir backups"),
 
-		VISUALIZAR_OPERACOES("Visualizar operaÁıes"), INSERIR_OPERACOES("Inserir operaÁıes"), EXCLUIR_OPERACOES("Excluir operaÁıes");
+		VISUALIZAR_OPERACOES("Visualizar opera√ß√µes"),
+		INSERIR_OPERACOES("Inserir opera√ß√µes"),
+		EXCLUIR_OPERACOES("Excluir opera√ß√µes");
 
 		private String descricao;
 
@@ -78,32 +86,34 @@ public class Usuario {
 		}
 	}
 
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
-	@Column(length = 20, unique = true, nullable = false)
-	private String login;
-
+	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Usuario> colaboradores;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Estacao> estacoes;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Backup> backups;
 
-	@Fetch(FetchMode.SUBSELECT)
-	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@JsonIgnore
+	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Registro> registros;
+
+	@Column(length = 20, unique = true, nullable = false)
+	private String login;
 
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
@@ -121,6 +131,7 @@ public class Usuario {
 	@Column(length = 50, nullable = true)
 	private String email;
 
+	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(nullable = false)
 	private String senha;
 
@@ -131,11 +142,32 @@ public class Usuario {
 	@Column(nullable = false)
 	private long armazenamento;
 
+	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private int tentativas = 0;
 
+	@JsonProperty(access = Access.READ_ONLY)
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
 	private Date ultimaTentativa;
+
+	@JsonProperty("backups")
+	public HashMap<Operacao.Status, Integer> getContagemBackups() {
+		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
+
+		for (Operacao.Status s : Operacao.Status.values()) {
+			int contagem = 0;
+			for (Backup b : this.getBackups()) {
+				Operacao ultimaOperacao = b.getUltimaOperacao();
+				if (ultimaOperacao != null && ultimaOperacao.getStatus() == s) {
+					contagem++;
+				}
+			}
+			operacoes.put(s, contagem);
+		}
+
+		return operacoes;
+	}
 
 	public List<Usuario> getColaboradores() {
 		return colaboradores;

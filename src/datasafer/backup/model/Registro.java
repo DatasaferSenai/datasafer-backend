@@ -13,6 +13,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 public class Registro {
 
@@ -31,19 +34,22 @@ public class Registro {
 		}
 	};
 
+	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	@JsonIgnore
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Usuario solicitante;
+	
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Tipo tipo;
 
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
 	private Date data;
-
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-	private Usuario solicitante;
 
 	public Long getId() {
 		return id;
