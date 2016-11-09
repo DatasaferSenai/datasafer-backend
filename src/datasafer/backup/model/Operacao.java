@@ -16,6 +16,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -23,7 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Operacao {
 
 	public enum Status {
-		SUCESSO("sucesso"), EXECUTANDO("executando"), FALHA("falha"), AGENDADO("agendado"), EXCLUIDO("excluído");
+		SUCESSO("sucesso"), EXECUTANDO("executando"), FALHA("falha"), AGENDADO("agendado"), EXCLUIDO("excluï¿½do");
 
 		private String descricao;
 
@@ -49,6 +52,7 @@ public class Operacao {
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	@JoinColumn(name = "operacao_id")
 	private List<Registro> registros;
 

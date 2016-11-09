@@ -26,6 +26,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -63,6 +66,7 @@ public class Usuario {
 
 		VISUALIZAR_ESTACOES("Visualizar estacaos"),
 		INSERIR_ESTACOES("Inserir estacaos"),
+		MODIFICAR_ESTACOES("Modificar estacaos"),
 		EXCLUIR_ESTACOES("Excluir estacaos"),
 
 		VISUALIZAR_BACKUPS("Visualizar backups"),
@@ -72,6 +76,7 @@ public class Usuario {
 
 		VISUALIZAR_OPERACOES("Visualizar operações"),
 		INSERIR_OPERACOES("Inserir operações"),
+		MODIFICAR_OPERACOES("Modificar operações"),
 		EXCLUIR_OPERACOES("Excluir operações");
 
 		private String descricao;
@@ -98,18 +103,21 @@ public class Usuario {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	private List<Usuario> colaboradores;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	private List<Estacao> estacoes;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	private List<Registro> registros;
 
 	@Column(length = 20, unique = true, nullable = false)
@@ -167,6 +175,15 @@ public class Usuario {
 		}
 
 		return operacoes;
+	}
+
+	@JsonProperty("login_superior")
+	public String getLoginSuperior() {
+		if (superior != null) {
+			return superior.getLogin();
+		} else {
+			return null;
+		}
 	}
 
 	public List<Usuario> getColaboradores() {

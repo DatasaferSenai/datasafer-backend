@@ -37,7 +37,10 @@ public class SegurancaFiltroJwt implements Filter {
 	private UsuarioDao usuarioDao;
 
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+	public void doFilter(	ServletRequest request,
+							ServletResponse response,
+							FilterChain chain)
+			throws IOException, ServletException {
 
 		HttpServletRequest req = (HttpServletRequest) request;
 		HttpServletResponse resp = (HttpServletResponse) response;
@@ -51,15 +54,16 @@ public class SegurancaFiltroJwt implements Filter {
 			String token = req.getHeader("Authorization");
 
 			Map<String, Object> claims;
+
 			try {
 				claims = new JWTVerifier(UsuarioRestController.SECRET).verify(token);
 			} catch (NoSuchAlgorithmException | InvalidKeyException | IllegalStateException | IOException | SignatureException | JWTVerifyException e) {
 				claims = null;
 
 				if (token == null) {
-					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
+					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorizaï¿½ï¿½o nula");
 				} else {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autorizaï¿½ï¿½o invï¿½lida");
 				}
 			}
 
@@ -67,24 +71,18 @@ public class SegurancaFiltroJwt implements Filter {
 
 				String login_solicitante = (String) claims.get("login_usuario");
 
-				String login_proprietario;
-
-				if (req.getHeader("usuario") != null) {
-					login_proprietario = req.getHeader("usuario");
-				} else {
-					login_proprietario = login_solicitante;
-				}
+				String login_usuario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
 
 				Usuario solicitante = usuarioDao.obter(login_solicitante);
-				Usuario proprietario = usuarioDao.obter(login_proprietario);
+				Usuario proprietario = usuarioDao.obter(login_usuario);
 
 				if (solicitante == null) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuï¿½rio invï¿½lido ou nï¿½o encontrado");
 				} else if (solicitante.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
 																			.toString());
 				} else if (proprietario == null) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuï¿½rio invï¿½lido ou nï¿½o encontrado");
 				} else if (proprietario.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()
 																				.toString());
@@ -105,8 +103,12 @@ public class SegurancaFiltroJwt implements Filter {
 					}
 
 					if (!relacionados) {
-						resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+						resp.sendError(HttpStatus.FORBIDDEN.value(), "UsuÃ¡rio invÃ¡lido ou nï¿½o encontrado");
 					} else {
+
+						req.setAttribute("login_solicitante", login_solicitante);
+						req.setAttribute("login_usuario", login_usuario);
+
 						chain.doFilter(req, resp);
 					}
 				}

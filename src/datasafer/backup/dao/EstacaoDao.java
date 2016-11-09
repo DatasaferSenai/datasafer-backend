@@ -14,8 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Registro;
-import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Registro.Tipo;
+import datasafer.backup.model.Usuario;
 
 @Repository
 public class EstacaoDao {
@@ -36,7 +36,8 @@ public class EstacaoDao {
 	}
 
 	@Transactional
-	public void modificar(String login_solicitante, Estacao estacao) {
+	public void modificar(	String login_solicitante,
+							Estacao estacao) {
 
 		estacao = manager.merge(estacao);
 
@@ -54,7 +55,9 @@ public class EstacaoDao {
 	}
 
 	@Transactional
-	public void inserir(String login_solicitante, String login_gerenciador, Estacao estacao) {
+	public void inserir(String login_solicitante,
+						String login_gerenciador,
+						Estacao estacao) {
 
 		Registro registro = new Registro();
 		registro.setSolicitante(
@@ -66,7 +69,7 @@ public class EstacaoDao {
 		registro.setTipo(Tipo.INSERIDO);
 
 		estacao.setRegistros(new ArrayList<Registro>(Arrays.asList(registro)));
-		
+
 		estacao.setGerenciador(
 				login_gerenciador == null ? null : manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_proprietario", Usuario.class)
 															.setParameter("login_proprietario", login_gerenciador)
