@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.bo.BackupBo;
+import datasafer.backup.dao.BackupDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 
@@ -27,16 +27,16 @@ import datasafer.backup.model.Operacao;
 public class BackupRestController {
 
 	@Autowired
-	private BackupBo backupBo;
+	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> inserir(	@RequestAttribute String login_solicitante,
-											@RequestAttribute String login_usuario,
-											@RequestHeader(name = "estacao") String nome_estacao,
-											@RequestBody Backup backup) {
+	public ResponseEntity<Object> inserirBackup(@RequestAttribute String login_solicitante,
+												@RequestAttribute String login_usuario,
+												@RequestHeader(name = "estacao") String nome_estacao,
+												@RequestBody Backup backup) {
 		try {
 			try {
-				backupBo.inserir(login_solicitante, login_usuario, nome_estacao, backup);
+				backupDao.inserir(login_solicitante, login_usuario, nome_estacao, backup);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -55,14 +55,14 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> obter(@RequestAttribute String login_solicitante,
-										@RequestAttribute String login_usuario,
-										@RequestHeader(name = "estacao") String nome_estacao,
-										@RequestHeader(name = "backup") String nome_backup) {
+	public ResponseEntity<Object> obterBackup(	@RequestAttribute String login_solicitante,
+												@RequestAttribute String login_usuario,
+												@RequestHeader(name = "estacao") String nome_estacao,
+												@RequestHeader(name = "backup") String nome_backup) {
 		try {
 
 			try {
-				return new ResponseEntity<>(new JSONObject(backupBo.obter(login_usuario, nome_estacao, nome_backup)).toString(), HttpStatus.OK);
+				return new ResponseEntity<>(new JSONObject(backupDao.obter(login_usuario, nome_estacao, nome_backup)).toString(), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -75,22 +75,21 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> listarOperacoes(	@RequestAttribute String login_solicitante,
+	public ResponseEntity<Object> obterOperacoes(	@RequestAttribute String login_solicitante,
 													@RequestAttribute String login_usuario,
 													@RequestHeader(name = "estacao") String nome_estacao,
 													@RequestHeader(name = "backup") String nome_backup) {
 		try {
 
 			try {
-				
-				Backup backup = backupBo.obter(login_usuario, nome_estacao, nome_backup);
+
+				Backup backup = backupDao.obter(login_usuario, nome_estacao, nome_backup);
 				List<Operacao> operacoes = new ArrayList<Operacao>();
-				
-				for(Operacao o : backup.getOperacoes()){
+
+				for (Operacao o : backup.getOperacoes()) {
 					operacoes.add(o);
 				}
-				return new ResponseEntity<>(new JSONObject(operacoes).toString(),
-						HttpStatus.OK);
+				return new ResponseEntity<>(new JSONObject(operacoes).toString(), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),

@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.bo.EstacaoBo;
+import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 
@@ -27,15 +27,15 @@ import datasafer.backup.model.Estacao;
 public class EstacaoRestController {
 
 	@Autowired
-	private EstacaoBo estacaoBo;
+	private EstacaoDao estacaoDao;
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> obter(@RequestAttribute String login_usuario,
+	public ResponseEntity<Object> obter(@RequestAttribute String login_usuario,
 										@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
 			try {
-				return new ResponseEntity<>(new JSONObject(estacaoBo.obter(nome_estacao)).toString(), HttpStatus.OK);
+				return new ResponseEntity<>(new JSONObject(estacaoDao.obter(nome_estacao)).toString(), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -48,14 +48,14 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<String> inserir(	@RequestAttribute String login_solicitante,
+	public ResponseEntity<Object> inserir(	@RequestAttribute String login_solicitante,
 											@RequestAttribute String login_usuario,
 											@RequestBody Estacao estacao) {
 		try {
 
 			try {
 
-				estacaoBo.inserir(login_solicitante, login_usuario, estacao);
+				estacaoDao.inserir(login_solicitante, login_usuario, estacao);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
 			} catch (DataRetrievalFailureException e) {
@@ -75,11 +75,11 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<List<Backup>> listarBackups(	@RequestAttribute String login_usuario,
-														@RequestHeader(name = "estacao") String nome_estacao) {
+	public ResponseEntity<Object> listarBackups(@RequestAttribute String login_usuario,
+												@RequestHeader(name = "estacao") String nome_estacao) {
 		try {
 
-			Estacao estacao = estacaoBo.obter(nome_estacao);
+			Estacao estacao = estacaoDao.obter(nome_estacao);
 
 			if (estacao != null) {
 

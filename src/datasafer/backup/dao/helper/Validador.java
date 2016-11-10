@@ -1,4 +1,4 @@
-package datasafer.backup.bo.helper;
+package datasafer.backup.dao.helper;
 
 import java.beans.IntrospectionException;
 import java.beans.PropertyDescriptor;
@@ -19,21 +19,21 @@ public class Validador {
 		}
 
 		for (Field f : objeto	.getClass()
-								.getFields()) {
+								.getDeclaredFields()) {
 			if (f.isAnnotationPresent(Column.class)) {
 				try {
 					Column column = f.getAnnotation(Column.class);
 					Method method = new PropertyDescriptor(f.getName(), objeto.getClass()).getReadMethod();
 
 					if (!column.nullable() && method.invoke(objeto) == null) {
-						throw new DataIntegrityViolationException("A propriedade \"" + f.getName() + "\" não pode ser nula.");
+						throw new DataIntegrityViolationException("A propriedade '" + f.getName() + "' não pode ser nula.");
 
 					}
 					if (method.getReturnType() == String.class) {
 						String value = (String) method.invoke(objeto);
-						if (value.length() > column.length()) {
+						if (!column.nullable() && value != null && value.length() > column.length()) {
 							throw new DataIntegrityViolationException(
-									"A propriedade \"" + f.getName() + "\" deve ter comprimento menor ou igual a " + column.length() + ".");
+									"A propriedade '" + f.getName() + "' deve ter comprimento menor ou igual a " + column.length() + ".");
 						}
 					}
 				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {

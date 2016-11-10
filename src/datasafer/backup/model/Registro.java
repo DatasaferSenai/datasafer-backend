@@ -19,8 +19,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Registro {
 
+	public Registro() {}
+
+	public Registro(Usuario solicitante, Tipo tipo, Date data) {
+		this.solicitante = solicitante;
+		this.tipo = tipo;
+		this.data = data;
+	}
+
 	public enum Tipo {
-		INSERIDO("Inserido"), MODIFICADO("Modificado"), EXCLUIDO("Excluido");
+		INSERIDO("Inserido"),
+		MODIFICADO("Modificado"),
+		EXCLUIDO("Excluido");
 
 		private String descricao;
 
@@ -42,7 +52,7 @@ public class Registro {
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Usuario solicitante;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Tipo tipo;
@@ -83,6 +93,4 @@ public class Registro {
 		this.solicitante = solicitante;
 	}
 
-	
-	
 }
