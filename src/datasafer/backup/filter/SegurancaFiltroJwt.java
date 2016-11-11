@@ -26,6 +26,7 @@ import com.auth0.jwt.JWTVerifyException;
 
 import datasafer.backup.controller.UsuarioRestController;
 import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -61,9 +62,9 @@ public class SegurancaFiltroJwt implements Filter {
 				claims = null;
 
 				if (token == null) {
-					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autoriza��o nula");
+					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 				} else {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autoriza��o inv�lida");
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 				}
 			}
 
@@ -76,13 +77,15 @@ public class SegurancaFiltroJwt implements Filter {
 				Usuario solicitante = usuarioDao.obter(login_solicitante);
 				Usuario proprietario = usuarioDao.obter(login_usuario);
 
-				if (solicitante == null) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usu�rio inv�lido ou n�o encontrado");
+				if (solicitante == null || solicitante	.getUltimoRegistro()
+														.getTipo() == Tipo.EXCLUIDO) {
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (solicitante.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
 																			.toString());
-				} else if (proprietario == null) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usu�rio inv�lido ou n�o encontrado");
+				} else if (proprietario == null || proprietario	.getUltimoRegistro()
+																.getTipo() == Tipo.EXCLUIDO) {
+					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (proprietario.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()
 																				.toString());
@@ -103,7 +106,7 @@ public class SegurancaFiltroJwt implements Filter {
 					}
 
 					if (!relacionados) {
-						resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou n�o encontrado");
+						resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 					} else {
 
 						req.setAttribute("login_solicitante", login_solicitante);

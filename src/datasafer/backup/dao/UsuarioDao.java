@@ -3,7 +3,6 @@ package datasafer.backup.dao;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -40,48 +39,40 @@ public class UsuarioDao {
 	@Transactional
 	public void inserir(String login_solicitante,
 						String login_superior,
-						Usuario novo)
+						Usuario usuario)
 			throws DataRetrievalFailureException, DataIntegrityViolationException {
 
-		Validador.validar(novo);
+		Validador.validar(usuario);
 
-		List<Usuario> resultadosSolicitante = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
-														.setParameter("login_solicitante", login_solicitante)
-														.getResultList();
-
-		if (resultadosSolicitante.isEmpty()) {
+		Usuario solicitante = this.obter(login_solicitante);
+		if (solicitante == null) {
 			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
 		}
 
-		Usuario solicitante = resultadosSolicitante.get(0);
-
-		List<Usuario> resultadosSuperior = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_superior", Usuario.class)
-													.setParameter("login_superior", login_superior)
-													.getResultList();
-
-		if (resultadosSuperior.isEmpty()) {
+		Usuario superior = this.obter(login_superior);
+		if (superior == null) {
 			throw new DataRetrievalFailureException("Usuário superior '" + login_superior + "' não encontrado");
 		}
 
-		Usuario superior = resultadosSuperior.get(0);
-
-		List<Usuario> resultadosExistente = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
-													.setParameter("login_usuario", novo.getLogin())
-													.getResultList();
-
-		if (!resultadosExistente.isEmpty()) {
-			throw new DataIntegrityViolationException("Usuário '" + novo.getLogin() + "' já existente");
+		Usuario existente = this.obter(usuario.getLogin());
+		if (existente != null && existente	.getUltimoRegistro()
+											.getTipo() != Tipo.EXCLUIDO) {
+			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
 		}
 
-		Registro registro = new Registro(solicitante, Tipo.INSERIDO, Date.from(LocalDateTime.now()
-																							.atZone(ZoneId.systemDefault())
-																							.toInstant()));
-		novo.setRegistros(new ArrayList<Registro>(Arrays.asList(registro)));
+		List<Registro> registros = usuario.getRegistros();
+		if (registros == null) {
+			registros = new ArrayList<Registro>();
+			usuario.setRegistros(registros);
+		}
+		registros.add(new Registro(solicitante, Tipo.INSERIDO, Date.from(LocalDateTime	.now()
+																						.atZone(ZoneId.systemDefault())
+																						.toInstant())));
 
-		novo.setSuperior(superior);
-		novo.setStatus(Status.ATIVO);
+		usuario.setSuperior(superior);
+		usuario.setStatus(Status.ATIVO);
 
-		manager.persist(novo);
+		manager.persist(usuario);
 	}
 
 	@Transactional
@@ -89,31 +80,24 @@ public class UsuarioDao {
 						String login_usuario)
 			throws DataRetrievalFailureException, DataIntegrityViolationException {
 
-		List<Usuario> resultadosSolicitante = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
-														.setParameter("login_solicitante", login_solicitante)
-														.getResultList();
-
-		if (resultadosSolicitante.isEmpty()) {
+		Usuario solicitante = this.obter(login_solicitante);
+		if (solicitante == null) {
 			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
 		}
 
-		Usuario solicitante = resultadosSolicitante.get(0);
-
-		List<Usuario> resultadosUsuario = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
-													.setParameter("login_usuario", login_usuario)
-													.getResultList();
-
-		if (resultadosUsuario.isEmpty()) {
-			throw new DataRetrievalFailureException("Usuário '" + login_usuario + "' não encontrado");
+		Usuario usuario = this.obter(login_usuario);
+		if (usuario == null) {
+			throw new DataRetrievalFailureException("Usuário superior '" + login_usuario + "' não encontrado");
 		}
 
-		Usuario usuario = resultadosUsuario.get(0);
-
-		Registro registro = new Registro(solicitante, Tipo.EXCLUIDO, Date.from(LocalDateTime.now()
-																							.atZone(ZoneId.systemDefault())
-																							.toInstant()));
-		usuario	.getRegistros()
-				.add(registro);
+		List<Registro> registros = usuario.getRegistros();
+		if (registros == null) {
+			registros = new ArrayList<Registro>();
+			usuario.setRegistros(registros);
+		}
+		registros.add(new Registro(solicitante, Tipo.EXCLUIDO, Date.from(LocalDateTime	.now()
+																						.atZone(ZoneId.systemDefault())
+																						.toInstant())));
 
 		manager.persist(usuario);
 	}
@@ -124,34 +108,21 @@ public class UsuarioDao {
 							Usuario valores)
 			throws DataRetrievalFailureException, DataIntegrityViolationException {
 
-		List<Usuario> resultadosSolicitante = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_solicitante", Usuario.class)
-														.setParameter("login_solicitante", login_solicitante)
-														.getResultList();
-
-		if (resultadosSolicitante.isEmpty()) {
+		Usuario solicitante = this.obter(login_solicitante);
+		if (solicitante == null) {
 			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
 		}
 
-		Usuario solicitante = resultadosSolicitante.get(0);
-
-		List<Usuario> resultadosUsuario = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
-													.setParameter("login_usuario", login_usuario)
-													.getResultList();
-
-		if (resultadosUsuario.isEmpty()) {
-			throw new DataRetrievalFailureException("Usuário '" + login_usuario + "' não encontrado");
+		Usuario usuario = this.obter(login_usuario);
+		if (usuario == null) {
+			throw new DataRetrievalFailureException("Usuário superior '" + login_usuario + "' não encontrado");
 		}
 
-		Usuario usuario = resultadosUsuario.get(0);
+		if (valores.getLogin() != null && !valores	.getLogin()
+													.equals(usuario.getLogin())) {
 
-		if (!valores.getLogin()
-					.equals(usuario.getLogin())) {
-
-			List<Usuario> resultadosExistente = manager	.createQuery("SELECT u FROM Usuario u WHERE u.login = :login_usuario", Usuario.class)
-														.setParameter("login_usuario", valores.getLogin())
-														.getResultList();
-
-			if (!resultadosExistente.isEmpty()) {
+			Usuario existente = this.obter(valores.getLogin());
+			if (existente != null) {
 				throw new DataIntegrityViolationException("Usuário '" + valores.getLogin() + "' já existente");
 			}
 
@@ -160,11 +131,14 @@ public class UsuarioDao {
 		Modificador.modificar(usuario, valores);
 		Validador.validar(usuario);
 
-		Registro registro = new Registro(solicitante, Tipo.MODIFICADO, Date.from(LocalDateTime	.now()
-																								.atZone(ZoneId.systemDefault())
-																								.toInstant()));
-		usuario	.getRegistros()
-				.add(registro);
+		List<Registro> registros = usuario.getRegistros();
+		if (registros == null) {
+			registros = new ArrayList<Registro>();
+			usuario.setRegistros(registros);
+		}
+		registros.add(new Registro(solicitante, Tipo.MODIFICADO, Date.from(LocalDateTime.now()
+																						.atZone(ZoneId.systemDefault())
+																						.toInstant())));
 
 		manager.persist(usuario);
 	}

@@ -67,6 +67,22 @@ public class Operacao {
 	@Column(nullable = false)
 	private long tamanho;
 
+	@JsonIgnore
+	public Registro getUltimoRegistro() {
+		Registro ultimoRegistro = null;
+		for (Registro r : this.getRegistros()) {
+			if (ultimoRegistro == null) {
+				ultimoRegistro = r;
+			} else {
+				if (r	.getData()
+						.before(ultimoRegistro.getData())) {
+					ultimoRegistro = r;
+				}
+			}
+		}
+		return ultimoRegistro;
+	}
+	
 	public Long getId() {
 		return id;
 	}

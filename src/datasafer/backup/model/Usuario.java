@@ -112,7 +112,8 @@ public class Usuario {
 	private List<Estacao> estacoes;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@Fetch(FetchMode.SUBSELECT)
 	private List<Backup> backups;
 
 	@JsonIgnore
@@ -184,6 +185,22 @@ public class Usuario {
 		} else {
 			return null;
 		}
+	}
+
+	@JsonIgnore
+	public Registro getUltimoRegistro() {
+		Registro ultimoRegistro = null;
+		for (Registro r : this.getRegistros()) {
+			if (ultimoRegistro == null) {
+				ultimoRegistro = r;
+			} else {
+				if (r	.getData()
+						.before(ultimoRegistro.getData())) {
+					ultimoRegistro = r;
+				}
+			}
+		}
+		return ultimoRegistro;
 	}
 
 	public List<Usuario> getColaboradores() {
