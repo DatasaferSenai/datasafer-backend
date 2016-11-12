@@ -1,10 +1,10 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
+import java.util.Set;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -21,12 +21,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.JWTVerifyException;
-
-import datasafer.backup.controller.UsuarioRestController;
+import datasafer.backup.dao.TokenDao;
 import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.model.Token;
 import datasafer.backup.model.Usuario;
+import datasafer.backup.model.Usuario.Permissao;
 import datasafer.backup.model.Usuario.Status;
 
 @Service
@@ -35,88 +34,147 @@ public class SegurancaFiltroJwt implements Filter {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
+	@Autowired
+	private TokenDao tokenDao;
 
 	@Override
-	public void doFilter(	ServletRequest request,
-							ServletResponse response,
+	public void doFilter(	ServletRequest req,
+							ServletResponse resp,
 							FilterChain chain)
 			throws IOException, ServletException {
 
-		HttpServletRequest req = (HttpServletRequest) request;
-		HttpServletResponse resp = (HttpServletResponse) response;
-		if (req	.getRequestURI()
-				.contains("login")) {
-			chain.doFilter(request, response);
+		HttpServletRequest request = (HttpServletRequest) req;
+		HttpServletResponse response = (HttpServletResponse) resp;
+		if (request	.getRequestURI()
+					.contains("login")) {
+
+			chain.doFilter(req, resp);
 			return;
 		}
 
 		try {
-			String token = req.getHeader("Authorization");
-
-			Map<String, Object> claims;
-
-			try {
-				claims = new JWTVerifier(UsuarioRestController.SECRET).verify(token);
-			} catch (NoSuchAlgorithmException | InvalidKeyException | IllegalStateException | IOException | SignatureException | JWTVerifyException e) {
-				claims = null;
-
-				if (token == null) {
-					resp.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
-				} else {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
-				}
+			String chave_token = request.getHeader("Authorization");
+			if (chave_token == null) {
+				response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
+				return;
 			}
 
-			if (claims != null) {
+			Token token = tokenDao.obter(chave_token);
+			if (token == null) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+				return;
+			}
 
-				String login_solicitante = (String) claims.get("login_usuario");
+			Date agora = Date.from(LocalDateTime.now()
+												.atZone(ZoneId.systemDefault())
+												.toInstant());
 
-				String login_usuario = req.getHeader("usuario") != null ? req.getHeader("usuario") : login_solicitante;
+			if (token.getExpiracao() != null && token	.getExpiracao()
+														.before(agora)) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+				return;
+			}
 
-				Usuario solicitante = usuarioDao.obter(login_solicitante);
-				Usuario proprietario = usuarioDao.obter(login_usuario);
+			Usuario solicitante = token.getUsuario();
+			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obter(request.getHeader("usuario")) : solicitante;
 
-				if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
-				} else if (solicitante.getStatus() != Status.ATIVO) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
+			if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+				return;
+			}
+
+			if (solicitante.getStatus() != Status.ATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
 																			.toString());
-				} else if (proprietario == null || proprietario.getStatus() == Status.INATIVO) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
-				} else if (proprietario.getStatus() != Status.ATIVO) {
-					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()
-																				.toString());
-				} else {
+				return;
+			}
 
-					boolean relacionados = false;
-					if (!solicitante.getLogin()
-									.equals(proprietario.getLogin())) {
-						for (Usuario superior = proprietario.getSuperior(); superior != null && superior != solicitante; superior = superior.getSuperior()) {
-							if (solicitante	.getLogin()
-											.equals(superior.getLogin())) {
-								relacionados = true;
-								break;
-							}
-						}
-					} else {
-						relacionados = true;
-					}
+			if (usuario == null || usuario.getStatus() == Status.INATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+				return;
+			}
 
-					if (!relacionados) {
-						resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
-					} else {
+			if (usuario.getStatus() != Status.ATIVO) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus()
+																		.toString());
 
-						req.setAttribute("login_solicitante", login_solicitante);
-						req.setAttribute("login_usuario", login_usuario);
+				return;
+			}
 
-						chain.doFilter(req, resp);
-					}
+			// boolean relacionados = true;
+			//
+			// if (!relacionados) {
+			// resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou
+			// não encontrado");
+			// return;
+			// }
+
+			Set<Permissao> permissoes = solicitante.getPermissoes();
+			if (permissoes == null) {
+				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+				return;
+			}
+
+			if (request	.getRequestURI()
+						.contains("usuario")
+					|| request	.getRequestURI()
+								.contains("usuarios")) {
+
+				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
+						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_USUARIOS))
+						|| (request.getMethod() == "PUT" && !permissoes.contains(Permissao.MODIFICAR_USUARIOS))
+						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_USUARIOS))) {
+					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+					return;
+				}
+
+			} else if (request	.getRequestURI()
+								.contains("estacao")
+					|| request	.getRequestURI()
+								.contains("estacoes")) {
+
+				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_ESTACOES))
+						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_ESTACOES))
+						|| (request.getMethod() == "PUT" && !permissoes.contains(Permissao.MODIFICAR_ESTACOES))
+						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_ESTACOES))) {
+					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+					return;
+				}
+
+			} else if (request	.getRequestURI()
+								.contains("backup")
+					|| request	.getRequestURI()
+								.contains("backups")) {
+
+				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_BACKUPS))
+						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_BACKUPS))
+						|| (request.getMethod() == "PUT" && !permissoes.contains(Permissao.MODIFICAR_BACKUPS))
+						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_BACKUPS))) {
+					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+					return;
+				}
+			} else if (request	.getRequestURI()
+								.contains("operacao")
+					|| request	.getRequestURI()
+								.contains("operacoes")) {
+
+				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_OPERACOES))
+						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_OPERACOES))
+						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.MODIFICAR_OPERACOES))
+						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_OPERACOES))) {
+					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+					return;
 				}
 			}
+
+			request.setAttribute("login_solicitante", solicitante.getLogin());
+			request.setAttribute("login_usuario", usuario.getLogin());
+
+			chain.doFilter(request, response);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			resp.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 
 	}

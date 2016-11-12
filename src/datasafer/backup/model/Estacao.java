@@ -19,7 +19,9 @@ import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({ "login_gerenciador", "nome", "descricao", "backups" })
 @Entity
 public class Estacao {
 
@@ -43,7 +45,7 @@ public class Estacao {
 	@JoinColumn(name = "estacao_id")
 	private List<Registro> registros;
 
-	@JsonProperty(index = 0, value = "login_gerenciador")
+	@JsonProperty(value = "login_gerenciador")
 	public String getLoginGerenciador() {
 		if (gerenciador != null) {
 			return gerenciador.getLogin();
@@ -51,16 +53,16 @@ public class Estacao {
 			return null;
 		}
 	}
-	
-	@JsonProperty(index = 1)
+
+	@JsonProperty()
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
-	@JsonProperty(index = 2)
+	@JsonProperty()
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonProperty(index = 3, value = "backups")
+	@JsonProperty(value = "status_backups")
 	public HashMap<Operacao.Status, Integer> getContagemBackups() {
 		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 

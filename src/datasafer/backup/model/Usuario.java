@@ -33,9 +33,11 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import datasafer.backup.controller.UsuarioRestController;
-
+@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+@JsonPropertyOrder({ "login_superior", "delegacoes", "login", "senha", "status", "permissoes", "nome", "email", "armazenamento", "ocupado", "tentativas",
+		"ultimaTentativa", "backups" })
 @Entity
 public class Usuario {
 
@@ -92,6 +94,15 @@ public class Usuario {
 		}
 	}
 
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private int tentativas;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	// @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@Column(nullable = true)
+	private Date ultimaTentativa;
+
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -126,7 +137,7 @@ public class Usuario {
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Token> tokens;
 
-	@JsonProperty(index = 0, value = "login_superior")
+	@JsonProperty(value = "login_superior")
 	public String getLoginSuperior() {
 		if (superior != null) {
 			return superior.getLogin();
@@ -135,53 +146,7 @@ public class Usuario {
 		}
 	}
 
-	@JsonProperty(index = 1)
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> delegacoes;
-
-	@JsonProperty(index = 2)
-	@Column(length = 20, unique = true, nullable = false)
-	private String login;
-
-	@JsonProperty(index = 3, access = Access.WRITE_ONLY)
-	@Column(nullable = false)
-	private String senha;
-
-	@JsonProperty(index = 4)
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private Status status;
-
-	@JsonProperty(index = 5)
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> permissoes;
-
-	@JsonProperty(index = 6)
-	@Column(length = 40, nullable = false)
-	private String nome;
-
-	@JsonProperty(index = 7)
-	@Column(length = 50, nullable = true)
-	private String email;
-
-	@JsonProperty(index = 8)
-	@Column(nullable = false)
-	private long armazenamento;
-
-	@JsonProperty(index = 9, access = Access.READ_ONLY)
-	@Column(nullable = true)
-	private int tentativas = 0;
-
-	@JsonProperty(index = 10, access = Access.READ_ONLY)
-	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-	@Column(nullable = true)
-	private Date ultimaTentativa;
-
-	@JsonProperty(index = 11, value = "backups")
+	@JsonProperty(value = "status_backups")
 	public HashMap<Operacao.Status, Integer> getContagemBackups() {
 		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 
@@ -198,6 +163,66 @@ public class Usuario {
 
 		return operacoes;
 	}
+
+	@JsonProperty(value = "armazenamento_ocupado")
+	public long getOcupado() {
+		long ocupado = 0L;
+
+		for (Backup b : this.getBackups()) {
+			Operacao ultimoSucesso = null;
+			for (Operacao o : b.getOperacoes()) {
+				if (o.getStatus() == Operacao.Status.SUCESSO) {
+					if (ultimoSucesso == null) {
+						ultimoSucesso = o;
+					} else if (o.getData()
+								.after(ultimoSucesso.getData())) {
+						ultimoSucesso = o;
+					}
+				}
+				if (ultimoSucesso != null) {
+					ocupado += ultimoSucesso.getTamanho();
+				}
+			}
+		}
+		return ocupado;
+	}
+
+	@JsonProperty()
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> delegacoes;
+
+	@JsonProperty()
+	@Column(length = 20, unique = true, nullable = false)
+	private String login;
+
+	@JsonProperty(access = Access.WRITE_ONLY)
+	@Column(nullable = false)
+	private String senha;
+
+	@JsonProperty()
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private Status status;
+
+	@JsonProperty()
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> permissoes;
+
+	@JsonProperty()
+	@Column(length = 40, nullable = false)
+	private String nome;
+
+	@JsonProperty()
+	@Column(length = 50, nullable = true)
+	private String email;
+
+	@JsonProperty()
+	@Column(nullable = false)
+	private long armazenamento;
 
 	public List<Token> getTokens() {
 		return tokens;
@@ -223,20 +248,20 @@ public class Usuario {
 		this.email = email;
 	}
 
+	public int getTentativas() {
+		return tentativas;
+	}
+
+	public void setTentativas(int tentativas) {
+		this.tentativas = tentativas;
+	}
+
 	public Date getUltimaTentativa() {
 		return ultimaTentativa;
 	}
 
 	public void setUltimaTentativa(Date ultimaTentativa) {
 		this.ultimaTentativa = ultimaTentativa;
-	}
-
-	public Integer getTentativas() {
-		return tentativas;
-	}
-
-	public void setTentativas(Integer tentativas) {
-		this.tentativas = tentativas;
 	}
 
 	public Usuario getSuperior() {
@@ -275,10 +300,6 @@ public class Usuario {
 		this.armazenamento = armazenamento;
 	}
 
-	public void setTentativas(int tentativas) {
-		this.tentativas = tentativas;
-	}
-
 	public Long getId() {
 		return id;
 	}
@@ -310,7 +331,8 @@ public class Usuario {
 	public void setSenha(String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(), UsuarioRestController.SECRET.getBytes(StandardCharsets.UTF_8), 65535, 128);
+			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(),
+					"J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO".getBytes(StandardCharsets.UTF_8), 65535, 128);
 			SecretKey key = skf.generateSecret(spec);
 			this.senha = Base64	.getEncoder()
 								.encodeToString(key.getEncoded());

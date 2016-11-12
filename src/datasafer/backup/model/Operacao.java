@@ -22,7 +22,9 @@ import org.hibernate.annotations.FetchMode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({ "data", "status", "tamanho" })
 @Entity
 public class Operacao {
 
@@ -61,17 +63,17 @@ public class Operacao {
 	@JoinColumn(name = "operacao_id")
 	private List<Registro> registros;
 
-	@JsonProperty(index = 0)
+	@JsonProperty()
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date data;
 
-	@JsonProperty(index = 1)
+	@JsonProperty()
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	@JsonProperty(index = 2)
+	@JsonProperty()
 	@Column(nullable = false)
 	private long tamanho;
 

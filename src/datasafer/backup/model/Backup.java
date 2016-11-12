@@ -21,7 +21,9 @@ import org.hibernate.annotations.FetchMode;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({ "login_proprietario", "nome", "descricao", "inicio", "intervalo", "pasta", "ultimaOperacao", "status_operacoes" })
 @Entity
 public class Backup {
 
@@ -50,7 +52,7 @@ public class Backup {
 	@JoinColumn(name = "backup_id")
 	private List<Registro> registros;
 
-	@JsonProperty(index = 0, value = "login_proprietario")
+	@JsonProperty(value = "login_proprietario")
 	public String getLoginProprietario() {
 		if (proprietario != null) {
 			return proprietario.getLogin();
@@ -58,29 +60,29 @@ public class Backup {
 			return null;
 		}
 	}
-	
-	@JsonProperty(index = 1)
+
+	@JsonProperty()
 	@Column(length = 40, nullable = false)
 	private String nome;
 
-	@JsonProperty(index = 2)
+	@JsonProperty()
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonProperty(index = 3)
+	@JsonProperty()
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date inicio;
 
-	@JsonProperty(index = 4)
+	@JsonProperty()
 	@Column(nullable = false)
 	private long intervalo;
 
-	@JsonProperty(index = 5)
+	@JsonProperty()
 	@Column(nullable = false)
 	private String pasta;
 
-	@JsonProperty(index = 6, value = "ultimaOperacao")
+	@JsonProperty(value = "ultimaOperacao")
 	public Operacao getUltimaOperacao() {
 		Operacao ultimaOperacao = null;
 
@@ -98,7 +100,7 @@ public class Backup {
 		return ultimaOperacao;
 	}
 
-	@JsonProperty(index = 7, value = "operacoes")
+	@JsonProperty(value = "status_operacoes")
 	public HashMap<Operacao.Status, Integer> getContagemOperacoes() {
 		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 

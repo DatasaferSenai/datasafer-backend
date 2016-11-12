@@ -10,11 +10,12 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+@JsonPropertyOrder({ "token", "login_usuario", "emissao", "expiracao" })
 @Entity
 public class Token {
 
@@ -24,11 +25,11 @@ public class Token {
 	private Usuario usuario;
 
 	@Id
-	@JsonProperty(index = 0, access = Access.READ_ONLY)
-	@Column(length = 256, nullable = false)
-	private String chave;
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(length = 255, nullable = false)
+	private String token;
 
-	@JsonProperty(index = 1, value = "login_usuario", access = Access.READ_ONLY)
+	@JsonIgnore
 	public String getLoginUsuario() {
 		if (usuario != null) {
 			return usuario.getLogin();
@@ -37,13 +38,11 @@ public class Token {
 		}
 	}
 
-	@JsonProperty(index = 2, access = Access.READ_ONLY)
-	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@JsonIgnore
 	@Column(nullable = false)
 	private Date emissao;
 
-	@JsonProperty(index = 3, access = Access.READ_ONLY)
-	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@JsonIgnore
 	@Column(nullable = true)
 	private Date expiracao;
 
@@ -71,12 +70,12 @@ public class Token {
 		this.usuario = usuario;
 	}
 
-	public String getChave() {
-		return chave;
+	public String getToken() {
+		return token;
 	}
 
-	public void setChave(String chave) {
-		this.chave = chave;
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 }

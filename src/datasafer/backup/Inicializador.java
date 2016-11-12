@@ -131,7 +131,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(10);
+		int quantidade = gerador.nextInt(3) + 2;
 
 		for (int n = 0; n < quantidade; n++) {
 			int tipo_index = gerador.nextInt(tiposDispositivos.size());
@@ -160,7 +160,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(10);
+		int quantidade = gerador.nextInt(3) + 2;
 
 		for (int n = 0; n < quantidade; n++) {
 			int nomeIndex = gerador.nextInt(nomes_backups.size());
@@ -196,7 +196,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(5);
+		int quantidade = gerador.nextInt(7) + 3;
 
 		for (int n = 0; n < quantidade; n++) {
 
