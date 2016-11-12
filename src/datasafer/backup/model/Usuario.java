@@ -41,6 +41,7 @@ public class Usuario {
 
 	public enum Status {
 		ATIVO("Ativo"),
+		INATIVO("Inativo"),
 		SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"),
 		SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
 
@@ -112,8 +113,7 @@ public class Usuario {
 	private List<Estacao> estacoes;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	private List<Backup> backups;
 
 	@JsonIgnore
@@ -185,22 +185,6 @@ public class Usuario {
 		} else {
 			return null;
 		}
-	}
-
-	@JsonIgnore
-	public Registro getUltimoRegistro() {
-		Registro ultimoRegistro = null;
-		for (Registro r : this.getRegistros()) {
-			if (ultimoRegistro == null) {
-				ultimoRegistro = r;
-			} else {
-				if (r	.getData()
-						.before(ultimoRegistro.getData())) {
-					ultimoRegistro = r;
-				}
-			}
-		}
-		return ultimoRegistro;
 	}
 
 	public List<Usuario> getColaboradores() {

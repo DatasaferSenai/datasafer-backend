@@ -199,16 +199,13 @@ public class UsuarioRestController {
 
 			boolean expira = jobj.getBoolean("expira");
 
-			try {
-				usuario = usuarioDao.logar(usuario);
+			usuario = usuarioDao.logar(usuario);
 
-			} catch (DataRetrievalFailureException e) {
+			if (usuario == null) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
 						HttpStatus.UNAUTHORIZED);
-			}
-
-			if (usuario.getStatus() != Status.ATIVO) {
+			} else if (usuario.getStatus() != Status.ATIVO) {
 				return new ResponseEntity<>(new JSONObject().put("erro", usuario.getStatus())
 															.toString(),
 						HttpStatus.UNAUTHORIZED);

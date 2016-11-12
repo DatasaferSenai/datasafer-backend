@@ -1,9 +1,5 @@
 package datasafer.backup.dao;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -15,11 +11,10 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Modificador;
+import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Registro;
-import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -44,9 +39,12 @@ public class EstacaoDao {
 							String nome_estacao,
 							Estacao valores) {
 
-		Usuario solicitante = usuarioDao.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = usuarioDao.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
 
 		Estacao estacao = this.obter(nome_estacao);
@@ -63,17 +61,20 @@ public class EstacaoDao {
 			}
 		}
 
-		Modificador.modificar(estacao, valores);
-		Validador.validar(estacao);
+		if (solicitante != null) {
+			List<Registro> registros = Registrador.modificar(solicitante, estacao, valores);
 
-		List<Registro> registros = estacao.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
-			estacao.setRegistros(registros);
+			Validador.validar(estacao);
+
+			if (estacao.getRegistros() == null) {
+				estacao.setRegistros(registros);
+			} else {
+				estacao	.getRegistros()
+						.addAll(registros);
+			}
+		} else {
+			Validador.validar(estacao);
 		}
-		registros.add(new Registro(solicitante, Tipo.MODIFICADO, Date.from(LocalDateTime.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		manager.persist(estacao);
 	}
@@ -85,9 +86,12 @@ public class EstacaoDao {
 
 		Validador.validar(estacao);
 
-		Usuario solicitante = usuarioDao.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = usuarioDao.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
 
 		Usuario gerenciador = usuarioDao.obter(login_gerenciador);
@@ -96,19 +100,20 @@ public class EstacaoDao {
 		}
 
 		Estacao existente = this.obter(estacao.getNome());
-		if (existente != null && existente	.getUltimoRegistro()
-											.getTipo() != Tipo.EXCLUIDO) {
+		if (existente != null) {
 			throw new DataIntegrityViolationException("Estação '" + estacao.getNome() + "' já existente");
 		}
 
-		List<Registro> registros = estacao.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
-			estacao.setRegistros(registros);
+		if (solicitante != null) {
+			List<Registro> registros = Registrador.inserir(solicitante, estacao);
+
+			if (estacao.getRegistros() == null) {
+				estacao.setRegistros(registros);
+			} else {
+				estacao	.getRegistros()
+						.addAll(registros);
+			}
 		}
-		registros.add(new Registro(solicitante, Tipo.INSERIDO, Date.from(LocalDateTime	.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		estacao.setGerenciador(gerenciador);
 

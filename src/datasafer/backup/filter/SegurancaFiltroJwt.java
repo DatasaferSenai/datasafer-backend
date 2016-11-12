@@ -26,7 +26,6 @@ import com.auth0.jwt.JWTVerifyException;
 
 import datasafer.backup.controller.UsuarioRestController;
 import datasafer.backup.dao.UsuarioDao;
-import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -77,14 +76,12 @@ public class SegurancaFiltroJwt implements Filter {
 				Usuario solicitante = usuarioDao.obter(login_solicitante);
 				Usuario proprietario = usuarioDao.obter(login_usuario);
 
-				if (solicitante == null || solicitante	.getUltimoRegistro()
-														.getTipo() == Tipo.EXCLUIDO) {
+				if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (solicitante.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
 																			.toString());
-				} else if (proprietario == null || proprietario	.getUltimoRegistro()
-																.getTipo() == Tipo.EXCLUIDO) {
+				} else if (proprietario == null || proprietario.getStatus() == Status.INATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
 				} else if (proprietario.getStatus() != Status.ATIVO) {
 					resp.sendError(HttpStatus.FORBIDDEN.value(), proprietario	.getStatus()

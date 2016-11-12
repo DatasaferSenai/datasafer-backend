@@ -5,8 +5,6 @@ import java.util.Date;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,31 +17,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 public class Registro {
 
-	public Registro() {}
-
-	public Registro(Usuario solicitante, Tipo tipo, Date data) {
-		this.solicitante = solicitante;
-		this.tipo = tipo;
-		this.data = data;
-	}
-
-	public enum Tipo {
-		INSERIDO("Inserido"),
-		MODIFICADO("Modificado"),
-		EXCLUIDO("Excluido");
-
-		private String descricao;
-
-		private Tipo(String descricao) {
-			this.descricao = descricao;
-		}
-
-		@Override
-		public String toString() {
-			return this.descricao;
-		}
-	};
-
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,13 +26,42 @@ public class Registro {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Usuario solicitante;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private Tipo tipo;
-
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private Date data;
+
+	@Column(nullable = false)
+	private String atributo;
+
+	@Column(length = 1023, nullable = true)
+	private String de;
+
+	@Column(length = 1023, nullable = false)
+	private String para;
+
+	public String getAtributo() {
+		return atributo;
+	}
+
+	public void setAtributo(String atributo) {
+		this.atributo = atributo;
+	}
+
+	public String getDe() {
+		return de;
+	}
+
+	public void setDe(String de) {
+		this.de = de;
+	}
+
+	public String getPara() {
+		return para;
+	}
+
+	public void setPara(String para) {
+		this.para = para;
+	}
 
 	public Long getId() {
 		return id;
@@ -67,14 +69,6 @@ public class Registro {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Tipo getTipo() {
-		return tipo;
-	}
-
-	public void setTipo(Tipo tipo) {
-		this.tipo = tipo;
 	}
 
 	public Date getData() {

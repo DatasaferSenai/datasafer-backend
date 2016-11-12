@@ -1,9 +1,6 @@
 package datasafer.backup.dao;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -16,13 +13,12 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Modificador;
+import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
-import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -64,10 +60,14 @@ public class OperacaoDao {
 
 		Validador.validar(operacao);
 
-		Usuario solicitante = usuarioDao.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = usuarioDao.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
+
 
 		Usuario proprietário = usuarioDao.obter(login_proprietario);
 		if (proprietário == null) {
@@ -84,20 +84,14 @@ public class OperacaoDao {
 			throw new DataRetrievalFailureException("Backup '" + nome_backup + "' não encontrado");
 		}
 
-		Operacao existente = this.obter(login_proprietario, nome_estacao, nome_backup, operacao.getData());
-		if (existente != null && existente	.getUltimoRegistro()
-											.getTipo() != Tipo.EXCLUIDO) {
-			throw new DataIntegrityViolationException("Operação '" + operacao.getData() + "' já existente");
-		}
+		List<Registro> registros = Registrador.inserir(solicitante, operacao);
 
-		List<Registro> registros = operacao.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
+		if (operacao.getRegistros() == null) {
 			operacao.setRegistros(registros);
+		} else {
+			operacao.getRegistros()
+					.addAll(registros);
 		}
-		registros.add(new Registro(solicitante, Tipo.INSERIDO, Date.from(LocalDateTime	.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		operacao.setBackup(backup);
 
@@ -113,10 +107,14 @@ public class OperacaoDao {
 							Operacao valores)
 			throws DataRetrievalFailureException, DataIntegrityViolationException {
 
-		Usuario solicitante = usuarioDao.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = usuarioDao.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
+
 
 		Usuario proprietário = usuarioDao.obter(login_proprietario);
 		if (proprietário == null) {
@@ -146,20 +144,18 @@ public class OperacaoDao {
 				throw new DataIntegrityViolationException(
 						"Operação '" + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valores.getData()) + "' já existente");
 			}
-
 		}
 
-		Modificador.modificar(operacao, valores);
+		List<Registro> registros = Registrador.modificar(solicitante, operacao, valores);
+
 		Validador.validar(operacao);
 
-		List<Registro> registros = operacao.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
+		if (operacao.getRegistros() == null) {
 			operacao.setRegistros(registros);
+		} else {
+			operacao.getRegistros()
+					.addAll(registros);
 		}
-		registros.add(new Registro(solicitante, Tipo.MODIFICADO, Date.from(LocalDateTime.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		manager.persist(operacao);
 	}

@@ -26,7 +26,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Operacao {
 
 	public enum Status {
-		SUCESSO("sucesso"), EXECUTANDO("executando"), FALHA("falha"), AGENDADO("agendado"), EXCLUIDO("exclu�do");
+		SUCESSO("Sucesso"),
+		EXECUTANDO("Executando"),
+		FALHA("Falha"),
+		AGENDADO("Agendado"),
+		EXCLUIDO("Excluído");
 
 		private String descricao;
 
@@ -67,22 +71,6 @@ public class Operacao {
 	@Column(nullable = false)
 	private long tamanho;
 
-	@JsonIgnore
-	public Registro getUltimoRegistro() {
-		Registro ultimoRegistro = null;
-		for (Registro r : this.getRegistros()) {
-			if (ultimoRegistro == null) {
-				ultimoRegistro = r;
-			} else {
-				if (r	.getData()
-						.before(ultimoRegistro.getData())) {
-					ultimoRegistro = r;
-				}
-			}
-		}
-		return ultimoRegistro;
-	}
-	
 	public Long getId() {
 		return id;
 	}

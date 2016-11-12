@@ -126,7 +126,7 @@ public class Inicializador {
 	public void populaEstacoes(String login_usuario) {
 
 		List<String> tiposDispositivos = Arrays.asList("PC", "Desktop", "Computador", "Notebook", "Netbook", "Laptop");
-		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escrit�rio", "Banheiro", "Quarto", "Sala");
+		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escritório", "Banheiro", "Quarto", "Sala");
 		List<String> separadores = Arrays.asList("-", "_", ".", " ");
 
 		Random gerador = new Random();
@@ -155,7 +155,7 @@ public class Inicializador {
 								String nome_estacao) {
 
 		List<String> nomes_backups = Arrays.asList("Meus arquivos", "Minhas fotos", "Arquivos", "Fotos", "Imagens", "Meus videos", "Videos", "Midia",
-				"Programas", "Importante", "Coisas importantes", "Arquivos importantes", "Software", "Banco de dados", "DB", "Apresenta��es", "Planilhas",
+				"Programas", "Importante", "Coisas importantes", "Arquivos importantes", "Software", "Banco de dados", "DB", "Apresentações", "Planilhas",
 				"Planilhas importantes");
 
 		Random gerador = new Random();

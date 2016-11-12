@@ -1,9 +1,5 @@
 package datasafer.backup.dao;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -14,10 +10,9 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Modificador;
+import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Registro;
-import datasafer.backup.model.Registro.Tipo;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -44,30 +39,35 @@ public class UsuarioDao {
 
 		Validador.validar(usuario);
 
-		Usuario solicitante = this.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = this.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
 
-		Usuario superior = this.obter(login_superior);
-		if (superior == null) {
-			throw new DataRetrievalFailureException("Usuário superior '" + login_superior + "' não encontrado");
+		Usuario superior = null;
+		if (login_superior != null) {
+			superior = this.obter(login_superior);
+			if (superior == null) {
+				throw new DataRetrievalFailureException("Usuário superior '" + login_superior + "' não encontrado");
+			}
 		}
 
 		Usuario existente = this.obter(usuario.getLogin());
-		if (existente != null && existente	.getUltimoRegistro()
-											.getTipo() != Tipo.EXCLUIDO) {
+		if (existente != null) {
 			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
 		}
 
-		List<Registro> registros = usuario.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
+		List<Registro> registros = Registrador.inserir(solicitante, usuario);
+
+		if (usuario.getRegistros() == null) {
 			usuario.setRegistros(registros);
+		} else {
+			usuario	.getRegistros()
+					.addAll(registros);
 		}
-		registros.add(new Registro(solicitante, Tipo.INSERIDO, Date.from(LocalDateTime	.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		usuario.setSuperior(superior);
 		usuario.setStatus(Status.ATIVO);
@@ -78,11 +78,14 @@ public class UsuarioDao {
 	@Transactional
 	public void excluir(String login_solicitante,
 						String login_usuario)
-			throws DataRetrievalFailureException, DataIntegrityViolationException {
+			throws DataRetrievalFailureException {
 
-		Usuario solicitante = this.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = this.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
 
 		Usuario usuario = this.obter(login_usuario);
@@ -90,16 +93,7 @@ public class UsuarioDao {
 			throw new DataRetrievalFailureException("Usuário superior '" + login_usuario + "' não encontrado");
 		}
 
-		List<Registro> registros = usuario.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
-			usuario.setRegistros(registros);
-		}
-		registros.add(new Registro(solicitante, Tipo.EXCLUIDO, Date.from(LocalDateTime	.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
-
-		manager.persist(usuario);
+		manager.remove(usuario);
 	}
 
 	@Transactional
@@ -108,9 +102,12 @@ public class UsuarioDao {
 							Usuario valores)
 			throws DataRetrievalFailureException, DataIntegrityViolationException {
 
-		Usuario solicitante = this.obter(login_solicitante);
-		if (solicitante == null) {
-			throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+		Usuario solicitante = null;
+		if (login_solicitante != null) {
+			solicitante = this.obter(login_solicitante);
+			if (solicitante == null) {
+				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
+			}
 		}
 
 		Usuario usuario = this.obter(login_usuario);
@@ -128,17 +125,16 @@ public class UsuarioDao {
 
 		}
 
-		Modificador.modificar(usuario, valores);
+		List<Registro> registros = Registrador.modificar(solicitante, usuario, valores);
+
 		Validador.validar(usuario);
 
-		List<Registro> registros = usuario.getRegistros();
-		if (registros == null) {
-			registros = new ArrayList<Registro>();
+		if (usuario.getRegistros() == null) {
 			usuario.setRegistros(registros);
+		} else {
+			usuario	.getRegistros()
+					.addAll(registros);
 		}
-		registros.add(new Registro(solicitante, Tipo.MODIFICADO, Date.from(LocalDateTime.now()
-																						.atZone(ZoneId.systemDefault())
-																						.toInstant())));
 
 		manager.persist(usuario);
 	}
@@ -150,6 +146,6 @@ public class UsuarioDao {
 										.setParameter("senha_usuario", usuario.getSenha())
 										.getResultList();
 
-		return !results.isEmpty() ? null : results.get(0);
+		return results.isEmpty() ? null : results.get(0);
 	}
 }
