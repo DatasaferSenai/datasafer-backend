@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Registro {
@@ -26,16 +27,29 @@ public class Registro {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Usuario solicitante;
 
+	@JsonProperty(index = 0, value = "login_solicitante")
+	public String getLoginSolicitante() {
+		if (solicitante != null) {
+			return solicitante.getLogin();
+		} else {
+			return null;
+		}
+	}
+
+	@JsonProperty(index = 1)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date data;
 
+	@JsonProperty(index = 2)
 	@Column(nullable = false)
 	private String atributo;
 
+	@JsonProperty(index = 3)
 	@Column(length = 1023, nullable = true)
 	private String de;
 
+	@JsonProperty(index = 4)
 	@Column(length = 1023, nullable = false)
 	private String para;
 

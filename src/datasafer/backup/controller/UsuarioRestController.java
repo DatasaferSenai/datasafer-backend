@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.auth0.jwt.JWTSigner;
 
 import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.model.Backup;
+import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -66,7 +68,9 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				return new ResponseEntity<>(usuarioDao.obter(login_usuario), HttpStatus.OK);
+				Usuario usuario = usuarioDao.obter(login_usuario);
+
+				return new ResponseEntity<>(usuario, HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -87,30 +91,7 @@ public class UsuarioRestController {
 
 			try {
 				usuarioDao.modificar(login_solicitante, login_usuario, valores);
-				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			} catch (DataIntegrityViolationException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.CONFLICT);
-			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
-	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> excluirUsuario(	@RequestAttribute String login_solicitante,
-													@RequestAttribute String login_usuario) {
-		try {
-
-			try {
-				usuarioDao.excluir(login_solicitante, login_usuario);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -137,6 +118,7 @@ public class UsuarioRestController {
 				List<Usuario> colaboradores = new ArrayList<Usuario>(usuario.getColaboradores()
 																			.size());
 				colaboradores.addAll(usuario.getColaboradores());
+
 				return new ResponseEntity<>(colaboradores, HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -154,9 +136,12 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				return new ResponseEntity<>(usuarioDao	.obter(login_usuario)
-														.getEstacoes(),
-						HttpStatus.OK);
+				Usuario usuario = usuarioDao.obter(login_usuario);
+				List<Estacao> estacoes = new ArrayList<Estacao>(usuario	.getEstacoes()
+																		.size());
+				estacoes.addAll(usuario.getEstacoes());
+
+				return new ResponseEntity<>(estacoes, HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -173,9 +158,12 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				return new ResponseEntity<>(usuarioDao	.obter(login_usuario)
-														.getBackups(),
-						HttpStatus.OK);
+				Usuario usuario = usuarioDao.obter(login_usuario);
+				List<Backup> backups = new ArrayList<Backup>(usuario.getBackups()
+																	.size());
+				backups.addAll(usuario.getBackups());
+
+				return new ResponseEntity<>(backups, HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),

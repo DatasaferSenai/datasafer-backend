@@ -38,18 +38,29 @@ public class Estacao {
 	private List<Backup> backups;
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	@JoinColumn(name = "estacao_id")
 	private List<Registro> registros;
 
+	@JsonProperty(index = 0, value = "login_gerenciador")
+	public String getLoginGerenciador() {
+		if (gerenciador != null) {
+			return gerenciador.getLogin();
+		} else {
+			return null;
+		}
+	}
+	
+	@JsonProperty(index = 1)
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
+	@JsonProperty(index = 2)
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonProperty("backups")
+	@JsonProperty(index = 3, value = "backups")
 	public HashMap<Operacao.Status, Integer> getContagemBackups() {
 		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 

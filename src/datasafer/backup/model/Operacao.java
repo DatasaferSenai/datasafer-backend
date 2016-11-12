@@ -21,6 +21,7 @@ import org.hibernate.annotations.FetchMode;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 public class Operacao {
@@ -55,19 +56,22 @@ public class Operacao {
 	private Backup backup;
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	@JoinColumn(name = "operacao_id")
 	private List<Registro> registros;
 
+	@JsonProperty(index = 0)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date data;
 
+	@JsonProperty(index = 1)
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
+	@JsonProperty(index = 2)
 	@Column(nullable = false)
 	private long tamanho;
 

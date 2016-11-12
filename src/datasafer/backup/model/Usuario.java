@@ -103,12 +103,12 @@ public class Usuario {
 	private Usuario superior;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Usuario> colaboradores;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Estacao> estacoes;
 
@@ -117,50 +117,71 @@ public class Usuario {
 	private List<Backup> backups;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
 	@Fetch(FetchMode.SUBSELECT)
 	private List<Registro> registros;
 
-	@Column(length = 20, unique = true, nullable = false)
-	private String login;
+	@JsonIgnore
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@Fetch(FetchMode.SUBSELECT)
+	private List<Token> tokens;
 
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> permissoes;
+	@JsonProperty(index = 0, value = "login_superior")
+	public String getLoginSuperior() {
+		if (superior != null) {
+			return superior.getLogin();
+		} else {
+			return null;
+		}
+	}
 
+	@JsonProperty(index = 1)
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> delegacoes;
 
-	@Column(length = 40, nullable = false)
-	private String nome;
+	@JsonProperty(index = 2)
+	@Column(length = 20, unique = true, nullable = false)
+	private String login;
 
-	@Column(length = 50, nullable = true)
-	private String email;
-
-	@JsonProperty(access = Access.WRITE_ONLY)
+	@JsonProperty(index = 3, access = Access.WRITE_ONLY)
 	@Column(nullable = false)
 	private String senha;
 
+	@JsonProperty(index = 4)
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
 
+	@JsonProperty(index = 5)
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> permissoes;
+
+	@JsonProperty(index = 6)
+	@Column(length = 40, nullable = false)
+	private String nome;
+
+	@JsonProperty(index = 7)
+	@Column(length = 50, nullable = true)
+	private String email;
+
+	@JsonProperty(index = 8)
 	@Column(nullable = false)
 	private long armazenamento;
 
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonProperty(index = 9, access = Access.READ_ONLY)
 	@Column(nullable = true)
 	private int tentativas = 0;
 
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonProperty(index = 10, access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
 	private Date ultimaTentativa;
 
-	@JsonProperty("backups")
+	@JsonProperty(index = 11, value = "backups")
 	public HashMap<Operacao.Status, Integer> getContagemBackups() {
 		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
 
@@ -178,13 +199,12 @@ public class Usuario {
 		return operacoes;
 	}
 
-	@JsonProperty("login_superior")
-	public String getLoginSuperior() {
-		if (superior != null) {
-			return superior.getLogin();
-		} else {
-			return null;
-		}
+	public List<Token> getTokens() {
+		return tokens;
+	}
+
+	public void setTokens(List<Token> tokens) {
+		this.tokens = tokens;
 	}
 
 	public List<Usuario> getColaboradores() {
