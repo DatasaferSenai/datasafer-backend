@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -13,9 +14,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.NaturalId;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,13 +38,14 @@ public class Estacao {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Backup> backups;
+	@OrderBy("nome")
+	private List<Backup> backups = new ArrayList<Backup>();
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
-	private List<Registro> registros;
+	@OrderBy("data")
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonProperty(value = "login_gerenciador")
 	public String getLoginGerenciador() {
@@ -54,11 +56,12 @@ public class Estacao {
 		}
 	}
 
-	@JsonProperty()
+	@JsonProperty
+	@NaturalId(mutable = true)
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(length = 100, nullable = true)
 	private String descricao;
 

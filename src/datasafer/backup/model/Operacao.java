@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -15,9 +16,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.NaturalId;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -59,21 +60,22 @@ public class Operacao {
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
 	@JoinColumn(name = "operacao_id")
-	private List<Registro> registros;
+	@OrderBy("data")
+	private List<Registro> registros = new ArrayList<Registro>();
 
-	@JsonProperty()
+	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@NaturalId(mutable = true)
 	@Column(nullable = false)
 	private Date data;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(nullable = false)
 	private long tamanho;
 

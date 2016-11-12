@@ -24,8 +24,8 @@ public class Token {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 
-	@Id
 	@JsonProperty(access = Access.READ_ONLY)
+	@Id
 	@Column(length = 255, nullable = false)
 	private String token;
 

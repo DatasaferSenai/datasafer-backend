@@ -1,5 +1,6 @@
 package datasafer.backup.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,9 +15,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.NaturalId;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,13 +45,14 @@ public class Backup {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Operacao> operacoes;
+	@OrderBy("data")
+	private List<Operacao> operacoes = new ArrayList<Operacao>();
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
 	@JoinColumn(name = "backup_id")
-	private List<Registro> registros;
+	@OrderBy("data")
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonProperty(value = "login_proprietario")
 	public String getLoginProprietario() {
@@ -61,24 +63,25 @@ public class Backup {
 		}
 	}
 
-	@JsonProperty()
+	@JsonProperty
+	@NaturalId(mutable = true)
 	@Column(length = 40, nullable = false)
 	private String nome;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonProperty()
+	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
 	private Date inicio;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(nullable = false)
 	private long intervalo;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(nullable = false)
 	private String pasta;
 

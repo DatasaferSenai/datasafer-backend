@@ -3,6 +3,7 @@ package datasafer.backup.model;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,9 +26,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.Fetch;
-import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.NaturalId;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -35,7 +36,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 @JsonPropertyOrder({ "login_superior", "delegacoes", "login", "senha", "status", "permissoes", "nome", "email", "armazenamento", "ocupado", "tentativas",
 		"ultimaTentativa", "backups" })
 @Entity
@@ -99,7 +99,7 @@ public class Usuario {
 	private int tentativas;
 
 	@JsonProperty(access = Access.READ_ONLY)
-	// @JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
 	private Date ultimaTentativa;
 
@@ -114,28 +114,29 @@ public class Usuario {
 	private Usuario superior;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
-	private List<Usuario> colaboradores;
+	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("login")
+	private List<Usuario> colaboradores = new ArrayList<Usuario>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
-	private List<Estacao> estacoes;
+	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("nome")
+	private List<Estacao> estacoes = new ArrayList<Estacao>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	private List<Backup> backups;
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("nome")
+	private List<Backup> backups = new ArrayList<Backup>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
-	private List<Registro> registros;
+	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("data")
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-	@Fetch(FetchMode.SUBSELECT)
-	private List<Token> tokens;
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("emissao")
+	private List<Token> tokens = new ArrayList<Token>();
 
 	@JsonProperty(value = "login_superior")
 	public String getLoginSuperior() {
@@ -187,13 +188,14 @@ public class Usuario {
 		return ocupado;
 	}
 
-	@JsonProperty()
+	@JsonProperty
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> delegacoes;
 
-	@JsonProperty()
+	@JsonProperty
+	@NaturalId(mutable = true)
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
@@ -201,26 +203,26 @@ public class Usuario {
 	@Column(nullable = false)
 	private String senha;
 
-	@JsonProperty()
+	@JsonProperty
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
 
-	@JsonProperty()
+	@JsonProperty
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> permissoes;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(length = 40, nullable = false)
 	private String nome;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(length = 50, nullable = true)
 	private String email;
 
-	@JsonProperty()
+	@JsonProperty
 	@Column(nullable = false)
 	private long armazenamento;
 
