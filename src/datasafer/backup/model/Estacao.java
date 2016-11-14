@@ -3,28 +3,47 @@ package datasafer.backup.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.NaturalId;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({ "login_gerenciador", "nome", "descricao", "backups" })
 @Entity
 public class Estacao {
+
+	public Estacao() {
+		this.id = null;
+		this.gerenciador = null;
+		this.backups = new ArrayList<Backup>();
+		this.registros = new ArrayList<Registro>();
+		this.nome = null;
+		this.descricao = null;
+
+		this.statusBackups = new HashMap<Operacao.Status, Integer>();
+		for (Operacao.Status s : Operacao.Status.values()) {
+			this.statusBackups.put(s, 0);
+		}
+	}
 
 	@JsonIgnore
 	@Id
@@ -37,27 +56,17 @@ public class Estacao {
 	private Usuario gerenciador;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("nome")
-	private List<Backup> backups = new ArrayList<Backup>();
+	private List<Backup> backups;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
 	@OrderBy("data")
-	private List<Registro> registros = new ArrayList<Registro>();
-
-	@JsonProperty(value = "login_gerenciador")
-	public String getLoginGerenciador() {
-		if (gerenciador != null) {
-			return gerenciador.getLogin();
-		} else {
-			return null;
-		}
-	}
+	private List<Registro> registros;
 
 	@JsonProperty
-	@NaturalId(mutable = true)
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome;
 
@@ -65,22 +74,20 @@ public class Estacao {
 	@Column(length = 100, nullable = true)
 	private String descricao;
 
-	@JsonProperty(value = "status_backups")
-	public HashMap<Operacao.Status, Integer> getContagemBackups() {
-		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
+	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
+	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name = "status")
+	@MapKeyEnumerated(EnumType.STRING)
+	@Column(name = "contagem")
+	@CollectionTable(name = "estacao_status_backups", joinColumns = @JoinColumn(name = "estacao_id"))
+	private Map<Operacao.Status, Integer> statusBackups;
 
-		for (Operacao.Status s : Operacao.Status.values()) {
-			int contagem = 0;
-			for (Backup b : this.getBackups()) {
-				Operacao ultimaOperacao = b.getUltimaOperacao();
-				if (ultimaOperacao != null && ultimaOperacao.getStatus() == s) {
-					contagem++;
-				}
-			}
-			operacoes.put(s, contagem);
-		}
+	public Map<Operacao.Status, Integer> getStatusBackups() {
+		return statusBackups;
+	}
 
-		return operacoes;
+	public void setStatusBackups(Map<Operacao.Status, Integer> statusBackups) {
+		this.statusBackups = statusBackups;
 	}
 
 	public Usuario getGerenciador() {

@@ -68,9 +68,8 @@ public class OperacaoDao {
 			}
 		}
 
-
-		Usuario proprietário = usuarioDao.obter(login_proprietario);
-		if (proprietário == null) {
+		Usuario proprietario = usuarioDao.obter(login_proprietario);
+		if (proprietario == null) {
 			throw new DataRetrievalFailureException("Usuário proprietário '" + login_proprietario + "' não encontrado");
 		}
 
@@ -93,6 +92,7 @@ public class OperacaoDao {
 					.addAll(registros);
 		}
 
+		backup.getOperacoes().add(operacao);
 		operacao.setBackup(backup);
 
 		manager.persist(operacao);
@@ -114,7 +114,6 @@ public class OperacaoDao {
 				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
 			}
 		}
-
 
 		Usuario proprietário = usuarioDao.obter(login_proprietario);
 		if (proprietário == null) {

@@ -52,6 +52,7 @@ public class Inicializador {
 
 			usuario_sistema.setArmazenamento(0L);
 			usuario_sistema.setNome("Sistema");
+			usuario_sistema.setEmail("");
 			usuario_sistema.setLogin("system");
 			usuario_sistema.setSenha("system");
 			usuario_sistema.setStatus(Status.ATIVO);
@@ -72,6 +73,7 @@ public class Inicializador {
 			usuario_admin.setArmazenamento(0L);
 			usuario_admin.setLogin("admin");
 			usuario_admin.setNome("Administrador");
+			usuario_admin.setEmail("admin@admin.com");
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
 
@@ -103,16 +105,16 @@ public class Inicializador {
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
+				usuario.setEmail(login + "@gmail.com");
 				usuario.setArmazenamento(10000000L);
 				usuario.setLogin(login);
 				usuario.setSenha(login);
 				usuario.setStatus(Status.ATIVO);
 
 				Set<Permissao> permissoes = new HashSet<Permissao>();
-				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
-						Permissao.VISUALIZAR_OPERACOES, Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS,
-						Permissao.INSERIR_OPERACOES, Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
-						Permissao.EXCLUIR_BACKUPS));
+				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_OPERACOES,
+						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
+						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_BACKUPS));
 
 				usuario.setPermissoes(permissoes);
 

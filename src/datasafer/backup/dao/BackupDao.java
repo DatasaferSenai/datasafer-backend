@@ -1,5 +1,8 @@
 package datasafer.backup.dao;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -15,6 +18,7 @@ import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
 
@@ -71,21 +75,51 @@ public class BackupDao {
 
 		Backup existente = this.obter(login_proprietario, nome_estacao, backup.getNome());
 		if (existente != null) {
-			throw new DataIntegrityViolationException("Backup '" + backup.getNome() + "' já existente");
+			existente	.getRegistros()
+						.addAll(Registrador.modificar(solicitante, existente, backup));
+			backup = existente;
+		} else {
+			backup	.getRegistros()
+					.addAll(Registrador.inserir(solicitante, backup));
 		}
 
-		if (solicitante != null) {
-			List<Registro> registros = Registrador.inserir(solicitante, backup);
+		Operacao operacao = new Operacao();
+		operacao.setBackup(backup);
+		operacao.setData(Date.from(LocalDateTime.now()
+												.atZone(ZoneId.systemDefault())
+												.toInstant()));
+		operacao.setStatus(Operacao.Status.AGENDADO);
+		operacao.setTamanho(null);
+		operacao.setRegistros(Registrador.inserir(solicitante, operacao));
 
-			if (backup.getRegistros() == null) {
-				backup.setRegistros(registros);
-			} else {
-				backup	.getRegistros()
-						.addAll(registros);
-			}
-		}
+		backup	.getOperacoes()
+				.add(operacao);
 
+		backup	.getStatusOperacoes()
+				.put(operacao.getStatus(), backup	.getStatusOperacoes()
+													.get(operacao.getStatus())
+						+ 1);
+
+		proprietario.getBackups()
+					.add(backup);
+		proprietario.getStatusBackups()
+					.put(backup	.getUltimaOperacao()
+								.getStatus(),
+							proprietario.getStatusBackups()
+										.get(backup	.getUltimaOperacao()
+													.getStatus())
+									+ 1);
 		backup.setProprietario(proprietario);
+
+		estacao	.getBackups()
+				.add(backup);
+		estacao	.getStatusBackups()
+				.put(backup	.getUltimaOperacao()
+							.getStatus(),
+						estacao	.getStatusBackups()
+								.get(backup	.getUltimaOperacao()
+											.getStatus())
+								+ 1);
 		backup.setEstacao(estacao);
 
 		manager.persist(backup);

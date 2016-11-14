@@ -1,8 +1,5 @@
 package datasafer.backup.controller;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -20,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import datasafer.backup.dao.BackupDao;
 import datasafer.backup.model.Backup;
-import datasafer.backup.model.Operacao;
+import datasafer.backup.model.Usuario;
 
 @CrossOrigin(maxAge = 3600)
 @RestController
@@ -30,13 +27,13 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> inserirBackup(@RequestAttribute String login_solicitante,
-												@RequestAttribute String login_usuario,
-												@RequestHeader(name = "estacao") String nome_estacao,
+	public ResponseEntity<Object> inserirBackup(@RequestAttribute Usuario solicitante,
+												@RequestAttribute Usuario usuario,
+												@RequestHeader("estacao") String nome_estacao,
 												@RequestBody Backup backup) {
 		try {
 			try {
-				backupDao.inserir(login_solicitante, login_usuario, nome_estacao, backup);
+				backupDao.inserir(solicitante.getLogin(), usuario.getLogin(), nome_estacao, backup);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -55,14 +52,13 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterBackup(	@RequestAttribute String login_solicitante,
-												@RequestAttribute String login_usuario,
+	public ResponseEntity<Object> obterBackup(	@RequestAttribute Usuario usuario,
 												@RequestHeader(name = "estacao") String nome_estacao,
 												@RequestHeader(name = "backup") String nome_backup) {
 		try {
 
 			try {
-				return new ResponseEntity<>(new JSONObject(backupDao.obter(login_usuario, nome_estacao, nome_backup)).toString(), HttpStatus.OK);
+				return new ResponseEntity<>(backupDao.obter(usuario.getLogin(), nome_estacao, nome_backup), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -75,21 +71,15 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterOperacoes(	@RequestAttribute String login_solicitante,
-													@RequestAttribute String login_usuario,
+	public ResponseEntity<Object> obterOperacoes(	@RequestAttribute Usuario usuario,
 													@RequestHeader(name = "estacao") String nome_estacao,
 													@RequestHeader(name = "backup") String nome_backup) {
 		try {
 
 			try {
-
-				Backup backup = backupDao.obter(login_usuario, nome_estacao, nome_backup);
-				List<Operacao> operacoes = new ArrayList<Operacao>();
-
-				for (Operacao o : backup.getOperacoes()) {
-					operacoes.add(o);
-				}
-				return new ResponseEntity<>(new JSONObject(operacoes).toString(), HttpStatus.OK);
+				return new ResponseEntity<>(backupDao	.obter(usuario.getLogin(), nome_estacao, nome_backup)
+														.getOperacoes(),
+						HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),

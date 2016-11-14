@@ -11,17 +11,24 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
-import org.hibernate.annotations.NaturalId;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({ "login_solicitante", "data", "atributo", "de", "para" })
 @Entity
 public class Registro {
+
+	public Registro() {
+		this.id = null;
+		this.solicitante = null;
+		this.data = null;
+		this.atributo = null;
+		this.de = null;
+		this.para = null;
+	}
 
 	@JsonIgnore
 	@Id
@@ -32,18 +39,8 @@ public class Registro {
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Usuario solicitante;
 
-	@JsonProperty(value = "login_solicitante", access = Access.READ_ONLY)
-	public String getLoginSolicitante() {
-		if (solicitante != null) {
-			return solicitante.getLogin();
-		} else {
-			return null;
-		}
-	}
-
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-	@NaturalId(mutable = true)
 	@Column(nullable = false)
 	private Date data;
 

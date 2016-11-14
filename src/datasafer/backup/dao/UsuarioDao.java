@@ -12,11 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
-import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Registro;
-import datasafer.backup.model.Token;
 import datasafer.backup.model.Usuario;
-import datasafer.backup.model.Usuario.Status;
 
 @Repository
 public class UsuarioDao {
@@ -62,17 +59,14 @@ public class UsuarioDao {
 			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
 		}
 
-		List<Registro> registros = Registrador.inserir(solicitante, usuario);
+		usuario	.getRegistros()
+				.addAll(Registrador.inserir(solicitante, usuario));
 
-		if (usuario.getRegistros() == null) {
-			usuario.setRegistros(registros);
-		} else {
-			usuario	.getRegistros()
-					.addAll(registros);
+		if (superior != null) {
+			superior.getColaboradores()
+					.add(usuario);
 		}
-
 		usuario.setSuperior(superior);
-		usuario.setStatus(Status.ATIVO);
 
 		manager.persist(usuario);
 	}
@@ -131,58 +125,10 @@ public class UsuarioDao {
 
 		Validador.validar(usuario);
 
-		if (usuario.getRegistros() == null) {
-			usuario.setRegistros(registros);
-		} else {
-			usuario	.getRegistros()
-					.addAll(registros);
-		}
+		usuario	.getRegistros()
+				.addAll(registros);
 
 		manager.persist(usuario);
-	}
-
-	@Transactional
-	public List<Estacao> obterEstacoes(Usuario usuario) {
-		return usuario.getEstacoes();
-	}
-
-	@Transactional
-	public List<Estacao> obterEstacoes(String login_usuario) {
-		return this	.obter(login_usuario)
-					.getEstacoes();
-	}
-
-	@Transactional
-	public List<Registro> obterRegistros(Usuario usuario) {
-		return usuario.getRegistros();
-	}
-
-	@Transactional
-	public List<Registro> obterRegistros(String login_usuario) {
-		return this	.obter(login_usuario)
-					.getRegistros();
-	}
-
-	@Transactional
-	public List<Token> obterTokens(Usuario usuario) {
-		return usuario.getTokens();
-	}
-
-	@Transactional
-	public List<Token> obterTokens(String login_usuario) {
-		return this	.obter(login_usuario)
-					.getTokens();
-	}
-
-	@Transactional
-	public List<Usuario> obterColaboradores(Usuario usuario) {
-		return usuario.getColaboradores();
-	}
-
-	@Transactional
-	public List<Usuario> obterColaboradores(String login_usuario) {
-		return this	.obter(login_usuario)
-					.getColaboradores();
 	}
 
 	// @Transactional

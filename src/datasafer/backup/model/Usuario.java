@@ -7,13 +7,16 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -25,10 +28,10 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
-
-import org.hibernate.annotations.NaturalId;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -40,6 +43,32 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 		"ultimaTentativa", "backups" })
 @Entity
 public class Usuario {
+
+	public Usuario() {
+		this.id = null;
+		this.superior = null;
+		this.colaboradores = new ArrayList<Usuario>();
+		this.estacoes = new ArrayList<Estacao>();
+		this.backups = new ArrayList<Backup>();
+		this.registros = new ArrayList<Registro>();
+		this.tokens = new ArrayList<Token>();
+		this.delegacoes = new HashSet<Permissao>();
+		this.login = null;
+		this.senha = null;
+		this.status = null;
+		this.permissoes = new HashSet<Permissao>();
+		this.nome = null;
+		this.email = null;
+		this.armazenamento = 0L;
+		this.armazenamentoOcupado = 0L;
+		this.tentativas = 0;
+		this.ultimaTentativa = null;
+
+		this.statusBackups = new HashMap<Operacao.Status, Integer>();
+		for (Operacao.Status s : Operacao.Status.values()) {
+			this.statusBackups.put(s, 0);
+		}
+	}
 
 	public enum Status {
 		ATIVO("Ativo"),
@@ -69,7 +98,6 @@ public class Usuario {
 
 		VISUALIZAR_ESTACOES("Visualizar estacaos"),
 		INSERIR_ESTACOES("Inserir estacaos"),
-		MODIFICAR_ESTACOES("Modificar estacaos"),
 		EXCLUIR_ESTACOES("Excluir estacaos"),
 
 		VISUALIZAR_BACKUPS("Visualizar backups"),
@@ -79,7 +107,6 @@ public class Usuario {
 
 		VISUALIZAR_OPERACOES("Visualizar operações"),
 		INSERIR_OPERACOES("Inserir operações"),
-		MODIFICAR_OPERACOES("Modificar operações"),
 		EXCLUIR_OPERACOES("Excluir operações");
 
 		private String descricao;
@@ -94,15 +121,6 @@ public class Usuario {
 		}
 	}
 
-	@JsonProperty(access = Access.READ_ONLY)
-	@Column(nullable = false)
-	private int tentativas;
-
-	@JsonProperty(access = Access.READ_ONLY)
-	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-	@Column(nullable = true)
-	private Date ultimaTentativa;
-
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -116,77 +134,33 @@ public class Usuario {
 	@JsonIgnore
 	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("login")
-	private List<Usuario> colaboradores = new ArrayList<Usuario>();
+	private List<Usuario> colaboradores;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("nome")
-	private List<Estacao> estacoes = new ArrayList<Estacao>();
+	private List<Estacao> estacoes;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("nome")
-	private List<Backup> backups = new ArrayList<Backup>();
+	private List<Backup> backups;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("data")
-	private List<Registro> registros = new ArrayList<Registro>();
+	private List<Registro> solicitacoes;
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "usuario_id")
+	@OrderBy("data")
+	private List<Registro> registros;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("emissao")
-	private List<Token> tokens = new ArrayList<Token>();
-
-	@JsonProperty(value = "login_superior")
-	public String getLoginSuperior() {
-		if (superior != null) {
-			return superior.getLogin();
-		} else {
-			return null;
-		}
-	}
-
-	@JsonProperty(value = "status_backups")
-	public HashMap<Operacao.Status, Integer> getContagemBackups() {
-		HashMap<Operacao.Status, Integer> operacoes = new HashMap<Operacao.Status, Integer>();
-
-		for (Operacao.Status s : Operacao.Status.values()) {
-			int contagem = 0;
-			for (Backup b : this.getBackups()) {
-				Operacao ultimaOperacao = b.getUltimaOperacao();
-				if (ultimaOperacao != null && ultimaOperacao.getStatus() == s) {
-					contagem++;
-				}
-			}
-			operacoes.put(s, contagem);
-		}
-
-		return operacoes;
-	}
-
-	@JsonProperty(value = "armazenamento_ocupado")
-	public long getOcupado() {
-		long ocupado = 0L;
-
-		for (Backup b : this.getBackups()) {
-			Operacao ultimoSucesso = null;
-			for (Operacao o : b.getOperacoes()) {
-				if (o.getStatus() == Operacao.Status.SUCESSO) {
-					if (ultimoSucesso == null) {
-						ultimoSucesso = o;
-					} else if (o.getData()
-								.after(ultimoSucesso.getData())) {
-						ultimoSucesso = o;
-					}
-				}
-				if (ultimoSucesso != null) {
-					ocupado += ultimoSucesso.getTamanho();
-				}
-			}
-		}
-		return ocupado;
-	}
+	private List<Token> tokens;
 
 	@JsonProperty
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -195,7 +169,6 @@ public class Usuario {
 	private Set<Permissao> delegacoes;
 
 	@JsonProperty
-	@NaturalId(mutable = true)
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
@@ -219,12 +192,49 @@ public class Usuario {
 	private String nome;
 
 	@JsonProperty
-	@Column(length = 50, nullable = true)
+	@Column(length = 50, nullable = false)
 	private String email;
 
 	@JsonProperty
 	@Column(nullable = false)
 	private long armazenamento;
+
+	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private long armazenamentoOcupado;
+
+	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
+	@ElementCollection(fetch = FetchType.EAGER)
+	@MapKeyColumn(name = "status")
+	@MapKeyEnumerated(EnumType.STRING)
+	@Column(name = "contagem")
+	@CollectionTable(name = "usuario_status_backups", joinColumns = @JoinColumn(name = "usuario_id"))
+	private Map<Operacao.Status, Integer> statusBackups;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@Column(nullable = false)
+	private int tentativas;
+
+	@JsonProperty(access = Access.READ_ONLY)
+	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
+	@Column(nullable = true)
+	private Date ultimaTentativa;
+
+	public long getArmazenamentoOcupado() {
+		return armazenamentoOcupado;
+	}
+
+	public void setArmazenamentoOcupado(long armazenamentoOcupado) {
+		this.armazenamentoOcupado = armazenamentoOcupado;
+	}
+
+	public Map<Operacao.Status, Integer> getStatusBackups() {
+		return statusBackups;
+	}
+
+	public void setStatusBackups(Map<Operacao.Status, Integer> statusBackups) {
+		this.statusBackups = statusBackups;
+	}
 
 	public List<Token> getTokens() {
 		return tokens;

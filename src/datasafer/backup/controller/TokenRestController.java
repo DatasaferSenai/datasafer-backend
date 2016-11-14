@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,9 +33,9 @@ public class TokenRestController {
 	private TokenDao tokenDao;
 
 	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> logar(@RequestBody String corpo_usuario) {
+	public ResponseEntity<Object> logar(HttpServletRequest req,
+										@RequestBody String corpo_usuario) {
 		try {
-
 			JSONObject jobj = new JSONObject(corpo_usuario);
 
 			Usuario usuario = new Usuario();

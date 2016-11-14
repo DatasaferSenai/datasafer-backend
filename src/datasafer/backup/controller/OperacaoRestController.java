@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.model.Operacao;
+import datasafer.backup.model.Usuario;
 
 @CrossOrigin(maxAge = 3600)
 @RestController
@@ -25,44 +26,43 @@ public class OperacaoRestController {
 	private OperacaoDao operacaoDao;
 
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obter(@RequestAttribute String login_solicitante,
-										@RequestAttribute String login_usuario,
+	public ResponseEntity<Object> obter(@RequestAttribute Usuario solicitante,
+										@RequestAttribute Usuario usuario,
 										@RequestHeader(name = "estacao") String nome_estacao,
 										@RequestHeader(name = "backup") String nome_backup,
 										@RequestHeader(name = "operacao") Date data_operacao) {
 		try {
 
-			Operacao operacao = operacaoDao.obter(login_usuario, nome_estacao, nome_backup, data_operacao);
+			Operacao operacao = operacaoDao.obter(usuario.getLogin(), nome_estacao, nome_backup, data_operacao);
 			if (operacao != null) {
-				return ResponseEntity	.ok()
-										.body(operacao);
+				return new ResponseEntity<>(operacao, HttpStatus.OK);
 			} else {
 				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 			}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> inserir(	@RequestAttribute String login_solicitante,
-											@RequestAttribute String login_usuario,
+	public ResponseEntity<Object> inserir(	@RequestAttribute Usuario solicitante,
+											@RequestAttribute Usuario usuario,
 											@RequestHeader(name = "estacao") String nome_estacao,
 											@RequestHeader(name = "backup") String nome_backup,
 											@RequestBody Operacao operacao) {
 		try {
 
 			try {
-				operacaoDao.inserir(login_solicitante, login_usuario, nome_estacao, nome_backup, operacao);
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+				operacaoDao.inserir(solicitante.getLogin(), usuario.getLogin(), nome_estacao, nome_backup, operacao);
+				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (Exception e) {
-				return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 

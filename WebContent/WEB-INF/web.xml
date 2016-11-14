@@ -34,5 +34,13 @@
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
 
-
+	<filter-mapping>
+		<filter-name>SegurancaFilter</filter-name>
+		<url-pattern>/gerenciamento/*</url-pattern>
+	</filter-mapping>
+	<filter-mapping>
+		<filter-name>PermissaoFilter</filter-name>
+		<url-pattern>/gerenciamento/*</url-pattern>
+	</filter-mapping>
+	
 </web-app>

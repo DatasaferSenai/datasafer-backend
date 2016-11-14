@@ -15,9 +15,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "token", "login_usuario", "emissao", "expiracao" })
+@JsonPropertyOrder({ "token", "emissao", "expiracao" })
 @Entity
 public class Token {
+
+	public Token() {
+		this.usuario = null;
+		this.token = null;
+		this.emissao = null;
+		this.expiracao = null;
+	}
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -28,15 +35,6 @@ public class Token {
 	@Id
 	@Column(length = 255, nullable = false)
 	private String token;
-
-	@JsonIgnore
-	public String getLoginUsuario() {
-		if (usuario != null) {
-			return usuario.getLogin();
-		} else {
-			return null;
-		}
-	}
 
 	@JsonIgnore
 	@Column(nullable = false)

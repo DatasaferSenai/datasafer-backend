@@ -34,11 +34,7 @@ public class TokenDao {
 
 	// Transactional
 	public Token obter(String chave_token) throws DataRetrievalFailureException {
-		List<Token> resultadosToken = manager	.createQuery("SELECT t FROM Token t WHERE t.token = :chave_token", Token.class)
-												.setParameter("chave_token", chave_token)
-												.getResultList();
-
-		return resultadosToken.isEmpty() ? null : resultadosToken.get(0);
+		return manager.find(Token.class, chave_token);
 	}
 
 	@Transactional
@@ -69,7 +65,7 @@ public class TokenDao {
 		}
 
 		Token token = new Token();
-		token.setToken(new BigInteger(1275, random).toString(32));
+		token.setToken(new BigInteger(635, random).toString(32));
 		token.setEmissao(Date.from(LocalDateTime.now()
 												.atZone(ZoneId.systemDefault())
 												.toInstant()));
@@ -80,6 +76,8 @@ public class TokenDao {
 																				.plusSeconds(expiracao)));
 		}
 
+		usuario	.getTokens()
+				.add(token);
 		token.setUsuario(usuario);
 
 		manager.persist(token);
@@ -144,6 +142,9 @@ public class TokenDao {
 			throw new DataRetrievalFailureException("Token não encontrado");
 		}
 
+		usuario.getTokens().remove(token);
+		token.setUsuario(null);
+		
 		manager.remove(token);
 	}
 

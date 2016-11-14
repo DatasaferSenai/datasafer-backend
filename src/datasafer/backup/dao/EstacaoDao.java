@@ -115,6 +115,7 @@ public class EstacaoDao {
 			}
 		}
 
+		gerenciador.getEstacoes().add(estacao);
 		estacao.setGerenciador(gerenciador);
 
 		manager.persist(estacao);

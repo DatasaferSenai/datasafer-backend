@@ -18,8 +18,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
-import org.hibernate.annotations.NaturalId;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -28,6 +26,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({ "data", "status", "tamanho" })
 @Entity
 public class Operacao {
+
+	public Operacao() {
+		this.id = null;
+		this.backup = null;
+		this.registros = new ArrayList<Registro>();
+		this.data = null;
+		this.status = null;
+		this.tamanho = null;
+	}
 
 	public enum Status {
 		SUCESSO("Sucesso"),
@@ -59,14 +66,13 @@ public class Operacao {
 	private Backup backup;
 
 	@JsonIgnore
-	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "operacao_id")
 	@OrderBy("data")
-	private List<Registro> registros = new ArrayList<Registro>();
+	private List<Registro> registros;
 
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
-	@NaturalId(mutable = true)
 	@Column(nullable = false)
 	private Date data;
 
@@ -76,8 +82,8 @@ public class Operacao {
 	private Status status;
 
 	@JsonProperty
-	@Column(nullable = false)
-	private long tamanho;
+	@Column(nullable = true)
+	private Long tamanho;
 
 	public Long getId() {
 		return id;
