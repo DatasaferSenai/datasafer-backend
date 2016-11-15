@@ -47,11 +47,17 @@ public class ValidadorFilter implements Filter {
 
 		Usuario usuario = (Usuario) request.getAttribute("usuario");
 
+		Estacao estacao = null;
 		if (request	.getRequestURI()
 					.contains("estacao")) {
-			Estacao estacao = null;
+
+			if (usuario == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Usuário não espeficado");
+				return;
+			}
+
 			if (request.getHeader("estacao") != null) {
-				estacao = estacaoDao.obter((String) request.getHeader("estacao"));
+				estacao = estacaoDao.obtem((String) request.getHeader("estacao"));
 			}
 			if (estacao == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value(), "Estação inválida ou não encontrada");
@@ -59,41 +65,56 @@ public class ValidadorFilter implements Filter {
 			}
 
 			request.setAttribute("estacao", estacao);
+		}
 
-			if (request	.getRequestURI()
-						.contains("backup")) {
-				Backup backup = null;
-				if (request.getHeader("backup") != null) {
-					backup = backupDao.obter(usuario, estacao, (String) request.getHeader("backup"));
-				}
-				if (backup == null) {
-					response.sendError(HttpStatus.NOT_FOUND.value(), "Backup inválido ou não encontrado");
-					return;
-				}
+		Backup backup = null;
+		if (request	.getRequestURI()
+					.contains("backup")) {
 
-				request.setAttribute("backup", backup);
+			if (estacao == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Estação não espeficada");
+				return;
+			}
 
-				if (request	.getRequestURI()
-							.contains("operacao")) {
-					Operacao operacao = null;
-					if (request.getHeader("operacao") != null) {
-						try {
-							operacao = operacaoDao.obter(backup, new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse((String) request.getHeader("operacao")));
-						} catch (ParseException e) {
-							operacao = null;
-						}
-					}
-					if (operacao == null) {
-						response.sendError(HttpStatus.NOT_FOUND.value(), "Operacao inválida ou não encontrada");
-						return;
-					}
+			if (request.getHeader("backup") != null) {
+				backup = backupDao.obtem(usuario, estacao, (String) request.getHeader("backup"));
+			}
+			if (backup == null) {
+				response.sendError(HttpStatus.NOT_FOUND.value(), "Backup inválido ou não encontrado");
+				return;
+			}
 
-					request.setAttribute("operacao", operacao);
+			request.setAttribute("backup", backup);
+
+		}
+
+		Operacao operacao = null;
+		if (request	.getRequestURI()
+					.contains("operacao")) {
+
+			if (backup == null) {
+				response.sendError(HttpStatus.BAD_REQUEST.value(), "Backup não espeficado");
+				return;
+			}
+
+			if (request.getHeader("operacao") != null) {
+				try {
+					operacao = operacaoDao.obtem(backup, new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse((String) request.getHeader("operacao")));
+				} catch (ParseException e) {
+					operacao = null;
 				}
 			}
+			if (operacao == null) {
+				response.sendError(HttpStatus.NOT_FOUND.value(), "Operacao inválida ou não encontrada");
+				return;
+			}
+
+			request.setAttribute("operacao", operacao);
+
 		}
 
 		chain.doFilter(req, resp);
+
 	}
 
 	@Override

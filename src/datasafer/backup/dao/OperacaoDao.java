@@ -25,7 +25,7 @@ public class OperacaoDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Operacao obter(	Backup backup,
+	public Operacao obtem(	Backup backup,
 							Date data_operacao) {
 		List<Operacao> resultadosOperacao = manager	.createQuery(
 				"SELECT operacao FROM Operacao operacao "
@@ -71,7 +71,7 @@ public class OperacaoDao {
 		if (valores.getData() != null && !valores	.getData()
 													.equals(operacao.getData())) {
 
-			Operacao existente = this.obter(operacao.getBackup(), valores.getData());
+			Operacao existente = this.obtem(operacao.getBackup(), valores.getData());
 			if (existente != null) {
 				throw new DataIntegrityViolationException(
 						"Operação '" + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valores.getData()) + "' já existente");

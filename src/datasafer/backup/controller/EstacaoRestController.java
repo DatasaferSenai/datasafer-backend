@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import datasafer.backup.dao.BackupDao;
 import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
@@ -24,13 +25,15 @@ public class EstacaoRestController {
 
 	@Autowired
 	private EstacaoDao estacaoDao;
+	@Autowired
+	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obter(@RequestAttribute Estacao estacao) {
+	public ResponseEntity<Object> obtem(@RequestAttribute Usuario usuario,
+										@RequestAttribute Estacao estacao) {
 		try {
-
 			try {
-				return new ResponseEntity<>(estacao, HttpStatus.OK);
+				return new ResponseEntity<>(estacaoDao.obtemStatusBackups(usuario, estacao), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -68,7 +71,7 @@ public class EstacaoRestController {
 	public ResponseEntity<Object> listarBackups(@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao) {
 		try {
-			return new ResponseEntity<>(estacaoDao.obterBackups(usuario, estacao), HttpStatus.OK);
+			return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(estacaoDao.obtemBackups(usuario, estacao))), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

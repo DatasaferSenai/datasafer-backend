@@ -56,7 +56,7 @@ public class SegurancaFilter implements Filter {
 				return;
 			}
 
-			Token token = tokenDao.obter(chave_token);
+			Token token = tokenDao.obtem(chave_token);
 			if (token == null) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 				return;
@@ -73,7 +73,7 @@ public class SegurancaFilter implements Filter {
 			}
 
 			Usuario solicitante = token.getUsuario();
-			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obter(request.getHeader("usuario")) : solicitante;
+			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obtem(request.getHeader("usuario")) : solicitante;
 
 			if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");

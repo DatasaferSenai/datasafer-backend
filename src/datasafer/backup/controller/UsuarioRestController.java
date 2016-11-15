@@ -3,7 +3,6 @@ package datasafer.backup.controller;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import datasafer.backup.dao.BackupDao;
+import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Usuario;
 
@@ -23,20 +24,19 @@ public class UsuarioRestController {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
+	@Autowired
+	private EstacaoDao estacaoDao;
+	@Autowired
+	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> inserirUsuario(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario,
 													@RequestBody Usuario novo) {
 		try {
-
 			try {
 				usuarioDao.inserir(solicitante, usuario, novo);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
 			} catch (DataIntegrityViolationException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -50,16 +50,9 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterUsuario(@RequestAttribute Usuario usuario) {
+	public ResponseEntity<Object> obtemUsuario(@RequestAttribute Usuario usuario) {
 		try {
-			try {
-				return new ResponseEntity<>(usuario, HttpStatus.OK);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			}
-
+			return new ResponseEntity<>(usuarioDao.carregaArmazenamentoOcupado(usuarioDao.carregaStatusBackups(usuario)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -76,10 +69,6 @@ public class UsuarioRestController {
 				usuarioDao.modificar(solicitante, usuario, valores);
 
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
 			} catch (DataIntegrityViolationException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -93,16 +82,9 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterUsuarios(@RequestAttribute Usuario usuario) {
+	public ResponseEntity<Object> obtemUsuarios(@RequestAttribute Usuario usuario) {
 		try {
-
-			try {
-				return new ResponseEntity<>(usuarioDao.obterColaboradores(usuario), HttpStatus.OK);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			}
+			return new ResponseEntity<>(usuarioDao.carregaArmazenamentoOcupado(usuarioDao.carregaStatusBackups(usuario)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -110,15 +92,9 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterEstacoes(@RequestAttribute Usuario usuario) {
+	public ResponseEntity<Object> obtemEstacoes(@RequestAttribute Usuario usuario) {
 		try {
-			try {
-				return new ResponseEntity<>(usuarioDao.obterEstacoes(usuario), HttpStatus.OK);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			}
+			return new ResponseEntity<>(estacaoDao.carregaStatusBackups(usuarioDao.obtemEstacoes(usuario)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -126,16 +102,9 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterBackups(@RequestAttribute Usuario usuario) {
+	public ResponseEntity<Object> obtemBackups(@RequestAttribute Usuario usuario) {
 		try {
-
-			try {
-				return new ResponseEntity<>(usuarioDao.obterBackups(usuario), HttpStatus.OK);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			}
+			return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(usuarioDao.obtemBackups(usuario))), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

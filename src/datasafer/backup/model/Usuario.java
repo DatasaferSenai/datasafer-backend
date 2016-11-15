@@ -16,7 +16,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
@@ -28,12 +27,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
-
-import org.hibernate.annotations.Formula;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -66,9 +62,9 @@ public class Usuario {
 		this.tentativas = 0;
 		this.ultimaTentativa = null;
 
-		this.statusBackups = new HashMap<Operacao.Status, Integer>();
+		this.statusBackups = new HashMap<Operacao.Status, Long>();
 		for (Operacao.Status s : Operacao.Status.values()) {
-			this.statusBackups.put(s, 0);
+			this.statusBackups.put(s, 0L);
 		}
 	}
 
@@ -202,17 +198,12 @@ public class Usuario {
 	private long armazenamento;
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
-	// @Column(nullable = false)
-	@Formula("(SELECT operacao FROM Operacao operacao)")
+	@Transient
 	private long armazenamentoOcupado;
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
-	@ElementCollection(fetch = FetchType.EAGER)
-	@MapKeyColumn(name = "status")
-	@MapKeyEnumerated(EnumType.STRING)
-	@Column(name = "contagem")
-	@CollectionTable(name = "usuario_status_backups", joinColumns = @JoinColumn(name = "usuario_id"))
-	private Map<Operacao.Status, Integer> statusBackups;
+	@Transient
+	private Map<Operacao.Status, Long> statusBackups;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
@@ -231,11 +222,11 @@ public class Usuario {
 		this.armazenamentoOcupado = armazenamentoOcupado;
 	}
 
-	public Map<Operacao.Status, Integer> getStatusBackups() {
+	public Map<Operacao.Status, Long> getStatusBackups() {
 		return statusBackups;
 	}
 
-	public void setStatusBackups(Map<Operacao.Status, Integer> statusBackups) {
+	public void setStatusBackups(Map<Operacao.Status, Long> statusBackups) {
 		this.statusBackups = statusBackups;
 	}
 

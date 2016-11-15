@@ -1,5 +1,6 @@
 package datasafer.backup.dao;
 
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -13,6 +14,7 @@ import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
 
@@ -23,7 +25,7 @@ public class UsuarioDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Usuario obter(String login_usuario) {
+	public Usuario obtem(String login_usuario) {
 		List<Usuario> resultadosUsuario = manager	.createQuery(
 				"SELECT usuario FROM Usuario usuario "
 						+ "WHERE usuario.login = :login_usuario ",
@@ -32,6 +34,61 @@ public class UsuarioDao {
 													.getResultList();
 
 		return resultadosUsuario.isEmpty() ? null : resultadosUsuario.get(0);
+	}
+
+	// @Transactional
+	public Usuario carregaArmazenamentoOcupado(Usuario proprietario) {
+
+		@SuppressWarnings("unchecked")
+		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
+				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ")
+															.setParameter("id_proprietario", proprietario.getId())
+															.setParameter("status_operacao", Operacao.Status.SUCESSO)
+															.getResultList();
+
+		proprietario.setArmazenamentoOcupado(
+				!resultadosArmazenamentoOcupado.isEmpty() && resultadosArmazenamentoOcupado.get(0) != null ? resultadosArmazenamentoOcupado.get(0) : 0L);
+
+		return proprietario;
+	}
+
+	// @Transactional
+	public List<Usuario> obtemArmazenamentoOcupado(List<Usuario> usuarios) {
+		for (Usuario usuario : usuarios) {
+			this.carregaArmazenamentoOcupado(usuario);
+		}
+		return usuarios;
+	}
+
+	// @Transactional
+	public Usuario carregaStatusBackups(Usuario proprietario) {
+
+		@SuppressWarnings("unchecked")
+		List<Object> resultadosStatusBackups = manager	.createQuery(
+				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+						+ "GROUP BY operacao.status ")
+														.setParameter("id_proprietario", proprietario.getId())
+														.getResultList();
+
+		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
+			Object obj[] = (Object[]) iterator.next();
+			proprietario.getStatusBackups()
+						.put((Operacao.Status) obj[0], (Long) obj[1]);
+		}
+
+		return proprietario;
+	}
+
+	// @Transactional
+	public List<Usuario> obtemStatusBackups(List<Usuario> usuarios) {
+		for (Usuario usuario : usuarios) {
+			this.carregaStatusBackups(usuario);
+		}
+		return usuarios;
 	}
 
 	@Transactional
@@ -44,7 +101,7 @@ public class UsuarioDao {
 
 		Validador.validar(usuario);
 
-		Usuario existente = this.obter(usuario.getLogin());
+		Usuario existente = this.obtem(usuario.getLogin());
 		if (existente != null) {
 			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
 		}
@@ -72,7 +129,7 @@ public class UsuarioDao {
 		if (valores.getLogin() != null && !valores	.getLogin()
 													.equals(usuario.getLogin())) {
 
-			Usuario existente = this.obter(valores.getLogin());
+			Usuario existente = this.obtem(valores.getLogin());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Usuário '" + valores.getLogin() + "' já existente");
 			}
@@ -90,7 +147,7 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public List<Usuario> obterColaboradores(Usuario superior) {
+	public List<Usuario> obtemColaboradores(Usuario superior) {
 		return manager	.createQuery(
 				"SELECT colaborador FROM Usuario colaborador "
 						+ "JOIN FETCH colaborador.superior superior "
@@ -101,7 +158,7 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public List<Backup> obterBackups(Usuario proprietario) {
+	public List<Backup> obtemBackups(Usuario proprietario) {
 		return manager	.createQuery(
 				"SELECT backup FROM Backup backup "
 						+ "JOIN FETCH backup.proprietario proprietario "
@@ -112,7 +169,7 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public List<Estacao> obterEstacoes(Usuario gerenciador) {
+	public List<Estacao> obtemEstacoes(Usuario gerenciador) {
 		return manager	.createQuery(
 				"SELECT estacao FROM Estacao estacao "
 						+ "JOIN FETCH estacao.gerenciador gerenciador "

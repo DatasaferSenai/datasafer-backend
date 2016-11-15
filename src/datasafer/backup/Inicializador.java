@@ -42,27 +42,7 @@ public class Inicializador {
 
 		System.out.println("==== Inicializando ====");
 
-		// Usuario usuario_sistema = usuarioDao.obter("system");
-		// if (usuario_sistema == null) {
-		// usuario_sistema = new Usuario();
-		//
-		// usuario_sistema.setArmazenamento(0L);
-		// usuario_sistema.setNome("Sistema");
-		// usuario_sistema.setEmail("");
-		// usuario_sistema.setLogin("system");
-		// usuario_sistema.setSenha("system");
-		// usuario_sistema.setStatus(Status.ATIVO);
-		//
-		// Set<Permissao> permissoes = new HashSet<Permissao>();
-		// for (Permissao p : Permissao.values())
-		// permissoes.add(p);
-		// usuario_sistema.setPermissoes(permissoes);
-		//
-		// usuarioDao.inserir(null, null, usuario_sistema);
-		//
-		// }
-
-		Usuario usuario_admin = usuarioDao.obter("admin");
+		Usuario usuario_admin = usuarioDao.obtem("admin");
 		if (usuario_admin == null) {
 			usuario_admin = new Usuario();
 
@@ -79,7 +59,6 @@ public class Inicializador {
 			usuario_admin.setPermissoes(permissoes);
 
 			usuarioDao.inserir(null, null, usuario_admin);
-
 		}
 
 		populaUsuarios(null, usuario_admin);
@@ -100,7 +79,7 @@ public class Inicializador {
 								.charAt(0);
 			}
 
-			Usuario usuario = usuarioDao.obter(login);
+			Usuario usuario = usuarioDao.obtem(login);
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
@@ -119,7 +98,6 @@ public class Inicializador {
 				usuario.setPermissoes(permissoes);
 
 				usuarioDao.inserir(solicitante, superior, usuario);
-
 				populaEstacoes(solicitante, usuario);
 			}
 		}
@@ -134,7 +112,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(3) + 2;
+		int quantidade = gerador.nextInt(5) + 5;
 
 		for (int n = 0; n < quantidade; n++) {
 			int tipo_index = gerador.nextInt(tiposDispositivos.size());
@@ -143,7 +121,7 @@ public class Inicializador {
 
 			String nome_estacao = tiposDispositivos.get(tipo_index) + separadores.get(separador_index) + nomesDispositivos.get(nome_index);
 
-			Estacao estacao = estacaoDao.obter(nome_estacao);
+			Estacao estacao = estacaoDao.obtem(nome_estacao);
 			if (estacao == null) {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);
@@ -164,7 +142,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(3) + 2;
+		int quantidade = gerador.nextInt(5) + 5;
 
 		for (int n = 0; n < quantidade; n++) {
 			int nomeIndex = gerador.nextInt(nomes_backups.size());
@@ -173,7 +151,7 @@ public class Inicializador {
 
 			String nomeBackup = nomes_backups.get(nomeIndex);
 
-			Backup backup = backupDao.obter(proprietario, estacao, nomeBackup);
+			Backup backup = backupDao.obtem(proprietario, estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
@@ -189,7 +167,18 @@ public class Inicializador {
 
 				backupDao.inserir(solicitante, proprietario, estacao, backup);
 
-				populaOperacoes(solicitante, proprietario, estacao, backup);
+				final Backup backup_temp = backup;
+				try {
+					Thread.sleep(1500);
+				} catch (InterruptedException e) {
+					Thread	.currentThread()
+							.interrupt();
+				}
+
+				new Thread(() -> {
+					populaOperacoes(solicitante, proprietario, estacao, backup_temp);
+				}).start();
+
 			}
 		}
 	}
@@ -201,7 +190,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(7) + 3;
+		int quantidade = gerador.nextInt(10) + 5;
 
 		for (int n = 0; n < quantidade; n++) {
 
@@ -210,7 +199,7 @@ public class Inicializador {
 											.getTime()
 					+ gerador.nextInt(365));
 
-			Operacao operacao = operacaoDao.obter(backup, data);
+			Operacao operacao = operacaoDao.obtem(backup, data);
 			if (operacao == null) {
 				operacao = new Operacao();
 				operacao.setData(new Date(Calendar	.getInstance(TimeZone.getDefault())
@@ -221,6 +210,12 @@ public class Inicializador {
 				operacao.setTamanho((long) gerador.nextInt(10000000));
 				operacaoDao.inserir(solicitante, backup, operacao);
 
+				try {
+					Thread.sleep(1500);
+				} catch (InterruptedException e) {
+					Thread	.currentThread()
+							.interrupt();
+				}
 			}
 		}
 

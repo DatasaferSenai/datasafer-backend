@@ -1,6 +1,8 @@
 package datasafer.backup.controller;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +26,7 @@ public class OperacaoRestController {
 	private OperacaoDao operacaoDao;
 
 	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obter(@RequestAttribute Operacao operacao) {
+	public ResponseEntity<Object> obtem(@RequestAttribute Operacao operacao) {
 		try {
 			return new ResponseEntity<>(operacao, HttpStatus.OK);
 		} catch (Exception e) {
@@ -42,8 +44,10 @@ public class OperacaoRestController {
 			try {
 				operacaoDao.inserir(solicitante, backup, operacao);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-			} catch (Exception e) {
-				return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+			} catch (DataIntegrityViolationException e) {
+				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
+															.toString(),
+						HttpStatus.CONFLICT);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

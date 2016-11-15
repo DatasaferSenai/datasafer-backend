@@ -43,7 +43,7 @@ public class TokenRestController {
 			usuario.setSenha(jobj.getString("senha"));
 			boolean expira = jobj.getBoolean("expira");
 
-			Usuario existente = usuarioDao.obter(usuario.getLogin());
+			Usuario existente = usuarioDao.obtem(usuario.getLogin());
 			if (existente == null) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),

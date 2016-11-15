@@ -3,6 +3,7 @@ package datasafer.backup.dao;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -27,7 +28,7 @@ public class BackupDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Backup obter(Usuario proprietario,
+	public Backup obtem(Usuario proprietario,
 						Estacao estacao,
 						String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
@@ -57,7 +58,7 @@ public class BackupDao {
 
 		Validador.validar(backup);
 
-		Backup existente = this.obter(proprietario, estacao, backup.getNome());
+		Backup existente = this.obtem(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
 						.addAll(Registrador.modificar(solicitante, existente, backup));
@@ -101,7 +102,7 @@ public class BackupDao {
 		if (valores.getNome() != null && !valores	.getNome()
 													.equals(backup.getNome())) {
 
-			Backup existente = this.obter(backup.getProprietario(), backup.getEstacao(), valores.getNome());
+			Backup existente = this.obtem(backup.getProprietario(), backup.getEstacao(), valores.getNome());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Backup '" + valores.getNome() + "' já existente");
 			}
@@ -122,7 +123,7 @@ public class BackupDao {
 	}
 
 	@Transactional
-	public List<Operacao> obterOperacoes(Backup backup) {
+	public List<Operacao> obtemOperacoes(Backup backup) {
 		return manager	.createQuery(
 				"SELECT operacao FROM Operacao operacao "
 						+ "JOIN FETCH operacao.backup backup "
@@ -130,6 +131,61 @@ public class BackupDao {
 				Operacao.class)
 						.setParameter("id_backup", backup.getId())
 						.getResultList();
+	}
+
+	// @Transactional
+	public Backup carregaStatusOperacoes(Backup backup) {
+
+		@SuppressWarnings("unchecked")
+		List<Object> resultadosStatusOperacoes = manager.createQuery(
+				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id_backup "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+						+ "GROUP BY operacao.status ")
+														.setParameter("id_backup", backup.getId())
+														.getResultList();
+
+		for (Iterator<Object> iterator = resultadosStatusOperacoes.iterator(); iterator.hasNext();) {
+			Object obj[] = (Object[]) iterator.next();
+			backup	.getStatusOperacoes()
+					.put((Operacao.Status) obj[0], (Long) obj[1]);
+		}
+
+		return backup;
+	}
+
+	// @Transactional
+	public List<Backup> carregaStatusOperacoes(
+												List<Backup> backups) {
+		for (Backup backup : backups) {
+			this.carregaStatusOperacoes(backup);
+		}
+		return backups;
+	}
+
+	// @Transactional
+	public Backup carregaUltimaOperacao(Backup backup) {
+		System.out.println("--- OPERACOES --- ");
+		List<Operacao> resultadosUltimaOperacao = manager	.createQuery(
+				"SELECT operacao FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id_backup "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE ultimaOperacao.backup = operacao.backup)",
+				Operacao.class)
+															.setParameter("id_backup", backup.getId())
+															.getResultList();
+		System.out.println("--- FIM OPERACOES --- ");
+		backup.setUltimaOperacao(
+				!resultadosUltimaOperacao.isEmpty() ? resultadosUltimaOperacao.get(0) : null);
+
+		return backup;
+	}
+
+	// @Transactional
+	public List<Backup> carregaUltimaOperacao(List<Backup> backups) {
+		for (Backup backup : backups) {
+			this.carregaUltimaOperacao(backup);
+		}
+		return backups;
 	}
 
 }

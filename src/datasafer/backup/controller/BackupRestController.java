@@ -48,13 +48,14 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterBackup(	@RequestAttribute Usuario usuario,
+	public ResponseEntity<Object> obtemBackup(	@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao,
 												@RequestAttribute Backup backup) {
 		try {
 
 			try {
-				return new ResponseEntity<>(backup, HttpStatus.OK);
+
+				return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(backup)), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -67,11 +68,11 @@ public class BackupRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obterOperacoes(	@RequestAttribute Usuario usuario,
+	public ResponseEntity<Object> obtemOperacoes(	@RequestAttribute Usuario usuario,
 													@RequestAttribute Estacao estacao,
 													@RequestAttribute Backup backup) {
 		try {
-			return new ResponseEntity<>(backupDao.obterOperacoes(backup), HttpStatus.OK);
+			return new ResponseEntity<>(backupDao.obtemOperacoes(backup), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

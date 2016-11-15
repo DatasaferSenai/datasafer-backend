@@ -30,7 +30,7 @@ public class TokenDao {
 	private SecureRandom random = new SecureRandom();
 
 	// Transactional
-	public Token obter(String chave_token) throws DataRetrievalFailureException {
+	public Token obtem(String chave_token) throws DataRetrievalFailureException {
 		return manager.find(Token.class, chave_token);
 	}
 

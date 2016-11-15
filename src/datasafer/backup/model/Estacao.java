@@ -6,21 +6,17 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -39,9 +35,9 @@ public class Estacao {
 		this.nome = null;
 		this.descricao = null;
 
-		this.statusBackups = new HashMap<Operacao.Status, Integer>();
+		this.statusBackups = new HashMap<Operacao.Status, Long>();
 		for (Operacao.Status s : Operacao.Status.values()) {
-			this.statusBackups.put(s, 0);
+			this.statusBackups.put(s, 0L);
 		}
 	}
 
@@ -75,18 +71,14 @@ public class Estacao {
 	private String descricao;
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
-	@ElementCollection(fetch = FetchType.EAGER)
-	@MapKeyColumn(name = "status")
-	@MapKeyEnumerated(EnumType.STRING)
-	@Column(name = "contagem")
-	@CollectionTable(name = "estacao_status_backups", joinColumns = @JoinColumn(name = "estacao_id"))
-	private Map<Operacao.Status, Integer> statusBackups;
+	@Transient
+	private Map<Operacao.Status, Long> statusBackups;
 
-	public Map<Operacao.Status, Integer> getStatusBackups() {
+	public Map<Operacao.Status, Long> getStatusBackups() {
 		return statusBackups;
 	}
 
-	public void setStatusBackups(Map<Operacao.Status, Integer> statusBackups) {
+	public void setStatusBackups(Map<Operacao.Status, Long> statusBackups) {
 		this.statusBackups = statusBackups;
 	}
 

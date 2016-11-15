@@ -7,22 +7,17 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -46,9 +41,9 @@ public class Backup {
 		this.intervalo = 0L;
 		this.pasta = "";
 
-		this.statusOperacoes = new HashMap<Operacao.Status, Integer>();
+		this.statusOperacoes = new HashMap<Operacao.Status, Long>();
 		for (Operacao.Status s : Operacao.Status.values()) {
-			this.statusOperacoes.put(s, 0);
+			this.statusOperacoes.put(s, 0L);
 		}
 	}
 
@@ -100,16 +95,12 @@ public class Backup {
 	private String pasta;
 
 	@JsonProperty(value = "ultima_operacao", access = Access.READ_ONLY)
-	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@Transient
 	private Operacao ultimaOperacao;
 
 	@JsonProperty(value = "status_operacoes", access = Access.READ_ONLY)
-	@ElementCollection(fetch = FetchType.EAGER)
-	@MapKeyColumn(name = "status")
-	@MapKeyEnumerated(EnumType.STRING)
-	@Column(name = "contagem")
-	@CollectionTable(name = "backup_status_operacoes", joinColumns = @JoinColumn(name = "backup_id"))
-	private Map<Operacao.Status, Integer> statusOperacoes;
+	@Transient
+	private Map<Operacao.Status, Long> statusOperacoes;
 
 	public Operacao getUltimaOperacao() {
 		return ultimaOperacao;
@@ -119,11 +110,11 @@ public class Backup {
 		this.ultimaOperacao = ultimaOperacao;
 	}
 
-	public Map<Operacao.Status, Integer> getStatusOperacoes() {
+	public Map<Operacao.Status, Long> getStatusOperacoes() {
 		return statusOperacoes;
 	}
 
-	public void setStatusOperacoes(Map<Operacao.Status, Integer> statusOperacoes) {
+	public void setStatusOperacoes(Map<Operacao.Status, Long> statusOperacoes) {
 		this.statusOperacoes = statusOperacoes;
 	}
 
