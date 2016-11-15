@@ -38,33 +38,29 @@ public class Inicializador {
 	private OperacaoDao operacaoDao;
 
 	@PostConstruct
-	private void Inicializa() {
+	private void popula() {
+
 		System.out.println("==== Inicializando ====");
-		verificaAdmin();
-		populaUsuarios();
-	}
 
-	private void verificaAdmin() {
-
-		Usuario usuario_sistema = usuarioDao.obter("system");
-		if (usuario_sistema == null) {
-			usuario_sistema = new Usuario();
-
-			usuario_sistema.setArmazenamento(0L);
-			usuario_sistema.setNome("Sistema");
-			usuario_sistema.setEmail("");
-			usuario_sistema.setLogin("system");
-			usuario_sistema.setSenha("system");
-			usuario_sistema.setStatus(Status.ATIVO);
-
-			Set<Permissao> permissoes = new HashSet<Permissao>();
-			for (Permissao p : Permissao.values())
-				permissoes.add(p);
-			usuario_sistema.setPermissoes(permissoes);
-
-			usuarioDao.inserir(null, null, usuario_sistema);
-
-		}
+		// Usuario usuario_sistema = usuarioDao.obter("system");
+		// if (usuario_sistema == null) {
+		// usuario_sistema = new Usuario();
+		//
+		// usuario_sistema.setArmazenamento(0L);
+		// usuario_sistema.setNome("Sistema");
+		// usuario_sistema.setEmail("");
+		// usuario_sistema.setLogin("system");
+		// usuario_sistema.setSenha("system");
+		// usuario_sistema.setStatus(Status.ATIVO);
+		//
+		// Set<Permissao> permissoes = new HashSet<Permissao>();
+		// for (Permissao p : Permissao.values())
+		// permissoes.add(p);
+		// usuario_sistema.setPermissoes(permissoes);
+		//
+		// usuarioDao.inserir(null, null, usuario_sistema);
+		//
+		// }
 
 		Usuario usuario_admin = usuarioDao.obter("admin");
 		if (usuario_admin == null) {
@@ -82,12 +78,15 @@ public class Inicializador {
 				permissoes.add(p);
 			usuario_admin.setPermissoes(permissoes);
 
-			usuarioDao.inserir("system", "system", usuario_admin);
+			usuarioDao.inserir(null, null, usuario_admin);
 
 		}
+
+		populaUsuarios(null, usuario_admin);
 	}
 
-	public void populaUsuarios() {
+	public void populaUsuarios(	Usuario solicitante,
+								Usuario superior) {
 
 		System.out.println(" ==== POPULA ==== ");
 
@@ -112,20 +111,22 @@ public class Inicializador {
 				usuario.setStatus(Status.ATIVO);
 
 				Set<Permissao> permissoes = new HashSet<Permissao>();
-				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_OPERACOES,
+				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
+						Permissao.VISUALIZAR_OPERACOES,
 						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
 						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_BACKUPS));
 
 				usuario.setPermissoes(permissoes);
 
-				usuarioDao.inserir("system", "admin", usuario);
+				usuarioDao.inserir(solicitante, superior, usuario);
 
-				populaEstacoes(login);
+				populaEstacoes(solicitante, usuario);
 			}
 		}
 	}
 
-	public void populaEstacoes(String login_usuario) {
+	public void populaEstacoes(	Usuario solicitante,
+								Usuario gerenciador) {
 
 		List<String> tiposDispositivos = Arrays.asList("PC", "Desktop", "Computador", "Notebook", "Netbook", "Laptop");
 		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escritório", "Banheiro", "Quarto", "Sala");
@@ -146,15 +147,16 @@ public class Inicializador {
 			if (estacao == null) {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);
-				estacaoDao.inserir("system", login_usuario, estacao);
+				estacaoDao.inserir(solicitante, gerenciador, estacao);
 
-				populaBackups(login_usuario, nome_estacao);
+				populaBackups(solicitante, gerenciador, estacao);
 			}
 		}
 	}
 
-	public void populaBackups(	String login_usuario,
-								String nome_estacao) {
+	public void populaBackups(	Usuario solicitante,
+								Usuario proprietario,
+								Estacao estacao) {
 
 		List<String> nomes_backups = Arrays.asList("Meus arquivos", "Minhas fotos", "Arquivos", "Fotos", "Imagens", "Meus videos", "Videos", "Midia",
 				"Programas", "Importante", "Coisas importantes", "Arquivos importantes", "Software", "Banco de dados", "DB", "Apresentações", "Planilhas",
@@ -171,7 +173,7 @@ public class Inicializador {
 
 			String nomeBackup = nomes_backups.get(nomeIndex);
 
-			Backup backup = backupDao.obter(login_usuario, nome_estacao, nomeBackup);
+			Backup backup = backupDao.obter(proprietario, estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
@@ -185,16 +187,17 @@ public class Inicializador {
 				backup.setPasta("C:\\" + nomeBackup	.toLowerCase()
 													.replace(' ', '_'));
 
-				backupDao.inserir("system", login_usuario, nome_estacao, backup);
+				backupDao.inserir(solicitante, proprietario, estacao, backup);
 
-				populaOperacoes(login_usuario, nome_estacao, backup.getNome());
+				populaOperacoes(solicitante, proprietario, estacao, backup);
 			}
 		}
 	}
 
-	public void populaOperacoes(String login_usuario,
-								String nome_estacao,
-								String nome_backup) {
+	public void populaOperacoes(Usuario solicitante,
+								Usuario proprietario,
+								Estacao estacao,
+								Backup backup) {
 
 		Random gerador = new Random();
 
@@ -207,7 +210,7 @@ public class Inicializador {
 											.getTime()
 					+ gerador.nextInt(365));
 
-			Operacao operacao = operacaoDao.obter(login_usuario, nome_estacao, nome_estacao, data);
+			Operacao operacao = operacaoDao.obter(backup, data);
 			if (operacao == null) {
 				operacao = new Operacao();
 				operacao.setData(new Date(Calendar	.getInstance(TimeZone.getDefault())
@@ -216,7 +219,7 @@ public class Inicializador {
 						+ gerador.nextInt(365)));
 				operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 				operacao.setTamanho((long) gerador.nextInt(10000000));
-				operacaoDao.inserir("system", login_usuario, nome_estacao, nome_backup, operacao);
+				operacaoDao.inserir(solicitante, backup, operacao);
 
 			}
 		}

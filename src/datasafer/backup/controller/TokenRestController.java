@@ -80,7 +80,7 @@ public class TokenRestController {
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()));
 
-				usuarioDao.modificar("system", usuario.getLogin(), usuario);
+				usuarioDao.modificar(null, usuario, usuario);
 
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),

@@ -31,7 +31,7 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				usuarioDao.inserir(solicitante.getLogin(), usuario.getLogin(), novo);
+				usuarioDao.inserir(solicitante, usuario, novo);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -73,7 +73,7 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				usuarioDao.modificar(solicitante.getLogin(), usuario.getLogin(), valores);
+				usuarioDao.modificar(solicitante, usuario, valores);
 
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataRetrievalFailureException e) {
@@ -97,7 +97,7 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				return new ResponseEntity<>(usuario.getColaboradores(), HttpStatus.OK);
+				return new ResponseEntity<>(usuarioDao.obterColaboradores(usuario), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -112,9 +112,8 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obterEstacoes(@RequestAttribute Usuario usuario) {
 		try {
-
 			try {
-				return new ResponseEntity<>(usuario.getEstacoes(), HttpStatus.OK);
+				return new ResponseEntity<>(usuarioDao.obterEstacoes(usuario), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -131,7 +130,7 @@ public class UsuarioRestController {
 		try {
 
 			try {
-				return new ResponseEntity<>(usuario.getBackups(), HttpStatus.OK);
+				return new ResponseEntity<>(usuarioDao.obterBackups(usuario), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),

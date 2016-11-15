@@ -41,6 +41,7 @@ public class SegurancaFilter implements Filter {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
+		
 		if (request	.getRequestURI()
 					.contains("login")) {
 
@@ -110,9 +111,7 @@ public class SegurancaFilter implements Filter {
 	}
 
 	@Override
-	public void destroy() {
-
-	}
+	public void destroy() {}
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {

@@ -33,6 +33,8 @@ import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
 
+import org.hibernate.annotations.Formula;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -200,7 +202,8 @@ public class Usuario {
 	private long armazenamento;
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
-	@Column(nullable = false)
+	// @Column(nullable = false)
+	@Formula("(SELECT operacao FROM Operacao operacao)")
 	private long armazenamentoOcupado;
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)

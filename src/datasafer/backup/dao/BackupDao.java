@@ -8,9 +8,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,53 +25,39 @@ public class BackupDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-	@Autowired
-	UsuarioDao usuarioDao;
-	@Autowired
-	EstacaoDao estacaoDao;
 
 	// @Transactional
-	public Backup obter(String login_proprietario,
-						String nome_estacao,
+	public Backup obter(Usuario proprietario,
+						Estacao estacao,
 						String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
-				"SELECT b FROM Backup b WHERE b.estacao.nome = :nome_estacao AND b.proprietario.login = :login_proprietario AND b.nome = :nome_backup",
+				"SELECT backup FROM Backup backup "
+						+ "JOIN FETCH backup.proprietario proprietario "
+						+ "JOIN FETCH backup.estacao estacao "
+						+ "WHERE proprietario.id = :id_proprietario "
+						+ "AND estacao.id = :id_estacao "
+						+ "AND backup.nome = :nome_backup ",
 				Backup.class)
-												.setParameter("login_proprietario", login_proprietario)
-												.setParameter("nome_estacao", nome_estacao)
+												.setParameter("id_proprietario", proprietario.getId())
+												.setParameter("id_estacao", estacao.getId())
 												.setParameter("nome_backup", nome_backup)
 												.getResultList();
-
 		return resultadosBackup.isEmpty() ? null : resultadosBackup.get(0);
 	}
 
 	@Transactional
-	public void inserir(String login_solicitante,
-						String login_proprietario,
-						String nome_estacao,
+	public void inserir(Usuario solicitante,
+						Usuario proprietario,
+						Estacao estacao,
 						Backup backup) {
+
+		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		proprietario = manager.find(Usuario.class, proprietario.getId());
+		estacao = manager.find(Estacao.class, estacao.getId());
 
 		Validador.validar(backup);
 
-		Usuario solicitante = null;
-		if (login_solicitante != null) {
-			solicitante = usuarioDao.obter(login_solicitante);
-			if (solicitante == null) {
-				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
-			}
-		}
-
-		Usuario proprietario = usuarioDao.obter(login_proprietario);
-		if (proprietario == null) {
-			throw new DataRetrievalFailureException("Usuário proprietário '" + login_proprietario + "' não encontrado");
-		}
-
-		Estacao estacao = estacaoDao.obter(nome_estacao);
-		if (estacao == null) {
-			throw new DataRetrievalFailureException("Estação '" + nome_estacao + "' não encontrada");
-		}
-
-		Backup existente = this.obter(login_proprietario, nome_estacao, backup.getNome());
+		Backup existente = this.obter(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
 						.addAll(Registrador.modificar(solicitante, existente, backup));
@@ -84,7 +68,6 @@ public class BackupDao {
 		}
 
 		Operacao operacao = new Operacao();
-		operacao.setBackup(backup);
 		operacao.setData(Date.from(LocalDateTime.now()
 												.atZone(ZoneId.systemDefault())
 												.toInstant()));
@@ -94,94 +77,59 @@ public class BackupDao {
 
 		backup	.getOperacoes()
 				.add(operacao);
-
-		backup	.getStatusOperacoes()
-				.put(operacao.getStatus(), backup	.getStatusOperacoes()
-													.get(operacao.getStatus())
-						+ 1);
+		operacao.setBackup(backup);
 
 		proprietario.getBackups()
 					.add(backup);
-		proprietario.getStatusBackups()
-					.put(backup	.getUltimaOperacao()
-								.getStatus(),
-							proprietario.getStatusBackups()
-										.get(backup	.getUltimaOperacao()
-													.getStatus())
-									+ 1);
 		backup.setProprietario(proprietario);
 
 		estacao	.getBackups()
 				.add(backup);
-		estacao	.getStatusBackups()
-				.put(backup	.getUltimaOperacao()
-							.getStatus(),
-						estacao	.getStatusBackups()
-								.get(backup	.getUltimaOperacao()
-											.getStatus())
-								+ 1);
 		backup.setEstacao(estacao);
 
 		manager.persist(backup);
 	}
 
 	@Transactional
-	public void modificar(	String login_solicitante,
-							String login_proprietario,
-							String nome_estacao,
-							String nome_backup,
+	public void modificar(	Usuario solicitante,
+							Backup backup,
 							Backup valores) {
 
-		Usuario solicitante = null;
-		if (login_solicitante != null) {
-			solicitante = usuarioDao.obter(login_solicitante);
-			if (solicitante == null) {
-				throw new DataRetrievalFailureException("Usuário solicitante '" + login_solicitante + "' não encontrado");
-			}
-		}
-
-		Usuario proprietário = usuarioDao.obter(login_proprietario);
-		if (proprietário == null) {
-			throw new DataRetrievalFailureException("Usuário proprietário '" + login_proprietario + "' não encontrado");
-		}
-
-		Estacao estacao = estacaoDao.obter(nome_estacao);
-		if (estacao == null) {
-			throw new DataRetrievalFailureException("Estação '" + nome_estacao + "' não encontrada");
-		}
-
-		Backup backup = this.obter(login_proprietario, nome_estacao, nome_backup);
-		if (backup == null) {
-			throw new DataRetrievalFailureException("Backup '" + nome_backup + "' não encontrado");
-		}
+		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		backup = manager.find(Backup.class, backup.getId());
 
 		if (valores.getNome() != null && !valores	.getNome()
 													.equals(backup.getNome())) {
 
-			Backup existente = this.obter(login_proprietario, nome_estacao, valores.getNome());
+			Backup existente = this.obter(backup.getProprietario(), backup.getEstacao(), valores.getNome());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Backup '" + valores.getNome() + "' já existente");
 			}
-
 		}
 
-		if (solicitante != null) {
-			List<Registro> registros = Registrador.modificar(solicitante, backup, valores);
-
-			Validador.validar(backup);
-
-			if (backup.getRegistros() == null) {
-				backup.setRegistros(registros);
-			} else {
-				backup	.getRegistros()
-						.addAll(registros);
-			}
+		List<Registro> registros = Registrador.modificar(solicitante, backup, valores);
+		if (backup.getRegistros() == null) {
+			backup.setRegistros(registros);
 		} else {
-			Validador.validar(backup);
+			backup	.getRegistros()
+					.addAll(registros);
 		}
+
+		Validador.validar(backup);
 
 		manager.persist(backup);
 
+	}
+
+	@Transactional
+	public List<Operacao> obterOperacoes(Backup backup) {
+		return manager	.createQuery(
+				"SELECT operacao FROM Operacao operacao "
+						+ "JOIN FETCH operacao.backup backup "
+						+ "WHERE backup.id = :id_backup ",
+				Operacao.class)
+						.setParameter("id_backup", backup.getId())
+						.getResultList();
 	}
 
 }

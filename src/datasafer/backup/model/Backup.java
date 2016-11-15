@@ -21,6 +21,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.MapKeyEnumerated;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.OrderBy;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -98,23 +99,9 @@ public class Backup {
 	@Column(nullable = false)
 	private String pasta;
 
-	@JsonProperty(value = "ultimaOperacao")
-	public Operacao getUltimaOperacao() {
-		Operacao ultimaOperacao = null;
-
-		for (Operacao o : this.getOperacoes()) {
-			if (ultimaOperacao == null) {
-				ultimaOperacao = o;
-			} else {
-				if (o	.getData()
-						.before(ultimaOperacao.getData())) {
-					ultimaOperacao = o;
-				}
-			}
-		}
-
-		return ultimaOperacao;
-	}
+	@JsonProperty(value = "ultima_operacao", access = Access.READ_ONLY)
+	@OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Operacao ultimaOperacao;
 
 	@JsonProperty(value = "status_operacoes", access = Access.READ_ONLY)
 	@ElementCollection(fetch = FetchType.EAGER)
@@ -123,6 +110,14 @@ public class Backup {
 	@Column(name = "contagem")
 	@CollectionTable(name = "backup_status_operacoes", joinColumns = @JoinColumn(name = "backup_id"))
 	private Map<Operacao.Status, Integer> statusOperacoes;
+
+	public Operacao getUltimaOperacao() {
+		return ultimaOperacao;
+	}
+
+	public void setUltimaOperacao(Operacao ultimaOperacao) {
+		this.ultimaOperacao = ultimaOperacao;
+	}
 
 	public Map<Operacao.Status, Integer> getStatusOperacoes() {
 		return statusOperacoes;
