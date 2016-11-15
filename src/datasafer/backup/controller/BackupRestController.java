@@ -27,13 +27,13 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> inserirBackup(@RequestAttribute Usuario solicitante,
+	public ResponseEntity<Object> insereBackup(@RequestAttribute Usuario solicitante,
 												@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao,
 												@RequestBody Backup backup) {
 		try {
 			try {
-				backupDao.inserir(solicitante, usuario, estacao, backup);
+				backupDao.insereBackup(solicitante, usuario, estacao, backup);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataIntegrityViolationException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())

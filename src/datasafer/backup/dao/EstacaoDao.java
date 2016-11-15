@@ -25,7 +25,7 @@ public class EstacaoDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Estacao obtem(String nome_estacao) {
+	public Estacao obtemEstacao(String nome_estacao) {
 		List<Estacao> resultadosEstacao = manager	.createQuery(
 				"SELECT estacao FROM Estacao estacao "
 						+ "WHERE estacao.nome = :nome_estacao ",
@@ -37,9 +37,9 @@ public class EstacaoDao {
 	}
 
 	@Transactional
-	public void modificar(	Usuario solicitante,
-							Estacao estacao,
-							Estacao valores) {
+	public void modificaEstacao(Usuario solicitante,
+								Estacao estacao,
+								Estacao valores) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		estacao = manager.find(Estacao.class, estacao.getId());
@@ -47,13 +47,13 @@ public class EstacaoDao {
 		if (valores.getNome() != null && !valores	.getNome()
 													.equals(estacao.getNome())) {
 
-			Estacao existente = this.obtem(valores.getNome());
+			Estacao existente = this.obtemEstacao(valores.getNome());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Usuário '" + valores.getNome() + "' já existente");
 			}
 		}
 
-		List<Registro> registros = Registrador.modificar(solicitante, estacao, valores);
+		List<Registro> registros = Registrador.modifica(solicitante, estacao, valores);
 		if (estacao.getRegistros() == null) {
 			estacao.setRegistros(registros);
 		} else {
@@ -67,22 +67,22 @@ public class EstacaoDao {
 	}
 
 	@Transactional
-	public void inserir(Usuario solicitante,
-						Usuario gerenciador,
-						Estacao estacao) {
+	public void insereEstacao(	Usuario solicitante,
+								Usuario gerenciador,
+								Estacao estacao) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		gerenciador = manager.find(Usuario.class, gerenciador.getId());
 
 		Validador.validar(estacao);
 
-		Estacao existente = this.obtem(estacao.getNome());
+		Estacao existente = this.obtemEstacao(estacao.getNome());
 		if (existente != null) {
 			throw new DataIntegrityViolationException("Estação '" + estacao.getNome() + "' já existente");
 		}
 
 		estacao	.getRegistros()
-				.addAll(Registrador.inserir(solicitante, estacao));
+				.addAll(Registrador.insere(solicitante, estacao));
 
 		gerenciador	.getEstacoes()
 					.add(estacao);
@@ -163,8 +163,8 @@ public class EstacaoDao {
 	}
 
 	// @Transactional
-	public List<Estacao> carregaStatusBackups(Usuario proprietario,
-											List<Estacao> estacoes) {
+	public List<Estacao> carregaStatusBackups(	Usuario proprietario,
+												List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
 			this.obtemStatusBackups(proprietario, estacao);
 		}
@@ -173,7 +173,7 @@ public class EstacaoDao {
 
 	// @Transactional
 	public List<Estacao> carregaStatusBackups(
-											List<Estacao> estacoes) {
+												List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
 			this.carregaStatusBackups(estacao);
 		}

@@ -13,14 +13,19 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
+import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Permissao;
 
 @WebFilter(filterName = "PermissaoFilter")
 public class PermissaoFilter implements Filter {
+
+	@Autowired
+	UsuarioDao usuarioDao;
 
 	@Override
 	public void doFilter(	ServletRequest req,
@@ -43,10 +48,27 @@ public class PermissaoFilter implements Filter {
 			Usuario solicitante = (Usuario) request.getAttribute("solicitante");
 			Usuario usuario = (Usuario) request.getAttribute("usuario");
 
-			Set<Permissao> permissoes = solicitante.getSuperior() != null && solicitante.getSuperior()
-																						.getLogin()
-																						.equals(usuario.getLogin()) ? solicitante.getDelegacoes()
-																								: solicitante.getPermissoes();
+			Set<Permissao> permissoes = null;
+			if (solicitante	.getLogin()
+							.equals(usuario.getLogin())) {
+				permissoes = usuario.getPermissoes();
+			} else {
+				Usuario superior = usuarioDao.obtemSuperior(solicitante);
+				if (superior != null && superior.getLogin()
+												.equals(usuario.getLogin())) {
+					permissoes = solicitante.getDelegacoes();
+				} else {
+					superior = usuarioDao.obtemSuperior(usuario);
+					while (superior != null) {
+						if (superior.getLogin()
+									.equals(solicitante.getLogin())) {
+							permissoes = solicitante.getPermissoes();
+							break;
+						}
+						superior = usuarioDao.obtemSuperior(superior);
+					}
+				}
+			}
 
 			if (permissoes == null) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
@@ -58,10 +80,18 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("usuarios")) {
 
-				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
-						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_USUARIOS))
-						|| (request.getMethod() == "PUT" && !permissoes.contains(Permissao.MODIFICAR_USUARIOS))
-						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_USUARIOS))) {
+				if ((request.getMethod()
+							.equals("GET")
+						&& !permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
+						|| (request	.getMethod()
+									.equals("POST")
+								&& !permissoes.contains(Permissao.INSERIR_USUARIOS))
+						|| (request	.getMethod()
+									.equals("PUT")
+								&& !permissoes.contains(Permissao.MODIFICAR_USUARIOS))
+						|| (request	.getMethod()
+									.equals("DELETE")
+								&& !permissoes.contains(Permissao.EXCLUIR_USUARIOS))) {
 					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 					return;
 				}
@@ -73,9 +103,15 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("estacoes")) {
 
-				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_ESTACOES))
-						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_ESTACOES))
-						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_ESTACOES))) {
+				if ((request.getMethod()
+							.equals("GET")
+						&& !permissoes.contains(Permissao.VISUALIZAR_ESTACOES))
+						|| (request	.getMethod()
+									.equals("POST")
+								&& !permissoes.contains(Permissao.INSERIR_ESTACOES))
+						|| (request	.getMethod()
+									.equals("DELETE")
+								&& !permissoes.contains(Permissao.EXCLUIR_ESTACOES))) {
 					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 					return;
 				}
@@ -86,10 +122,18 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("backups")) {
 
-				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_BACKUPS))
-						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_BACKUPS))
-						|| (request.getMethod() == "PUT" && !permissoes.contains(Permissao.MODIFICAR_BACKUPS))
-						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_BACKUPS))) {
+				if ((request.getMethod()
+							.equals("GET")
+						&& !permissoes.contains(Permissao.VISUALIZAR_BACKUPS))
+						|| (request	.getMethod()
+									.equals("POST")
+								&& !permissoes.contains(Permissao.INSERIR_BACKUPS))
+						|| (request	.getMethod()
+									.equals("PUT")
+								&& !permissoes.contains(Permissao.MODIFICAR_BACKUPS))
+						|| (request	.getMethod()
+									.equals("DELETE")
+								&& !permissoes.contains(Permissao.EXCLUIR_BACKUPS))) {
 					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 					return;
 				}
@@ -99,9 +143,15 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("operacoes")) {
 
-				if ((request.getMethod() == "GET" && !permissoes.contains(Permissao.VISUALIZAR_OPERACOES))
-						|| (request.getMethod() == "POST" && !permissoes.contains(Permissao.INSERIR_OPERACOES))
-						|| (request.getMethod() == "DELETE" && !permissoes.contains(Permissao.EXCLUIR_OPERACOES))) {
+				if ((request.getMethod()
+							.equals("GET")
+						&& !permissoes.contains(Permissao.VISUALIZAR_OPERACOES))
+						|| (request	.getMethod()
+									.equals("POST")
+								&& !permissoes.contains(Permissao.INSERIR_OPERACOES))
+						|| (request	.getMethod()
+									.equals("DELETE")
+								&& !permissoes.contains(Permissao.EXCLUIR_OPERACOES))) {
 					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
 					return;
 				}

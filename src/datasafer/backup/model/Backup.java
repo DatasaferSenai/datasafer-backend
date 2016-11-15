@@ -53,7 +53,7 @@ public class Backup {
 	private Long id;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "priorietario_id")
 	private Usuario proprietario;
 

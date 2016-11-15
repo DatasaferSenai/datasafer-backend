@@ -69,8 +69,8 @@ public class Usuario {
 	}
 
 	public enum Status {
-		ATIVO("Ativo"),
-		INATIVO("Inativo"),
+		ATIVO("Usuário ativo"),
+		INATIVO("Usuário inativo"),
 		SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"),
 		SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
 
@@ -125,7 +125,7 @@ public class Usuario {
 	private Long id;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
@@ -167,6 +167,12 @@ public class Usuario {
 	private Set<Permissao> delegacoes;
 
 	@JsonProperty
+	@ElementCollection(fetch = FetchType.EAGER)
+	@Column(nullable = true)
+	@Enumerated(EnumType.STRING)
+	private Set<Permissao> permissoes;
+
+	@JsonProperty
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
@@ -178,12 +184,6 @@ public class Usuario {
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
-
-	@JsonProperty
-	@ElementCollection(fetch = FetchType.EAGER)
-	@Column(nullable = true)
-	@Enumerated(EnumType.STRING)
-	private Set<Permissao> permissoes;
 
 	@JsonProperty
 	@Column(length = 40, nullable = false)

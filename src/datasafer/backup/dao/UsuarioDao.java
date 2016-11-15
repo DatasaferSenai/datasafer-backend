@@ -25,7 +25,7 @@ public class UsuarioDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Usuario obtem(String login_usuario) {
+	public Usuario obtemUsuario(String login_usuario) {
 		List<Usuario> resultadosUsuario = manager	.createQuery(
 				"SELECT usuario FROM Usuario usuario "
 						+ "WHERE usuario.login = :login_usuario ",
@@ -37,13 +37,55 @@ public class UsuarioDao {
 	}
 
 	// @Transactional
+	public Usuario obtemSuperior(Usuario usuario) {
+
+		List<Usuario> resultadosSuperior = manager	.createQuery(
+				"SELECT usuario.superior "
+						+ "FROM Usuario usuario "
+						+ "WHERE usuario.id = :id_usuario",
+				Usuario.class)
+													.setParameter("id_usuario", usuario.getId())
+													.getResultList();
+
+		return resultadosSuperior.isEmpty() ? null : resultadosSuperior.get(0);
+	}
+
+	// // @Transactional
+	// public Set<Permissao> obtemPermissoes(Usuario usuario) {
+	//
+	// List<Permissao> resultadosPermissoes = manager .createQuery(
+	// "SELECT elements(usuario.permissoes) "
+	// + "FROM Usuario usuario "
+	// + "WHERE usuario.id = :id_usuario",
+	// Permissao.class)
+	// .setParameter("id_usuario", usuario.getId())
+	// .getResultList();
+	//
+	// return new HashSet<Permissao>(resultadosPermissoes);
+	// }
+	//
+	// // @Transactional
+	// public Set<Permissao> obtemDelegacoes(Usuario usuario) {
+	//
+	// List<Permissao> resultadosDelegacoes = manager .createQuery(
+	// "SELECT elements(usuario.delegacoes) "
+	// + "FROM Usuario usuario "
+	// + "WHERE usuario.id = :id_usuario",
+	// Permissao.class)
+	// .setParameter("id_usuario", usuario.getId())
+	// .getResultList();
+	//
+	// return new HashSet<Permissao>(resultadosDelegacoes);
+	// }
+
+	// @Transactional
 	public Usuario carregaArmazenamentoOcupado(Usuario proprietario) {
 
-		@SuppressWarnings("unchecked")
 		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
 				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
 						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ")
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
+				Long.class)
 															.setParameter("id_proprietario", proprietario.getId())
 															.setParameter("status_operacao", Operacao.Status.SUCESSO)
 															.getResultList();
@@ -55,7 +97,7 @@ public class UsuarioDao {
 	}
 
 	// @Transactional
-	public List<Usuario> obtemArmazenamentoOcupado(List<Usuario> usuarios) {
+	public List<Usuario> carregaArmazenamentoOcupado(List<Usuario> usuarios) {
 		for (Usuario usuario : usuarios) {
 			this.carregaArmazenamentoOcupado(usuario);
 		}
@@ -84,7 +126,7 @@ public class UsuarioDao {
 	}
 
 	// @Transactional
-	public List<Usuario> obtemStatusBackups(List<Usuario> usuarios) {
+	public List<Usuario> carregaStatusBackups(List<Usuario> usuarios) {
 		for (Usuario usuario : usuarios) {
 			this.carregaStatusBackups(usuario);
 		}
@@ -92,22 +134,22 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public void inserir(Usuario solicitante,
-						Usuario superior,
-						Usuario usuario) {
+	public void insereUsuario(	Usuario solicitante,
+								Usuario superior,
+								Usuario usuario) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		superior = (superior == null ? null : manager.find(Usuario.class, superior.getId()));
 
 		Validador.validar(usuario);
 
-		Usuario existente = this.obtem(usuario.getLogin());
+		Usuario existente = this.obtemUsuario(usuario.getLogin());
 		if (existente != null) {
 			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
 		}
 
 		usuario	.getRegistros()
-				.addAll(Registrador.inserir(solicitante, usuario));
+				.addAll(Registrador.insere(solicitante, usuario));
 
 		if (superior != null) {
 			superior.getColaboradores()
@@ -119,9 +161,9 @@ public class UsuarioDao {
 	}
 
 	@Transactional
-	public void modificar(	Usuario solicitante,
-							Usuario usuario,
-							Usuario valores) {
+	public void modificaUsuario(Usuario solicitante,
+								Usuario usuario,
+								Usuario valores) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		usuario = manager.find(Usuario.class, usuario.getId());
@@ -129,14 +171,14 @@ public class UsuarioDao {
 		if (valores.getLogin() != null && !valores	.getLogin()
 													.equals(usuario.getLogin())) {
 
-			Usuario existente = this.obtem(valores.getLogin());
+			Usuario existente = this.obtemUsuario(valores.getLogin());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Usuário '" + valores.getLogin() + "' já existente");
 			}
 
 		}
 
-		List<Registro> registros = Registrador.modificar(solicitante, usuario, valores);
+		List<Registro> registros = Registrador.modifica(solicitante, usuario, valores);
 
 		Validador.validar(usuario);
 
@@ -180,7 +222,7 @@ public class UsuarioDao {
 	}
 
 	// @Transactional
-	public Usuario logar(Usuario usuario) {
+	public Usuario login(Usuario usuario) {
 		List<Usuario> results = manager	.createQuery(
 				"SELECT usuario FROM Usuario usuario "
 						+ "WHERE usuario.login = :login_usuario "

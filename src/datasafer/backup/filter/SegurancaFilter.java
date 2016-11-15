@@ -41,7 +41,7 @@ public class SegurancaFilter implements Filter {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-		
+
 		if (request	.getRequestURI()
 					.contains("login")) {
 
@@ -56,7 +56,7 @@ public class SegurancaFilter implements Filter {
 				return;
 			}
 
-			Token token = tokenDao.obtem(chave_token);
+			Token token = tokenDao.obtemToken(req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), chave_token);
 			if (token == null) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
 				return;
@@ -68,12 +68,14 @@ public class SegurancaFilter implements Filter {
 
 			if (token.getExpiracao() != null && token	.getExpiracao()
 														.before(agora)) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização expirada");
 				return;
 			}
 
+			tokenDao.modificaUltimaUtilizacao(token, agora);
+
 			Usuario solicitante = token.getUsuario();
-			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obtem(request.getHeader("usuario")) : solicitante;
+			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obtemUsuario(request.getHeader("usuario")) : solicitante;
 
 			if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");

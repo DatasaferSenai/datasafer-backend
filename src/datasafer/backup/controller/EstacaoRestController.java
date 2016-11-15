@@ -46,13 +46,13 @@ public class EstacaoRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> inserir(	@RequestAttribute Usuario solicitante,
+	public ResponseEntity<Object> insere(	@RequestAttribute Usuario solicitante,
 											@RequestAttribute Usuario usuario,
 											@RequestBody Estacao estacao) {
 		try {
 
 			try {
-				estacaoDao.inserir(solicitante, usuario, estacao);
+				estacaoDao.insereEstacao(solicitante, usuario, estacao);
 
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataIntegrityViolationException e) {

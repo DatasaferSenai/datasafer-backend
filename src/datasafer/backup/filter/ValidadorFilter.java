@@ -57,7 +57,7 @@ public class ValidadorFilter implements Filter {
 			}
 
 			if (request.getHeader("estacao") != null) {
-				estacao = estacaoDao.obtem((String) request.getHeader("estacao"));
+				estacao = estacaoDao.obtemEstacao((String) request.getHeader("estacao"));
 			}
 			if (estacao == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value(), "Estação inválida ou não encontrada");
@@ -77,7 +77,7 @@ public class ValidadorFilter implements Filter {
 			}
 
 			if (request.getHeader("backup") != null) {
-				backup = backupDao.obtem(usuario, estacao, (String) request.getHeader("backup"));
+				backup = backupDao.obtemBackup(usuario, estacao, (String) request.getHeader("backup"));
 			}
 			if (backup == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value(), "Backup inválido ou não encontrado");
@@ -99,7 +99,7 @@ public class ValidadorFilter implements Filter {
 
 			if (request.getHeader("operacao") != null) {
 				try {
-					operacao = operacaoDao.obtem(backup, new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse((String) request.getHeader("operacao")));
+					operacao = operacaoDao.obtemOperacao(backup, new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse((String) request.getHeader("operacao")));
 				} catch (ParseException e) {
 					operacao = null;
 				}

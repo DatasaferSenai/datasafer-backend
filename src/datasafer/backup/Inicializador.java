@@ -42,7 +42,7 @@ public class Inicializador {
 
 		System.out.println("==== Inicializando ====");
 
-		Usuario usuario_admin = usuarioDao.obtem("admin");
+		Usuario usuario_admin = usuarioDao.obtemUsuario("admin");
 		if (usuario_admin == null) {
 			usuario_admin = new Usuario();
 
@@ -58,7 +58,7 @@ public class Inicializador {
 				permissoes.add(p);
 			usuario_admin.setPermissoes(permissoes);
 
-			usuarioDao.inserir(null, null, usuario_admin);
+			usuarioDao.insereUsuario(null, null, usuario_admin);
 		}
 
 		populaUsuarios(null, usuario_admin);
@@ -79,7 +79,7 @@ public class Inicializador {
 								.charAt(0);
 			}
 
-			Usuario usuario = usuarioDao.obtem(login);
+			Usuario usuario = usuarioDao.obtemUsuario(login);
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
@@ -94,10 +94,14 @@ public class Inicializador {
 						Permissao.VISUALIZAR_OPERACOES,
 						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
 						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_BACKUPS));
-
 				usuario.setPermissoes(permissoes);
 
-				usuarioDao.inserir(solicitante, superior, usuario);
+				Set<Permissao> delegacoes = new HashSet<Permissao>();
+				delegacoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
+						Permissao.VISUALIZAR_OPERACOES));
+				usuario.setDelegacoes(delegacoes);
+
+				usuarioDao.insereUsuario(solicitante, superior, usuario);
 				populaEstacoes(solicitante, usuario);
 			}
 		}
@@ -121,11 +125,11 @@ public class Inicializador {
 
 			String nome_estacao = tiposDispositivos.get(tipo_index) + separadores.get(separador_index) + nomesDispositivos.get(nome_index);
 
-			Estacao estacao = estacaoDao.obtem(nome_estacao);
+			Estacao estacao = estacaoDao.obtemEstacao(nome_estacao);
 			if (estacao == null) {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);
-				estacaoDao.inserir(solicitante, gerenciador, estacao);
+				estacaoDao.insereEstacao(solicitante, gerenciador, estacao);
 
 				populaBackups(solicitante, gerenciador, estacao);
 			}
@@ -151,7 +155,7 @@ public class Inicializador {
 
 			String nomeBackup = nomes_backups.get(nomeIndex);
 
-			Backup backup = backupDao.obtem(proprietario, estacao, nomeBackup);
+			Backup backup = backupDao.obtemBackup(proprietario, estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
@@ -165,7 +169,7 @@ public class Inicializador {
 				backup.setPasta("C:\\" + nomeBackup	.toLowerCase()
 													.replace(' ', '_'));
 
-				backupDao.inserir(solicitante, proprietario, estacao, backup);
+				backupDao.insereBackup(solicitante, proprietario, estacao, backup);
 
 				final Backup backup_temp = backup;
 				try {
@@ -199,7 +203,7 @@ public class Inicializador {
 											.getTime()
 					+ gerador.nextInt(365));
 
-			Operacao operacao = operacaoDao.obtem(backup, data);
+			Operacao operacao = operacaoDao.obtemOperacao(backup, data);
 			if (operacao == null) {
 				operacao = new Operacao();
 				operacao.setData(new Date(Calendar	.getInstance(TimeZone.getDefault())
@@ -208,7 +212,7 @@ public class Inicializador {
 						+ gerador.nextInt(365)));
 				operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 				operacao.setTamanho((long) gerador.nextInt(10000000));
-				operacaoDao.inserir(solicitante, backup, operacao);
+				operacaoDao.insereOperacao(solicitante, backup, operacao);
 
 				try {
 					Thread.sleep(1500);

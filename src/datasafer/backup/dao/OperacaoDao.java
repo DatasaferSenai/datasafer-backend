@@ -25,7 +25,7 @@ public class OperacaoDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Operacao obtem(	Backup backup,
+	public Operacao obtemOperacao(	Backup backup,
 							Date data_operacao) {
 		List<Operacao> resultadosOperacao = manager	.createQuery(
 				"SELECT operacao FROM Operacao operacao "
@@ -41,7 +41,7 @@ public class OperacaoDao {
 	}
 
 	@Transactional
-	public void inserir(Usuario solicitante,
+	public void insereOperacao(Usuario solicitante,
 						Backup backup,
 						Operacao operacao) {
 
@@ -51,7 +51,7 @@ public class OperacaoDao {
 		Validador.validar(operacao);
 
 		operacao.getRegistros()
-				.addAll(Registrador.inserir(solicitante, operacao));
+				.addAll(Registrador.insere(solicitante, operacao));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -61,7 +61,7 @@ public class OperacaoDao {
 	}
 
 	@Transactional
-	public void modificar(	Usuario solicitante,
+	public void modifica(	Usuario solicitante,
 							Operacao operacao,
 							Operacao valores) {
 
@@ -71,14 +71,14 @@ public class OperacaoDao {
 		if (valores.getData() != null && !valores	.getData()
 													.equals(operacao.getData())) {
 
-			Operacao existente = this.obtem(operacao.getBackup(), valores.getData());
+			Operacao existente = this.obtemOperacao(operacao.getBackup(), valores.getData());
 			if (existente != null) {
 				throw new DataIntegrityViolationException(
 						"Operação '" + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valores.getData()) + "' já existente");
 			}
 		}
 
-		List<Registro> registros = Registrador.modificar(solicitante, operacao, valores);
+		List<Registro> registros = Registrador.modifica(solicitante, operacao, valores);
 
 		Validador.validar(operacao);
 

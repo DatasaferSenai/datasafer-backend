@@ -28,7 +28,7 @@ public class BackupDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Backup obtem(Usuario proprietario,
+	public Backup obtemBackup(Usuario proprietario,
 						Estacao estacao,
 						String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
@@ -47,7 +47,7 @@ public class BackupDao {
 	}
 
 	@Transactional
-	public void inserir(Usuario solicitante,
+	public void insereBackup(Usuario solicitante,
 						Usuario proprietario,
 						Estacao estacao,
 						Backup backup) {
@@ -58,14 +58,14 @@ public class BackupDao {
 
 		Validador.validar(backup);
 
-		Backup existente = this.obtem(proprietario, estacao, backup.getNome());
+		Backup existente = this.obtemBackup(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
-						.addAll(Registrador.modificar(solicitante, existente, backup));
+						.addAll(Registrador.modifica(solicitante, existente, backup));
 			backup = existente;
 		} else {
 			backup	.getRegistros()
-					.addAll(Registrador.inserir(solicitante, backup));
+					.addAll(Registrador.insere(solicitante, backup));
 		}
 
 		Operacao operacao = new Operacao();
@@ -74,7 +74,7 @@ public class BackupDao {
 												.toInstant()));
 		operacao.setStatus(Operacao.Status.AGENDADO);
 		operacao.setTamanho(null);
-		operacao.setRegistros(Registrador.inserir(solicitante, operacao));
+		operacao.setRegistros(Registrador.insere(solicitante, operacao));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -92,7 +92,7 @@ public class BackupDao {
 	}
 
 	@Transactional
-	public void modificar(	Usuario solicitante,
+	public void modificaBackup(	Usuario solicitante,
 							Backup backup,
 							Backup valores) {
 
@@ -102,13 +102,13 @@ public class BackupDao {
 		if (valores.getNome() != null && !valores	.getNome()
 													.equals(backup.getNome())) {
 
-			Backup existente = this.obtem(backup.getProprietario(), backup.getEstacao(), valores.getNome());
+			Backup existente = this.obtemBackup(backup.getProprietario(), backup.getEstacao(), valores.getNome());
 			if (existente != null) {
 				throw new DataIntegrityViolationException("Backup '" + valores.getNome() + "' já existente");
 			}
 		}
 
-		List<Registro> registros = Registrador.modificar(solicitante, backup, valores);
+		List<Registro> registros = Registrador.modifica(solicitante, backup, valores);
 		if (backup.getRegistros() == null) {
 			backup.setRegistros(registros);
 		} else {

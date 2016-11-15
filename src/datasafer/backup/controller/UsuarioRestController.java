@@ -30,12 +30,12 @@ public class UsuarioRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> inserirUsuario(	@RequestAttribute Usuario solicitante,
-													@RequestAttribute Usuario usuario,
-													@RequestBody Usuario novo) {
+	public ResponseEntity<Object> insereUsuario(@RequestAttribute Usuario solicitante,
+												@RequestAttribute Usuario usuario,
+												@RequestBody Usuario novo) {
 		try {
 			try {
-				usuarioDao.inserir(solicitante, usuario, novo);
+				usuarioDao.insereUsuario(solicitante, usuario, novo);
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataIntegrityViolationException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
@@ -60,13 +60,35 @@ public class UsuarioRestController {
 	}
 
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> modificarUsuario(	@RequestAttribute Usuario solicitante,
+	public ResponseEntity<Object> modificaUsuario(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario,
 													@RequestBody Usuario valores) {
 		try {
 
 			try {
-				usuarioDao.modificar(solicitante, usuario, valores);
+				usuarioDao.modificaUsuario(solicitante, usuario, valores);
+
+				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
+			} catch (DataIntegrityViolationException e) {
+				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
+															.toString(),
+						HttpStatus.CONFLICT);
+			}
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
+
+	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Object> inativaUsuario(	@RequestAttribute Usuario solicitante,
+													@RequestAttribute Usuario usuario) {
+		try {
+
+			try {
+				usuario.setStatus(Usuario.Status.INATIVO);
+				usuarioDao.modificaUsuario(solicitante, usuario, usuario);
 
 				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 			} catch (DataIntegrityViolationException e) {

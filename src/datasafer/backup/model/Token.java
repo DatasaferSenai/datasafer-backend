@@ -21,7 +21,7 @@ public class Token {
 
 	public Token() {
 		this.usuario = null;
-		this.token = null;
+		this.chave = null;
 		this.emissao = null;
 		this.expiracao = null;
 	}
@@ -31,10 +31,14 @@ public class Token {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 
-	@JsonProperty(access = Access.READ_ONLY)
+	@JsonProperty(value = "token", access = Access.READ_ONLY)
 	@Id
 	@Column(length = 255, nullable = false)
-	private String token;
+	private String chave;
+
+	@JsonIgnore
+	@Column(length = 64, nullable = false)
+	private String ip;
 
 	@JsonIgnore
 	@Column(nullable = false)
@@ -43,6 +47,26 @@ public class Token {
 	@JsonIgnore
 	@Column(nullable = true)
 	private Date expiracao;
+
+	@JsonIgnore
+	@Column(nullable = true)
+	private Date ultimaUtilizacao;
+
+	public Date getUltimaUtilizacao() {
+		return ultimaUtilizacao;
+	}
+
+	public void setUltimaUtilizacao(Date ultimaUtilizacao) {
+		this.ultimaUtilizacao = ultimaUtilizacao;
+	}
+
+	public String getIp() {
+		return ip;
+	}
+
+	public void setIp(String ip) {
+		this.ip = ip;
+	}
 
 	public Date getEmissao() {
 		return emissao;
@@ -68,12 +92,12 @@ public class Token {
 		this.usuario = usuario;
 	}
 
-	public String getToken() {
-		return token;
+	public String getChave() {
+		return chave;
 	}
 
-	public void setToken(String token) {
-		this.token = token;
+	public void setChave(String chave) {
+		this.chave = chave;
 	}
 
 }

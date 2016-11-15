@@ -21,7 +21,7 @@ import datasafer.backup.model.Usuario;
 
 public class Registrador {
 
-	public static <T> List<Registro> inserir(	Usuario solicitante,
+	public static <T> List<Registro> insere(	Usuario solicitante,
 												T objeto) {
 
 		List<Registro> registros = new ArrayList<Registro>();
@@ -57,7 +57,7 @@ public class Registrador {
 
 	}
 
-	public static <T> List<Registro> modificar(	Usuario solicitante,
+	public static <T> List<Registro> modifica(	Usuario solicitante,
 												T destino,
 												T origem) {
 

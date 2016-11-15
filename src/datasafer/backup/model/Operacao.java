@@ -61,7 +61,7 @@ public class Operacao {
 	private Long id;
 
 	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
 

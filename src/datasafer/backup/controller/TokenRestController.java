@@ -43,14 +43,14 @@ public class TokenRestController {
 			usuario.setSenha(jobj.getString("senha"));
 			boolean expira = jobj.getBoolean("expira");
 
-			Usuario existente = usuarioDao.obtem(usuario.getLogin());
-			if (existente == null) {
+			Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
+			if (existente == null || existente.getStatus() == Usuario.Status.INATIVO) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
 						HttpStatus.UNAUTHORIZED);
 			}
 
-			Usuario logado = usuarioDao.logar(usuario);
+			Usuario logado = usuarioDao.login(usuario);
 			if (logado == null) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
@@ -58,7 +58,7 @@ public class TokenRestController {
 			}
 
 			if (logado.getStatus() != Status.ATIVO) {
-				return new ResponseEntity<>(new JSONObject().put("erro", usuario.getStatus())
+				return new ResponseEntity<>(new JSONObject().put("erro", logado.getStatus())
 															.toString(),
 						HttpStatus.FORBIDDEN);
 			}
@@ -67,7 +67,7 @@ public class TokenRestController {
 			Date ultimaTentativa = existente.getUltimaTentativa();
 			if (ultimaTentativa == null || tentativas < 3) {
 
-				Token token = tokenDao.emitir(existente, expira ? 60 * 60 * 24 : 0);
+				Token token = tokenDao.emiteToken(existente, req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), expira ? 60 * 60 * 24 : 0);
 
 				existente.setTentativas(0);
 				existente.setUltimaTentativa(null);
@@ -80,7 +80,7 @@ public class TokenRestController {
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()));
 
-				usuarioDao.modificar(null, usuario, usuario);
+				usuarioDao.modificaUsuario(null, usuario, usuario);
 
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
