@@ -30,7 +30,7 @@ public class TokenRestController {
 	@Autowired
 	private TokenDao tokenDao;
 
-	@RequestMapping(value = "/gerenciamento/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> logar(HttpServletRequest req,
 										@RequestBody String corpo_usuario) {
 		try {

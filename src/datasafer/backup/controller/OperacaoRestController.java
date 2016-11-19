@@ -27,7 +27,7 @@ public class OperacaoRestController {
 	@Autowired
 	private OperacaoDao operacaoDao;
 
-	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtem(@RequestAttribute Operacao operacao) {
 		try {
 			return new ResponseEntity<>(operacao, HttpStatus.OK);
@@ -37,7 +37,7 @@ public class OperacaoRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insere(	@RequestAttribute Usuario solicitante,
 											@RequestAttribute Backup backup,
 											@RequestBody Operacao operacao) {

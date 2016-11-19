@@ -27,7 +27,7 @@ public class UsuarioRestController {
 	@Autowired
 	private BackupDao backupDao;
 
-	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insereUsuario(@RequestAttribute Usuario solicitante,
 												@RequestAttribute Usuario usuario,
 												@RequestBody Usuario novo) {
@@ -47,7 +47,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemUsuario(@RequestAttribute Usuario usuario) {
 		try {
 			return new ResponseEntity<>(usuarioDao.carregaInfos(usuario), HttpStatus.OK);
@@ -57,7 +57,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> modificaUsuario(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario,
 													@RequestBody Usuario valores) {
@@ -79,7 +79,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> inativaUsuario(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario) {
 		try {
@@ -101,7 +101,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemUsuarios(@RequestAttribute Usuario usuario) {
 		try {
 			return new ResponseEntity<>(usuarioDao.carregaInfos(usuario), HttpStatus.OK);
@@ -111,7 +111,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemEstacoes(@RequestAttribute Usuario usuario) {
 		try {
 			return new ResponseEntity<>(estacaoDao.carregaInfos(usuarioDao.obtemEstacoes(usuario)), HttpStatus.OK);
@@ -121,7 +121,7 @@ public class UsuarioRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemBackups(@RequestAttribute Usuario usuario) {
 		try {
 			return new ResponseEntity<>(backupDao.carregaInfos(usuarioDao.obtemBackups(usuario)), HttpStatus.OK);

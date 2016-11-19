@@ -26,7 +26,7 @@ public class EstacaoRestController {
 	@Autowired
 	private BackupDao backupDao;
 
-	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtem(@RequestAttribute Usuario usuario,
 										@RequestAttribute Estacao estacao) {
 		try {
@@ -43,7 +43,7 @@ public class EstacaoRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insere(	@RequestAttribute Usuario solicitante,
 											@RequestAttribute Usuario usuario,
 											@RequestBody Estacao estacao) {
@@ -65,7 +65,7 @@ public class EstacaoRestController {
 		}
 	}
 
-	@RequestMapping(value = "/gerenciamento/estacao/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/estacao/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> listarBackups(@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao) {
 		try {

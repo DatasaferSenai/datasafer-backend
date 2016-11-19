@@ -36,19 +36,19 @@
 	
 	<filter-mapping>
 		<filter-name>CORSFilter</filter-name>
-		<url-pattern>/gerenciamento/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>SegurancaFilter</filter-name>
-		<url-pattern>/gerenciamento/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>PermissaoFilter</filter-name>
-		<url-pattern>/gerenciamento/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
 		<filter-name>ValidadorFilter</filter-name>
-		<url-pattern>/gerenciamento/*</url-pattern>
+		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	
 </web-app>

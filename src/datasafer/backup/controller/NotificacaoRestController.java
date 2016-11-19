@@ -20,7 +20,7 @@ public class NotificacaoRestController {
 	@Autowired
 	private NotificacaoDao notificacaoDao;
 
-	@RequestMapping(value = "/gerenciamento/notificacoes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/notificacoes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> insereNotificacao(@RequestAttribute Usuario solicitante,
 													@RequestBody Notificacao notificacao) {
 		try {
