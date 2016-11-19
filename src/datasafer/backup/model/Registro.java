@@ -58,6 +58,11 @@ public class Registro {
 	@Column(length = 1023, nullable = false)
 	private String para;
 
+	@JsonProperty("login_solicitante")
+	public String getLoginSolicitante() {
+		return solicitante.getLogin();
+	}
+	
 	public String getAtributo() {
 		return atributo;
 	}

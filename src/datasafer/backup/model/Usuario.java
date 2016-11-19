@@ -66,6 +66,8 @@ public class Usuario {
 		for (Operacao.Status s : Operacao.Status.values()) {
 			this.statusBackups.put(s, 0L);
 		}
+
+		this.notificacoes = new ArrayList<Notificacao>();
 	}
 
 	public enum Status {
@@ -125,7 +127,7 @@ public class Usuario {
 	private Long id;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "superior_id")
 	private Usuario superior;
 
@@ -213,6 +215,32 @@ public class Usuario {
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
 	private Date ultimaTentativa;
+
+	@JsonIgnore
+	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OrderBy("emissao")
+	private List<Notificacao> notificacoes;
+
+	@JsonProperty("login_superior")
+	public String getLoginSuperior() {
+		return superior.getLogin();
+	}
+
+	public List<Registro> getSolicitacoes() {
+		return solicitacoes;
+	}
+
+	public void setSolicitacoes(List<Registro> solicitacoes) {
+		this.solicitacoes = solicitacoes;
+	}
+
+	public List<Notificacao> getNotificacoes() {
+		return notificacoes;
+	}
+
+	public void setNotificacoes(List<Notificacao> notificacoes) {
+		this.notificacoes = notificacoes;
+	}
 
 	public long getArmazenamentoOcupado() {
 		return armazenamentoOcupado;

@@ -33,7 +33,11 @@
 	<listener>
 		<listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
 	</listener>
-
+	
+	<filter-mapping>
+		<filter-name>CORSFilter</filter-name>
+		<url-pattern>/gerenciamento/*</url-pattern>
+	</filter-mapping>
 	<filter-mapping>
 		<filter-name>SegurancaFilter</filter-name>
 		<url-pattern>/gerenciamento/*</url-pattern>

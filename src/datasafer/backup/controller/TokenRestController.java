@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -23,7 +22,6 @@ import datasafer.backup.model.Token;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
-@CrossOrigin(maxAge = 3600)
 @RestController
 public class TokenRestController {
 
@@ -41,7 +39,6 @@ public class TokenRestController {
 			Usuario usuario = new Usuario();
 			usuario.setLogin(jobj.getString("login"));
 			usuario.setSenha(jobj.getString("senha"));
-			boolean expira = jobj.getBoolean("expira");
 
 			Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
 			if (existente == null || existente.getStatus() == Usuario.Status.INATIVO) {
@@ -67,7 +64,7 @@ public class TokenRestController {
 			Date ultimaTentativa = existente.getUltimaTentativa();
 			if (ultimaTentativa == null || tentativas < 3) {
 
-				Token token = tokenDao.emiteToken(existente, req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), expira ? 60 * 60 * 24 : 0);
+				Token token = tokenDao.emiteToken(existente, req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), 0);
 
 				existente.setTentativas(0);
 				existente.setUltimaTentativa(null);

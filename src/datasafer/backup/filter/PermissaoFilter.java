@@ -62,7 +62,6 @@ public class PermissaoFilter implements Filter {
 						permissoes.addAll(solicitante.getPermissoes());
 						break;
 					}
-					relacionado = usuarioDao.obtemSuperior(relacionado);
 				}
 
 				for (Usuario relacionado = usuarioDao.obtemSuperior(solicitante); relacionado != null; relacionado = usuarioDao.obtemSuperior(
@@ -71,14 +70,13 @@ public class PermissaoFilter implements Filter {
 					if (permissoes.isEmpty()) {
 						permissoes.addAll(solicitante.getDelegacoes());
 					} else {
-						permissoes.retainAll(relacionado.getDelegacoes());
+						permissoes.retainAll(solicitante.getDelegacoes());
 					}
 
 					if (relacionado	.getLogin()
 									.equals(usuario.getLogin())) {
 						break;
 					}
-					relacionado = usuarioDao.obtemSuperior(relacionado);
 				}
 
 			}
@@ -88,8 +86,12 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("usuarios")) {
 
-				if ((request.getMethod()
-							.equals("GET")
+				if (request	.getMethod()
+							.equals("OPTIONS")) {
+					response.setHeader("Allow", "GET, POST, PUT, DELETE");
+					return;
+				} else if ((request	.getMethod()
+									.equals("GET")
 						&& !permissoes.contains(Permissao.VISUALIZAR_USUARIOS))
 						|| (request	.getMethod()
 									.equals("POST")
@@ -111,8 +113,12 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("estacoes")) {
 
-				if ((request.getMethod()
-							.equals("GET")
+				if (request	.getMethod()
+							.equals("OPTIONS")) {
+					response.setHeader("Allow", "GET, POST, DELETE");
+					return;
+				} else if ((request	.getMethod()
+									.equals("GET")
 						&& !permissoes.contains(Permissao.VISUALIZAR_ESTACOES))
 						|| (request	.getMethod()
 									.equals("POST")
@@ -131,8 +137,12 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("backups")) {
 
-				if ((request.getMethod()
-							.equals("GET")
+				if (request	.getMethod()
+							.equals("OPTIONS")) {
+					response.setHeader("Allow", "GET, POST, PUT, DELETE");
+					return;
+				} else if ((request	.getMethod()
+									.equals("GET")
 						&& !permissoes.contains(Permissao.VISUALIZAR_BACKUPS))
 						|| (request	.getMethod()
 									.equals("POST")
@@ -152,8 +162,12 @@ public class PermissaoFilter implements Filter {
 					|| request	.getRequestURI()
 								.contains("operacoes")) {
 
-				if ((request.getMethod()
-							.equals("GET")
+				if (request	.getMethod()
+							.equals("OPTIONS")) {
+					response.setHeader("Allow", "GET, POST, DELETE");
+					return;
+				} else if ((request	.getMethod()
+									.equals("GET")
 						&& !permissoes.contains(Permissao.VISUALIZAR_OPERACOES))
 						|| (request	.getMethod()
 									.equals("POST")

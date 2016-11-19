@@ -1,8 +1,6 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -23,7 +21,6 @@ import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
-import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Usuario;
 
 @WebFilter(filterName = "ValidadorFilter")
@@ -111,7 +108,6 @@ public class ValidadorFilter implements Filter {
 
 		}
 
-		Operacao operacao = null;
 		if ((request.getRequestURI()
 					.contains("operacao")
 				&& !request	.getRequestURI()
@@ -121,20 +117,6 @@ public class ValidadorFilter implements Filter {
 				response.sendError(HttpStatus.BAD_REQUEST.value(), "Backup não espeficado");
 				return;
 			}
-
-			if (request.getHeader("operacao") != null) {
-				try {
-					operacao = operacaoDao.obtemOperacao(backup, new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").parse((String) request.getHeader("operacao")));
-				} catch (ParseException e) {
-					operacao = null;
-				}
-			}
-			if (operacao == null) {
-				response.sendError(HttpStatus.NOT_FOUND.value(), "Operacao inválida ou não encontrada");
-				return;
-			}
-
-			request.setAttribute("operacao", operacao);
 
 		}
 

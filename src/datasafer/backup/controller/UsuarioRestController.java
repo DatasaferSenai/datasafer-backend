@@ -6,7 +6,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,7 +17,6 @@ import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Usuario;
 
-@CrossOrigin(maxAge = 3600)
 @RestController
 public class UsuarioRestController {
 

@@ -58,7 +58,7 @@ public class Backup {
 	private Usuario proprietario;
 
 	@JsonIgnore
-	@ManyToOne
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "estacao_id")
 	private Estacao estacao;
 
@@ -101,6 +101,27 @@ public class Backup {
 	@JsonProperty(value = "status_operacoes", access = Access.READ_ONLY)
 	@Transient
 	private Map<Operacao.Status, Long> statusOperacoes;
+
+	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
+	@Transient
+	private long armazenamentoOcupado;
+	
+	@JsonProperty("nome_estacao")
+	public String getNomeEstacao() {
+		return estacao.getNome();
+	}
+	
+	public long getArmazenamentoOcupado() {
+		return armazenamentoOcupado;
+	}
+
+
+
+	public void setArmazenamentoOcupado(long armazenamentoOcupado) {
+		this.armazenamentoOcupado = armazenamentoOcupado;
+	}
+
+
 
 	public Operacao getUltimaOperacao() {
 		return ultimaOperacao;

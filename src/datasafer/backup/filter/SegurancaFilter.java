@@ -42,6 +42,13 @@ public class SegurancaFilter implements Filter {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
+		response.setHeader("Access-Control-Allow-Origin", "*");
+
+		if (request	.getMethod()
+					.equals("OPTIONS")) {
+			return;
+		}
+
 		if (request	.getRequestURI()
 					.contains("login")) {
 

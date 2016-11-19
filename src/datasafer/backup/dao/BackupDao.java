@@ -1,8 +1,8 @@
 package datasafer.backup.dao;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -28,9 +28,9 @@ public class BackupDao {
 	private EntityManager manager;
 
 	// @Transactional
-	public Backup obtemBackup(Usuario proprietario,
-						Estacao estacao,
-						String nome_backup) {
+	public Backup obtemBackup(	Usuario proprietario,
+								Estacao estacao,
+								String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
 				"SELECT backup FROM Backup backup "
 						+ "WHERE backup.proprietario.id = :id_proprietario "
@@ -45,10 +45,10 @@ public class BackupDao {
 	}
 
 	@Transactional
-	public void insereBackup(Usuario solicitante,
-						Usuario proprietario,
-						Estacao estacao,
-						Backup backup) {
+	public void insereBackup(	Usuario solicitante,
+								Usuario proprietario,
+								Estacao estacao,
+								Backup backup) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		proprietario = manager.find(Usuario.class, proprietario.getId());
@@ -67,9 +67,9 @@ public class BackupDao {
 		}
 
 		Operacao operacao = new Operacao();
-		operacao.setData(Date.from(LocalDateTime.now()
-												.atZone(ZoneId.systemDefault())
-												.toInstant()));
+		operacao.setData(Timestamp.from(LocalDateTime	.now()
+														.atZone(ZoneId.systemDefault())
+														.toInstant()));
 		operacao.setStatus(Operacao.Status.AGENDADO);
 		operacao.setTamanho(null);
 		operacao.setRegistros(Registrador.insere(solicitante, operacao));
@@ -91,8 +91,8 @@ public class BackupDao {
 
 	@Transactional
 	public void modificaBackup(	Usuario solicitante,
-							Backup backup,
-							Backup valores) {
+								Backup backup,
+								Backup valores) {
 
 		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
 		backup = manager.find(Backup.class, backup.getId());
@@ -138,7 +138,6 @@ public class BackupDao {
 		List<Object> resultadosStatusOperacoes = manager.createQuery(
 				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
 						+ "WHERE operacao.backup.id = :id_backup "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
 						+ "GROUP BY operacao.status ")
 														.setParameter("id_backup", backup.getId())
 														.getResultList();
@@ -156,16 +155,28 @@ public class BackupDao {
 				Operacao.class)
 															.setParameter("id_backup", backup.getId())
 															.getResultList();
-		
+
 		backup.setUltimaOperacao(
 				!resultadosUltimaOperacao.isEmpty() ? resultadosUltimaOperacao.get(0) : null);
-		
+
+		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
+				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id_backup "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
+				Long.class)
+															.setParameter("id_backup", backup.getId())
+															.setParameter("status_operacao", Operacao.Status.SUCESSO)
+															.getResultList();
+
+		backup.setArmazenamentoOcupado(
+				!resultadosArmazenamentoOcupado.isEmpty() && resultadosArmazenamentoOcupado.get(0) != null ? resultadosArmazenamentoOcupado.get(0) : 0L);
+
 		return backup;
 	}
 
 	// @Transactional
 	public List<Backup> carregaInfos(
-												List<Backup> backups) {
+										List<Backup> backups) {
 		for (Backup backup : backups) {
 			this.carregaInfos(backup);
 		}

@@ -7,7 +7,6 @@ import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +18,6 @@ import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 
-@CrossOrigin(maxAge = 3600)
 @RestController
 public class BackupRestController {
 
@@ -27,7 +25,7 @@ public class BackupRestController {
 	private BackupDao backupDao;
 
 	@RequestMapping(value = "/gerenciamento/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> insereBackup(@RequestAttribute Usuario solicitante,
+	public ResponseEntity<Object> insereBackup(	@RequestAttribute Usuario solicitante,
 												@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao,
 												@RequestBody Backup backup) {

@@ -1,5 +1,8 @@
 package datasafer.backup;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -171,18 +174,7 @@ public class Inicializador {
 
 				backupDao.insereBackup(solicitante, proprietario, estacao, backup);
 
-				final Backup backup_temp = backup;
-				try {
-					Thread.sleep(1500);
-				} catch (InterruptedException e) {
-					Thread	.currentThread()
-							.interrupt();
-				}
-
-				new Thread(() -> {
-					populaOperacoes(solicitante, proprietario, estacao, backup_temp);
-				}).start();
-
+				populaOperacoes(solicitante, proprietario, estacao, backup);
 			}
 		}
 	}
@@ -198,29 +190,15 @@ public class Inicializador {
 
 		for (int n = 0; n < quantidade; n++) {
 
-			Date data = new Date(Calendar	.getInstance(TimeZone.getDefault())
-											.getTime()
-											.getTime()
-					+ gerador.nextInt(365));
+			Operacao operacao = new Operacao();
+			operacao.setData(Timestamp.from(LocalDateTime	.now()
+															.atZone(ZoneId.systemDefault())
+															.toInstant()
+															.plusSeconds(gerador.nextInt(365) * 24 * 60)));
+			operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
+			operacao.setTamanho((long) gerador.nextInt(10000000));
 
-			Operacao operacao = operacaoDao.obtemOperacao(backup, data);
-			if (operacao == null) {
-				operacao = new Operacao();
-				operacao.setData(new Date(Calendar	.getInstance(TimeZone.getDefault())
-													.getTime()
-													.getTime()
-						+ gerador.nextInt(365)));
-				operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
-				operacao.setTamanho((long) gerador.nextInt(10000000));
-				operacaoDao.insereOperacao(solicitante, backup, operacao);
-
-				try {
-					Thread.sleep(1500);
-				} catch (InterruptedException e) {
-					Thread	.currentThread()
-							.interrupt();
-				}
-			}
+			operacaoDao.insereOperacao(solicitante, backup, operacao);
 		}
 
 	}

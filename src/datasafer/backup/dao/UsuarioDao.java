@@ -14,6 +14,7 @@ import datasafer.backup.dao.helper.Registrador;
 import datasafer.backup.dao.helper.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
+import datasafer.backup.model.Notificacao;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
@@ -50,34 +51,6 @@ public class UsuarioDao {
 		return resultadosSuperior.isEmpty() ? null : resultadosSuperior.get(0);
 	}
 
-	// // @Transactional
-	// public Set<Permissao> obtemPermissoes(Usuario usuario) {
-	//
-	// List<Permissao> resultadosPermissoes = manager .createQuery(
-	// "SELECT elements(usuario.permissoes) "
-	// + "FROM Usuario usuario "
-	// + "WHERE usuario.id = :id_usuario",
-	// Permissao.class)
-	// .setParameter("id_usuario", usuario.getId())
-	// .getResultList();
-	//
-	// return new HashSet<Permissao>(resultadosPermissoes);
-	// }
-	//
-	// // @Transactional
-	// public Set<Permissao> obtemDelegacoes(Usuario usuario) {
-	//
-	// List<Permissao> resultadosDelegacoes = manager .createQuery(
-	// "SELECT elements(usuario.delegacoes) "
-	// + "FROM Usuario usuario "
-	// + "WHERE usuario.id = :id_usuario",
-	// Permissao.class)
-	// .setParameter("id_usuario", usuario.getId())
-	// .getResultList();
-	//
-	// return new HashSet<Permissao>(resultadosDelegacoes);
-	// }
-
 	// @Transactional
 	public Usuario carregaInfos(Usuario proprietario) {
 
@@ -107,7 +80,7 @@ public class UsuarioDao {
 			proprietario.getStatusBackups()
 						.put((Operacao.Status) obj[0], (Long) obj[1]);
 		}
-		
+
 		return proprietario;
 	}
 
@@ -177,8 +150,8 @@ public class UsuarioDao {
 	@Transactional
 	public List<Usuario> obtemColaboradores(Usuario superior) {
 		return manager	.createQuery(
-				"SELECT colaborador FROM Usuario colaborador "
-						+ "JOIN FETCH colaborador.superior superior "
+				"SELECT c FROM Usuario c "
+						+ "JOIN FETCH c.superior superior "
 						+ "WHERE superior.id = :id_superior ",
 				Usuario.class)
 						.setParameter("id_superior", superior.getId())
@@ -188,8 +161,8 @@ public class UsuarioDao {
 	@Transactional
 	public List<Backup> obtemBackups(Usuario proprietario) {
 		return manager	.createQuery(
-				"SELECT backup FROM Backup backup "
-						+ "JOIN FETCH backup.proprietario proprietario "
+				"SELECT b FROM Backup b "
+						+ "JOIN FETCH b.proprietario proprietario "
 						+ "WHERE proprietario.id = :id_proprietario ",
 				Backup.class)
 						.setParameter("id_proprietario", proprietario.getId())
@@ -199,11 +172,22 @@ public class UsuarioDao {
 	@Transactional
 	public List<Estacao> obtemEstacoes(Usuario gerenciador) {
 		return manager	.createQuery(
-				"SELECT estacao FROM Estacao estacao "
-						+ "JOIN FETCH estacao.gerenciador gerenciador "
+				"SELECT e FROM Estacao e "
+						+ "JOIN FETCH e.gerenciador gerenciador "
 						+ "WHERE gerenciador.id = :id_gerenciador ",
 				Estacao.class)
 						.setParameter("id_gerenciador", gerenciador.getId())
+						.getResultList();
+	}
+
+	@Transactional
+	public List<Notificacao> obtemNotificacoes(Usuario usuario) {
+		return manager	.createQuery(
+				"SELECT n FROM Notificacao n "
+						+ "JOIN FETCH n.usuario usuario "
+						+ "WHERE usuario.id = :id_usuario ",
+				Notificacao.class)
+						.setParameter("id_usuario", usuario.getId())
 						.getResultList();
 	}
 

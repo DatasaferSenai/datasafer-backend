@@ -1,7 +1,7 @@
 package datasafer.backup.model;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -61,7 +61,7 @@ public class Operacao {
 	private Long id;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "backup_id")
 	private Backup backup;
 
@@ -74,7 +74,7 @@ public class Operacao {
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Date data;
+	private Timestamp data;
 
 	@JsonProperty
 	@Column(nullable = false)
@@ -85,6 +85,12 @@ public class Operacao {
 	@Column(nullable = true)
 	private Long tamanho;
 
+	@JsonProperty("nome_backup")
+	public String getNomeBackup() {
+		return backup.getNome();
+	}
+	
+	
 	public Long getId() {
 		return id;
 	}
@@ -101,11 +107,11 @@ public class Operacao {
 		this.backup = backup;
 	}
 
-	public Date getData() {
+	public Timestamp getData() {
 		return data;
 	}
 
-	public void setData(Date data) {
+	public void setData(Timestamp data) {
 		this.data = data;
 	}
 
