@@ -50,7 +50,7 @@ public class SegurancaFilter implements Filter {
 		}
 
 		try {
-			String chave_token = request.getHeader("Authorization");
+			String chave_token = (String) request.getHeader("Authorization");
 			if (chave_token == null) {
 				response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
 				return;
@@ -68,6 +68,7 @@ public class SegurancaFilter implements Filter {
 
 			if (token.getExpiracao() != null && token	.getExpiracao()
 														.before(agora)) {
+				tokenDao.revogaToken(token);
 				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização expirada");
 				return;
 			}
@@ -96,7 +97,6 @@ public class SegurancaFilter implements Filter {
 			if (usuario.getStatus() != Status.ATIVO) {
 				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus()
 																		.toString());
-
 				return;
 			}
 

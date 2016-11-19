@@ -61,7 +61,7 @@ public class OperacaoDao {
 	}
 
 	@Transactional
-	public void modifica(	Usuario solicitante,
+	public void modificaOperacao(	Usuario solicitante,
 							Operacao operacao,
 							Operacao valores) {
 

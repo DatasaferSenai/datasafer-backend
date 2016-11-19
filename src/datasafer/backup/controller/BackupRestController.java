@@ -55,7 +55,7 @@ public class BackupRestController {
 
 			try {
 
-				return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(backup)), HttpStatus.OK);
+				return new ResponseEntity<>(backupDao.carregaInfos(backup), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),

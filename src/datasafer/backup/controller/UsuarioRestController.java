@@ -52,7 +52,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemUsuario(@RequestAttribute Usuario usuario) {
 		try {
-			return new ResponseEntity<>(usuarioDao.carregaArmazenamentoOcupado(usuarioDao.carregaStatusBackups(usuario)), HttpStatus.OK);
+			return new ResponseEntity<>(usuarioDao.carregaInfos(usuario), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -106,7 +106,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemUsuarios(@RequestAttribute Usuario usuario) {
 		try {
-			return new ResponseEntity<>(usuarioDao.carregaArmazenamentoOcupado(usuarioDao.carregaStatusBackups(usuario)), HttpStatus.OK);
+			return new ResponseEntity<>(usuarioDao.carregaInfos(usuario), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -116,7 +116,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemEstacoes(@RequestAttribute Usuario usuario) {
 		try {
-			return new ResponseEntity<>(estacaoDao.carregaStatusBackups(usuarioDao.obtemEstacoes(usuario)), HttpStatus.OK);
+			return new ResponseEntity<>(estacaoDao.carregaInfos(usuarioDao.obtemEstacoes(usuario)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -126,7 +126,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/gerenciamento/usuario/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemBackups(@RequestAttribute Usuario usuario) {
 		try {
-			return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(usuarioDao.obtemBackups(usuario))), HttpStatus.OK);
+			return new ResponseEntity<>(backupDao.carregaInfos(usuarioDao.obtemBackups(usuario)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -79,7 +79,7 @@ public class UsuarioDao {
 	// }
 
 	// @Transactional
-	public Usuario carregaArmazenamentoOcupado(Usuario proprietario) {
+	public Usuario carregaInfos(Usuario proprietario) {
 
 		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
 				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
@@ -92,20 +92,6 @@ public class UsuarioDao {
 
 		proprietario.setArmazenamentoOcupado(
 				!resultadosArmazenamentoOcupado.isEmpty() && resultadosArmazenamentoOcupado.get(0) != null ? resultadosArmazenamentoOcupado.get(0) : 0L);
-
-		return proprietario;
-	}
-
-	// @Transactional
-	public List<Usuario> carregaArmazenamentoOcupado(List<Usuario> usuarios) {
-		for (Usuario usuario : usuarios) {
-			this.carregaArmazenamentoOcupado(usuario);
-		}
-		return usuarios;
-	}
-
-	// @Transactional
-	public Usuario carregaStatusBackups(Usuario proprietario) {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusBackups = manager	.createQuery(
@@ -121,14 +107,14 @@ public class UsuarioDao {
 			proprietario.getStatusBackups()
 						.put((Operacao.Status) obj[0], (Long) obj[1]);
 		}
-
+		
 		return proprietario;
 	}
 
 	// @Transactional
-	public List<Usuario> carregaStatusBackups(List<Usuario> usuarios) {
+	public List<Usuario> carregaInfos(List<Usuario> usuarios) {
 		for (Usuario usuario : usuarios) {
-			this.carregaStatusBackups(usuario);
+			this.carregaInfos(usuario);
 		}
 		return usuarios;
 	}

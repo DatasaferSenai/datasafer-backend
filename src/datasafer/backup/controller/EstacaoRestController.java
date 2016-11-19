@@ -33,7 +33,7 @@ public class EstacaoRestController {
 										@RequestAttribute Estacao estacao) {
 		try {
 			try {
-				return new ResponseEntity<>(estacaoDao.obtemStatusBackups(usuario, estacao), HttpStatus.OK);
+				return new ResponseEntity<>(estacaoDao.carregaInfos(usuario, estacao), HttpStatus.OK);
 			} catch (DataRetrievalFailureException e) {
 				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
 															.toString(),
@@ -71,7 +71,7 @@ public class EstacaoRestController {
 	public ResponseEntity<Object> listarBackups(@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao) {
 		try {
-			return new ResponseEntity<>(backupDao.carregaStatusOperacoes(backupDao.carregaUltimaOperacao(estacaoDao.obtemBackups(usuario, estacao))), HttpStatus.OK);
+			return new ResponseEntity<>(backupDao.carregaInfos(estacaoDao.obtemBackups(usuario, estacao)), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);

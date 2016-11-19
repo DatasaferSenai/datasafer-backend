@@ -1,6 +1,7 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.servlet.Filter;
@@ -45,34 +46,41 @@ public class PermissaoFilter implements Filter {
 
 		try {
 
-			Usuario solicitante = (Usuario) request.getAttribute("solicitante");
-			Usuario usuario = (Usuario) request.getAttribute("usuario");
+			final Usuario solicitante = (Usuario) request.getAttribute("solicitante");
+			final Usuario usuario = (Usuario) request.getAttribute("usuario");
 
-			Set<Permissao> permissoes = null;
+			final Set<Permissao> permissoes = new HashSet<Permissao>();
+
 			if (solicitante	.getLogin()
 							.equals(usuario.getLogin())) {
-				permissoes = usuario.getPermissoes();
+				permissoes.addAll(usuario.getPermissoes());
 			} else {
-				Usuario superior = usuarioDao.obtemSuperior(solicitante);
-				if (superior != null && superior.getLogin()
-												.equals(usuario.getLogin())) {
-					permissoes = solicitante.getDelegacoes();
-				} else {
-					superior = usuarioDao.obtemSuperior(usuario);
-					while (superior != null) {
-						if (superior.getLogin()
-									.equals(solicitante.getLogin())) {
-							permissoes = solicitante.getPermissoes();
-							break;
-						}
-						superior = usuarioDao.obtemSuperior(superior);
-					}
-				}
-			}
 
-			if (permissoes == null) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
-				return;
+				for (Usuario relacionado = usuarioDao.obtemSuperior(usuario); relacionado != null; relacionado = usuarioDao.obtemSuperior(relacionado)) {
+					if (relacionado	.getLogin()
+									.equals(solicitante.getLogin())) {
+						permissoes.addAll(solicitante.getPermissoes());
+						break;
+					}
+					relacionado = usuarioDao.obtemSuperior(relacionado);
+				}
+
+				for (Usuario relacionado = usuarioDao.obtemSuperior(solicitante); relacionado != null; relacionado = usuarioDao.obtemSuperior(
+						relacionado)) {
+
+					if (permissoes.isEmpty()) {
+						permissoes.addAll(solicitante.getDelegacoes());
+					} else {
+						permissoes.retainAll(relacionado.getDelegacoes());
+					}
+
+					if (relacionado	.getLogin()
+									.equals(usuario.getLogin())) {
+						break;
+					}
+					relacionado = usuarioDao.obtemSuperior(relacionado);
+				}
+
 			}
 
 			if (request	.getRequestURI()
@@ -117,6 +125,7 @@ public class PermissaoFilter implements Filter {
 				}
 
 			}
+
 			if (request	.getRequestURI()
 						.contains("backup")
 					|| request	.getRequestURI()

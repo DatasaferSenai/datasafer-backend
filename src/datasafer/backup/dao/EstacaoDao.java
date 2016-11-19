@@ -118,7 +118,7 @@ public class EstacaoDao {
 	}
 
 	// @Transactional
-	public Estacao obtemStatusBackups(	Usuario proprietario,
+	public Estacao carregaInfos(	Usuario proprietario,
 										Estacao estacao) {
 
 		@SuppressWarnings("unchecked")
@@ -142,7 +142,7 @@ public class EstacaoDao {
 	}
 
 	// @Transactional
-	public Estacao carregaStatusBackups(Estacao estacao) {
+	public Estacao carregaInfos(Estacao estacao) {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusBackups = manager	.createQuery(
@@ -163,19 +163,19 @@ public class EstacaoDao {
 	}
 
 	// @Transactional
-	public List<Estacao> carregaStatusBackups(	Usuario proprietario,
+	public List<Estacao> carregaInfos(	Usuario proprietario,
 												List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
-			this.obtemStatusBackups(proprietario, estacao);
+			this.carregaInfos(proprietario, estacao);
 		}
 		return estacoes;
 	}
 
 	// @Transactional
-	public List<Estacao> carregaStatusBackups(
+	public List<Estacao> carregaInfos(
 												List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
-			this.carregaStatusBackups(estacao);
+			this.carregaInfos(estacao);
 		}
 		return estacoes;
 	}

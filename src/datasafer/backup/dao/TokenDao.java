@@ -84,12 +84,23 @@ public class TokenDao {
 	}
 
 	@Transactional
-	public void revogaTokens(Usuario usuario) throws DataRetrievalFailureException {
+	public void revogaTokens(Usuario usuario) {
 
 		manager	.createQuery("DELETE "
 				+ "FROM Token t "
 				+ "WHERE t.usuario.id = :id_usuario ")
 				.setParameter("id_usuario", usuario.getId())
+				.executeUpdate();
+
+	}
+
+	@Transactional
+	public void revogaToken(Token token) {
+
+		manager	.createQuery("DELETE "
+				+ "FROM Token t "
+				+ "WHERE t.chave = :id_usuario ")
+				.setParameter("chave_token", token.getChave())
 				.executeUpdate();
 
 	}

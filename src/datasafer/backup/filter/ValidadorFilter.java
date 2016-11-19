@@ -45,11 +45,28 @@ public class ValidadorFilter implements Filter {
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
+		if (request	.getRequestURI()
+					.contains("login")) {
+
+			chain.doFilter(req, resp);
+			return;
+		}
+
 		Usuario usuario = (Usuario) request.getAttribute("usuario");
 
 		Estacao estacao = null;
-		if (request	.getRequestURI()
-					.contains("estacao")) {
+		if ((request.getRequestURI()
+					.contains("operacao")
+				&& !request	.getRequestURI()
+							.contains("operacoes"))
+				|| (request	.getRequestURI()
+							.contains("backup")
+						&& !request	.getRequestURI()
+									.contains("backups"))
+				|| (request	.getRequestURI()
+							.contains("estacao")
+						&& !request	.getRequestURI()
+									.contains("estacoes"))) {
 
 			if (usuario == null) {
 				response.sendError(HttpStatus.BAD_REQUEST.value(), "Usuário não espeficado");
@@ -68,8 +85,14 @@ public class ValidadorFilter implements Filter {
 		}
 
 		Backup backup = null;
-		if (request	.getRequestURI()
-					.contains("backup")) {
+		if ((request.getRequestURI()
+					.contains("operacao")
+				&& !request	.getRequestURI()
+							.contains("operacoes"))
+				|| (request	.getRequestURI()
+							.contains("backup")
+						&& !request	.getRequestURI()
+									.contains("backups"))) {
 
 			if (estacao == null) {
 				response.sendError(HttpStatus.BAD_REQUEST.value(), "Estação não espeficada");
@@ -89,8 +112,10 @@ public class ValidadorFilter implements Filter {
 		}
 
 		Operacao operacao = null;
-		if (request	.getRequestURI()
-					.contains("operacao")) {
+		if ((request.getRequestURI()
+					.contains("operacao")
+				&& !request	.getRequestURI()
+							.contains("operacoes"))) {
 
 			if (backup == null) {
 				response.sendError(HttpStatus.BAD_REQUEST.value(), "Backup não espeficado");

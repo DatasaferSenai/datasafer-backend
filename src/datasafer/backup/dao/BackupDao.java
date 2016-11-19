@@ -33,10 +33,8 @@ public class BackupDao {
 						String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
 				"SELECT backup FROM Backup backup "
-						+ "JOIN FETCH backup.proprietario proprietario "
-						+ "JOIN FETCH backup.estacao estacao "
-						+ "WHERE proprietario.id = :id_proprietario "
-						+ "AND estacao.id = :id_estacao "
+						+ "WHERE backup.proprietario.id = :id_proprietario "
+						+ "AND backup.estacao.id = :id_estacao "
 						+ "AND backup.nome = :nome_backup ",
 				Backup.class)
 												.setParameter("id_proprietario", proprietario.getId())
@@ -134,7 +132,7 @@ public class BackupDao {
 	}
 
 	// @Transactional
-	public Backup carregaStatusOperacoes(Backup backup) {
+	public Backup carregaInfos(Backup backup) {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusOperacoes = manager.createQuery(
@@ -151,21 +149,6 @@ public class BackupDao {
 					.put((Operacao.Status) obj[0], (Long) obj[1]);
 		}
 
-		return backup;
-	}
-
-	// @Transactional
-	public List<Backup> carregaStatusOperacoes(
-												List<Backup> backups) {
-		for (Backup backup : backups) {
-			this.carregaStatusOperacoes(backup);
-		}
-		return backups;
-	}
-
-	// @Transactional
-	public Backup carregaUltimaOperacao(Backup backup) {
-		System.out.println("--- OPERACOES --- ");
 		List<Operacao> resultadosUltimaOperacao = manager	.createQuery(
 				"SELECT operacao FROM Operacao operacao "
 						+ "WHERE operacao.backup.id = :id_backup "
@@ -173,17 +156,18 @@ public class BackupDao {
 				Operacao.class)
 															.setParameter("id_backup", backup.getId())
 															.getResultList();
-		System.out.println("--- FIM OPERACOES --- ");
+		
 		backup.setUltimaOperacao(
 				!resultadosUltimaOperacao.isEmpty() ? resultadosUltimaOperacao.get(0) : null);
-
+		
 		return backup;
 	}
 
 	// @Transactional
-	public List<Backup> carregaUltimaOperacao(List<Backup> backups) {
+	public List<Backup> carregaInfos(
+												List<Backup> backups) {
 		for (Backup backup : backups) {
-			this.carregaUltimaOperacao(backup);
+			this.carregaInfos(backup);
 		}
 		return backups;
 	}
