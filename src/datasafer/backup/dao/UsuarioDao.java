@@ -2,6 +2,7 @@ package datasafer.backup.dao;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -99,7 +100,7 @@ public class UsuarioDao {
 	@Transactional
 	public void insereUsuario(	Usuario solicitante,
 								Usuario superior,
-								Usuario usuario) {
+								Usuario usuario) throws DataIntegrityViolationException {
 
 		solicitante = (solicitante == null	? null
 											: manager.find(Usuario.class, solicitante.getId()));
@@ -110,7 +111,7 @@ public class UsuarioDao {
 
 		Usuario existente = this.obtemUsuario(usuario.getLogin());
 		if (existente != null) {
-			throw new DataIntegrityViolationException("Usuário '" + usuario.getLogin() + "' já existente");
+			throw new DataIntegrityViolationException("O usuário " + usuario.getLogin() + " já existe");
 		}
 
 		usuario	.getRegistros()
@@ -128,7 +129,7 @@ public class UsuarioDao {
 	@Transactional
 	public void modificaUsuario(Usuario solicitante,
 								Usuario usuario,
-								Usuario valores) {
+								Usuario valores) throws DataIntegrityViolationException {
 
 		solicitante = (solicitante == null	? null
 											: manager.find(Usuario.class, solicitante.getId()));
@@ -139,12 +140,12 @@ public class UsuarioDao {
 
 			Usuario existente = this.obtemUsuario(valores.getLogin());
 			if (existente != null) {
-				throw new DataIntegrityViolationException("Usuário '" + valores.getLogin() + "' já existente");
+				throw new DataIntegrityViolationException("O usuário " + valores.getLogin() + " já existe");
 			}
 
 		}
 
-		List<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
+		Set<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
 
 		Validador.validar(usuario);
 
@@ -212,4 +213,5 @@ public class UsuarioDao {
 		return results.isEmpty()	? null
 									: results.get(0);
 	}
+
 }

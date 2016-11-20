@@ -1,8 +1,8 @@
 package datasafer.backup.model;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +29,7 @@ public class Operacao {
 	public Operacao() {
 		this.id = null;
 		this.backup = null;
-		this.registros = new ArrayList<Registro>();
+		this.registros = new HashSet<Registro>();
 		this.data = null;
 		this.status = null;
 		this.tamanho = null;
@@ -68,8 +67,7 @@ public class Operacao {
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "operacao_id")
-	@OrderBy("data")
-	private List<Registro> registros;
+	private Set<Registro> registros;
 
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -89,8 +87,7 @@ public class Operacao {
 	public String getNomeBackup() {
 		return backup.getNome();
 	}
-	
-	
+
 	public Long getId() {
 		return id;
 	}
@@ -131,11 +128,11 @@ public class Operacao {
 		this.tamanho = tamanho;
 	}
 
-	public List<Registro> getRegistros() {
+	public Set<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(List<Registro> registros) {
+	public void setRegistros(Set<Registro> registros) {
 		this.registros = registros;
 	}
 

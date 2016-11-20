@@ -68,7 +68,6 @@ public class PermissaoFilter implements Filter {
 
 				for (Usuario relacionado = usuarioDao.obtemSuperior(solicitante); relacionado != null; relacionado = usuarioDao.obtemSuperior(
 																																				relacionado)) {
-
 					if (permissoes.isEmpty()) {
 						permissoes.addAll(solicitante.getDelegacoes());
 					} else {
@@ -130,7 +129,7 @@ public class PermissaoFilter implements Filter {
 						|| (request	.getMethod()
 									.equals("DELETE")
 								&& !permissoes.contains(Permissao.EXCLUIR_ESTACOES))) {
-					
+
 					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
 					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 					response.getWriter().write(new JSONObject().put("erro", "O usuário não possui permissão para realizar a operação solicitada").toString());

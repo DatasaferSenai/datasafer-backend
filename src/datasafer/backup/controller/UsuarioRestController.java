@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,7 +47,7 @@ public class UsuarioRestController {
 					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> modificaUsuario(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario,
-													@RequestBody Usuario valores) {
+													@RequestBody Usuario valores) throws DataIntegrityViolationException, AccessDeniedException {
 
 		usuarioDao.modificaUsuario(solicitante, usuario, valores);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
@@ -54,7 +55,7 @@ public class UsuarioRestController {
 
 	@RequestMapping(value = "/usuario", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> inativaUsuario(	@RequestAttribute Usuario solicitante,
-													@RequestAttribute Usuario usuario) {
+													@RequestAttribute Usuario usuario) throws DataIntegrityViolationException, AccessDeniedException {
 
 		usuario.setStatus(Usuario.Status.INATIVO);
 		usuarioDao.modificaUsuario(solicitante, usuario, usuario);

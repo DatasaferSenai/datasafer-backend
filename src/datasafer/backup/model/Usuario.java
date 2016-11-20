@@ -4,11 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -28,7 +26,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -48,11 +45,11 @@ public class Usuario {
 	public Usuario() {
 		this.id = null;
 		this.superior = null;
-		this.colaboradores = new ArrayList<Usuario>();
-		this.estacoes = new ArrayList<Estacao>();
-		this.backups = new ArrayList<Backup>();
-		this.registros = new ArrayList<Registro>();
-		this.autorizacoes = new ArrayList<Autorizacao>();
+		this.colaboradores = new HashSet<Usuario>();
+		this.estacoes = new HashSet<Estacao>();
+		this.backups = new HashSet<Backup>();
+		this.registros = new HashSet<Registro>();
+		this.autorizacoes = new HashSet<Autorizacao>();
 		this.delegacoes = new HashSet<Permissao>();
 		this.login = null;
 		this.senha = null;
@@ -70,7 +67,7 @@ public class Usuario {
 			this.statusBackups.put(s, 0L);
 		}
 
-		this.notificacoes = new ArrayList<Notificacao>();
+		this.notificacoes = new HashSet<Notificacao>();
 	}
 
 	public enum Status {
@@ -136,35 +133,28 @@ public class Usuario {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("login")
-	private List<Usuario> colaboradores;
+	private Set<Usuario> colaboradores;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy(value = "nome ASC")
-	private List<Estacao> estacoes;
+	private Set<Estacao> estacoes;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("nome")
-	private List<Backup> backups;
+	private Set<Backup> backups;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "solicitante", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("data")
-	private List<Registro> solicitacoes;
+	private Set<Registro> solicitacoes;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "usuario_id")
-	@OrderBy("data")
-	private List<Registro> registros;
+	private Set<Registro> registros;
 
-	@Modificavel(autoModificavel = false)
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("emissao")
-	private List<Autorizacao> autorizacoes;
+	private Set<Autorizacao> autorizacoes;
 
 	@Modificavel(autoModificavel = false)
 	@Validar
@@ -238,27 +228,26 @@ public class Usuario {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("emissao")
-	private List<Notificacao> notificacoes;
+	private Set<Notificacao> notificacoes;
 
 	@JsonProperty("login_superior")
 	public String getLoginSuperior() {
 		return superior.getLogin();
 	}
 
-	public List<Registro> getSolicitacoes() {
+	public Set<Registro> getSolicitacoes() {
 		return solicitacoes;
 	}
 
-	public void setSolicitacoes(List<Registro> solicitacoes) {
+	public void setSolicitacoes(Set<Registro> solicitacoes) {
 		this.solicitacoes = solicitacoes;
 	}
 
-	public List<Notificacao> getNotificacoes() {
+	public Set<Notificacao> getNotificacoes() {
 		return notificacoes;
 	}
 
-	public void setNotificacoes(List<Notificacao> notificacoes) {
+	public void setNotificacoes(Set<Notificacao> notificacoes) {
 		this.notificacoes = notificacoes;
 	}
 
@@ -278,19 +267,19 @@ public class Usuario {
 		this.statusBackups = statusBackups;
 	}
 
-	public List<Autorizacao> getAutorizacoes() {
+	public Set<Autorizacao> getAutorizacoes() {
 		return autorizacoes;
 	}
 
-	public void setAutorizacoes(List<Autorizacao> autorizacoes) {
+	public void setAutorizacoes(Set<Autorizacao> autorizacoes) {
 		this.autorizacoes = autorizacoes;
 	}
 
-	public List<Usuario> getColaboradores() {
+	public Set<Usuario> getColaboradores() {
 		return colaboradores;
 	}
 
-	public void setColaboradores(List<Usuario> colaboradores) {
+	public void setColaboradores(Set<Usuario> colaboradores) {
 		this.colaboradores = colaboradores;
 	}
 
@@ -326,19 +315,19 @@ public class Usuario {
 		this.superior = superior;
 	}
 
-	public List<Estacao> getEstacoes() {
+	public Set<Estacao> getEstacoes() {
 		return estacoes;
 	}
 
-	public void setEstacoes(List<Estacao> estacoes) {
+	public void setEstacoes(Set<Estacao> estacoes) {
 		this.estacoes = estacoes;
 	}
 
-	public List<Backup> getBackups() {
+	public Set<Backup> getBackups() {
 		return backups;
 	}
 
-	public void setBackups(List<Backup> backups) {
+	public void setBackups(Set<Backup> backups) {
 		this.backups = backups;
 	}
 
@@ -420,11 +409,11 @@ public class Usuario {
 		this.delegacoes = delegacoes;
 	}
 
-	public List<Registro> getRegistros() {
+	public Set<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(List<Registro> registros) {
+	public void setRegistros(Set<Registro> registros) {
 		this.registros = registros;
 	}
 

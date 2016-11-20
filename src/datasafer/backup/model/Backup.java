@@ -1,10 +1,10 @@
 package datasafer.backup.model;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,7 +16,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -33,8 +32,8 @@ public class Backup {
 		this.id = null;
 		this.proprietario = null;
 		this.estacao = null;
-		this.operacoes = new ArrayList<Operacao>();
-		this.registros = new ArrayList<Registro>();
+		this.operacoes = new HashSet<Operacao>();
+		this.registros = new HashSet<Registro>();
 		this.nome = null;
 		this.descricao = null;
 		this.inicio = null;
@@ -64,14 +63,12 @@ public class Backup {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("data")
-	private List<Operacao> operacoes;
+	private Set<Operacao> operacoes;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "backup_id")
-	@OrderBy("data")
-	private List<Registro> registros;
+	private Set<Registro> registros;
 
 	@JsonProperty
 	@Column(length = 40, nullable = false)
@@ -175,11 +172,11 @@ public class Backup {
 		this.estacao = estacao;
 	}
 
-	public List<Operacao> getOperacoes() {
+	public Set<Operacao> getOperacoes() {
 		return operacoes;
 	}
 
-	public void setOperacoes(List<Operacao> operacoes) {
+	public void setOperacoes(Set<Operacao> operacoes) {
 		this.operacoes = operacoes;
 	}
 
@@ -207,11 +204,11 @@ public class Backup {
 		this.pasta = pasta;
 	}
 
-	public List<Registro> getRegistros() {
+	public Set<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(List<Registro> registros) {
+	public void setRegistros(Set<Registro> registros) {
 		this.registros = registros;
 	}
 

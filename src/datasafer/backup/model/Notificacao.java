@@ -31,6 +31,7 @@ public class Notificacao {
 
 	@JsonProperty
 	@Id
+	@Column(length = 255, nullable = false)
 	private String token;
 
 	@JsonProperty
@@ -38,12 +39,11 @@ public class Notificacao {
 	@Enumerated(EnumType.STRING)
 	private Tipo tipo;
 
-	
 	@JsonProperty("login_usuario")
 	public String getLoginUsuario() {
 		return usuario.getLogin();
 	}
-	
+
 	@JsonIgnore
 	@Column(nullable = true)
 	private Timestamp ultimaNotificacao;

@@ -1,9 +1,9 @@
 package datasafer.backup.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -15,7 +15,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,8 +29,8 @@ public class Estacao {
 	public Estacao() {
 		this.id = null;
 		this.gerenciador = null;
-		this.backups = new ArrayList<Backup>();
-		this.registros = new ArrayList<Registro>();
+		this.backups = new HashSet<Backup>();
+		this.registros = new HashSet<Registro>();
 		this.nome = null;
 		this.descricao = null;
 
@@ -53,14 +52,12 @@ public class Estacao {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("nome")
-	private List<Backup> backups;
+	private Set<Backup> backups;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
-	@OrderBy("data")
-	private List<Registro> registros;
+	private Set<Registro> registros;
 
 	@JsonProperty
 	@Column(length = 40, unique = true, nullable = false)
@@ -106,11 +103,11 @@ public class Estacao {
 		this.nome = nome;
 	}
 
-	public List<Backup> getBackups() {
+	public Set<Backup> getBackups() {
 		return backups;
 	}
 
-	public void setBackups(List<Backup> backups) {
+	public void setBackups(Set<Backup> backups) {
 		this.backups = backups;
 	}
 
@@ -122,11 +119,11 @@ public class Estacao {
 		this.descricao = descricao;
 	}
 
-	public List<Registro> getRegistros() {
+	public Set<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(List<Registro> registros) {
+	public void setRegistros(Set<Registro> registros) {
 		this.registros = registros;
 	}
 

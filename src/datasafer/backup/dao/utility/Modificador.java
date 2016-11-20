@@ -12,9 +12,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.springframework.security.access.AccessDeniedException;
 
@@ -35,18 +35,19 @@ public class Modificador {
 
 	}
 
-	public static <T> List<Registro> modifica(	Usuario solicitante,
+	public static <T> Set<Registro> modifica(	Usuario solicitante,
 												T destino,
 												T origem) throws AccessDeniedException {
 
-		List<Registro> registros = new ArrayList<Registro>();
+		Set<Registro> registros = new HashSet<Registro>();
 		for (Field f : destino	.getClass()
 								.getDeclaredFields()) {
 			try {
 				if (f.isAnnotationPresent(Modificavel.class)) {
 					Modificavel modificavel = f.getAnnotation(Modificavel.class);
 
-					if (destino instanceof Usuario && ((Usuario) destino).getLogin().equals(solicitante.getLogin()) && !modificavel.autoModificavel()) {
+					if (destino instanceof Usuario && solicitante != null && ((Usuario) destino).getLogin().equals(solicitante.getLogin())
+							&& !modificavel.autoModificavel()) {
 						throw new AccessDeniedException("A propriedade " + f.getName() + " não é auto modificável");
 					}
 
@@ -56,6 +57,7 @@ public class Modificador {
 
 						if (origem != null) {
 							Object valorOrigem = new PropertyDescriptor(f.getName(), origem.getClass()).getReadMethod().invoke(origem);
+
 							if (valorOrigem != null && !valorOrigem.equals(valorDestino)) {
 
 								Registro registro = new Registro();
@@ -83,10 +85,10 @@ public class Modificador {
 																			.toInstant()));
 							registro.setAtributo(f.getName());
 
-							registro.setDe(valorDestino == null	? null
-																: valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)
-																								: valorDestino.toString());
-							registro.setPara(null);
+							registro.setDe(null);
+							registro.setPara(valorDestino == null	? null
+																	: valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)
+																									: valorDestino.toString());
 							registros.add(registro);
 						}
 					}

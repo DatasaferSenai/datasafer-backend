@@ -7,7 +7,6 @@ import java.time.ZoneId;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +37,9 @@ public class NotificacaoDao {
 		manager.remove(notificacao);
 	}
 
-	@Scheduled(cron = "*/60 * * * * *") /* Todos os dias as 12:00:00 (24HR) */
 	@Transactional
 	public void limpaNotificacoes() {
-		
+
 		manager	.createQuery("DELETE "
 				+ "FROM Notificacao n "
 				+ "WHERE n.ultimaNotificacao IS NOT NULL "

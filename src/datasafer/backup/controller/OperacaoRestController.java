@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.controller.utlility.Notificador;
+import datasafer.backup.controller.utlility.NotificadorOneSignal;
 import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Backup;
@@ -42,7 +42,7 @@ public class OperacaoRestController {
 					.equals(Operacao.Status.SUCESSO)
 				|| operacao	.getStatus()
 							.equals(Operacao.Status.FALHA)) {
-			Notificador.envia(	usuarioDao.obtemNotificacoes(solicitante),
+			NotificadorOneSignal.envia(	usuarioDao.obtemNotificacoes(solicitante),
 								"O backup " + backup.getNome() + " do " + backup.getEstacao()
 																				.getNome()
 										+ (operacao	.getStatus()

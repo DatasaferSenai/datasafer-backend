@@ -12,7 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import datasafer.backup.model.Notificacao;
 
-public class Notificador {
+public class NotificadorOneSignal {
 
 	private static final RestTemplate restTemplate = new RestTemplate();
 

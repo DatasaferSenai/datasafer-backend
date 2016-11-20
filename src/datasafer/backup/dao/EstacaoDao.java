@@ -15,7 +15,6 @@ import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
-import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -55,13 +54,8 @@ public class EstacaoDao {
 			}
 		}
 
-		List<Registro> registros = Modificador.modifica(solicitante, estacao, valores);
-		if (estacao.getRegistros() == null) {
-			estacao.setRegistros(registros);
-		} else {
-			estacao	.getRegistros()
-					.addAll(registros);
-		}
+		estacao	.getRegistros()
+				.addAll(Modificador.modifica(solicitante, estacao, valores));
 
 		Validador.validar(estacao);
 

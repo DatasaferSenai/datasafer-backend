@@ -18,7 +18,6 @@ import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
-import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -109,13 +108,8 @@ public class BackupDao {
 			}
 		}
 
-		List<Registro> registros = Modificador.modifica(solicitante, backup, valores);
-		if (backup.getRegistros() == null) {
-			backup.setRegistros(registros);
-		} else {
-			backup	.getRegistros()
-					.addAll(registros);
-		}
+		backup	.getRegistros()
+				.addAll(Modificador.modifica(solicitante, backup, valores));
 
 		Validador.validar(backup);
 
