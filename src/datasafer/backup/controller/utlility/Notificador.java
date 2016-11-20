@@ -1,4 +1,4 @@
-package datasafer.backup.controller.helper;
+package datasafer.backup.controller.utlility;
 
 import java.net.URI;
 import java.util.List;
@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import datasafer.backup.model.Notificacao;
@@ -43,7 +42,7 @@ public class Notificador {
 																.contentType(MediaType.APPLICATION_JSON_UTF8)
 																.body(job.toString(1));
 
-				ResponseEntity<String> response = restTemplate.postForEntity(request.getUrl(), request, String.class);
+				/* ResponseEntity<String> response = */restTemplate.postForEntity(request.getUrl(), request, String.class);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

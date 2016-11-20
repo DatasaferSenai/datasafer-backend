@@ -13,8 +13,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Registrador;
-import datasafer.backup.dao.helper.Validador;
+import datasafer.backup.dao.utility.Modificador;
+import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
@@ -32,16 +32,17 @@ public class BackupDao {
 								Estacao estacao,
 								String nome_backup) {
 		List<Backup> resultadosBackup = manager	.createQuery(
-				"SELECT backup FROM Backup backup "
-						+ "WHERE backup.proprietario.id = :id_proprietario "
-						+ "AND backup.estacao.id = :id_estacao "
-						+ "AND backup.nome = :nome_backup ",
-				Backup.class)
+															"SELECT backup FROM Backup backup "
+																	+ "WHERE backup.proprietario.id = :id_proprietario "
+																	+ "AND backup.estacao.id = :id_estacao "
+																	+ "AND backup.nome = :nome_backup ",
+															Backup.class)
 												.setParameter("id_proprietario", proprietario.getId())
 												.setParameter("id_estacao", estacao.getId())
 												.setParameter("nome_backup", nome_backup)
 												.getResultList();
-		return resultadosBackup.isEmpty() ? null : resultadosBackup.get(0);
+		return resultadosBackup.isEmpty()	? null
+											: resultadosBackup.get(0);
 	}
 
 	@Transactional
@@ -50,7 +51,8 @@ public class BackupDao {
 								Estacao estacao,
 								Backup backup) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		proprietario = manager.find(Usuario.class, proprietario.getId());
 		estacao = manager.find(Estacao.class, estacao.getId());
 
@@ -59,11 +61,11 @@ public class BackupDao {
 		Backup existente = this.obtemBackup(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
-						.addAll(Registrador.modifica(solicitante, existente, backup));
+						.addAll(Modificador.modifica(solicitante, existente, backup));
 			backup = existente;
 		} else {
 			backup	.getRegistros()
-					.addAll(Registrador.insere(solicitante, backup));
+					.addAll(Modificador.modifica(solicitante, backup, null));
 		}
 
 		Operacao operacao = new Operacao();
@@ -72,7 +74,7 @@ public class BackupDao {
 														.toInstant()));
 		operacao.setStatus(Operacao.Status.AGENDADO);
 		operacao.setTamanho(null);
-		operacao.setRegistros(Registrador.insere(solicitante, operacao));
+		operacao.setRegistros(Modificador.modifica(solicitante, operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -94,7 +96,8 @@ public class BackupDao {
 								Backup backup,
 								Backup valores) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		backup = manager.find(Backup.class, backup.getId());
 
 		if (valores.getNome() != null && !valores	.getNome()
@@ -106,7 +109,7 @@ public class BackupDao {
 			}
 		}
 
-		List<Registro> registros = Registrador.modifica(solicitante, backup, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, backup, valores);
 		if (backup.getRegistros() == null) {
 			backup.setRegistros(registros);
 		} else {
@@ -123,10 +126,10 @@ public class BackupDao {
 	@Transactional
 	public List<Operacao> obtemOperacoes(Backup backup) {
 		return manager	.createQuery(
-				"SELECT operacao FROM Operacao operacao "
-						+ "JOIN FETCH operacao.backup backup "
-						+ "WHERE backup.id = :id_backup ",
-				Operacao.class)
+									"SELECT operacao FROM Operacao operacao "
+											+ "JOIN FETCH operacao.backup backup "
+											+ "WHERE backup.id = :id_backup ",
+									Operacao.class)
 						.setParameter("id_backup", backup.getId())
 						.getResultList();
 	}
@@ -136,9 +139,9 @@ public class BackupDao {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusOperacoes = manager.createQuery(
-				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-						+ "WHERE operacao.backup.id = :id_backup "
-						+ "GROUP BY operacao.status ")
+																		"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+																				+ "WHERE operacao.backup.id = :id_backup "
+																				+ "GROUP BY operacao.status ")
 														.setParameter("id_backup", backup.getId())
 														.getResultList();
 
@@ -149,27 +152,30 @@ public class BackupDao {
 		}
 
 		List<Operacao> resultadosUltimaOperacao = manager	.createQuery(
-				"SELECT operacao FROM Operacao operacao "
-						+ "WHERE operacao.backup.id = :id_backup "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE ultimaOperacao.backup = operacao.backup)",
-				Operacao.class)
+																		"SELECT operacao FROM Operacao operacao "
+																				+ "WHERE operacao.backup.id = :id_backup "
+																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE ultimaOperacao.backup = operacao.backup)",
+																		Operacao.class)
 															.setParameter("id_backup", backup.getId())
 															.getResultList();
 
 		backup.setUltimaOperacao(
-				!resultadosUltimaOperacao.isEmpty() ? resultadosUltimaOperacao.get(0) : null);
+									!resultadosUltimaOperacao.isEmpty()	? resultadosUltimaOperacao.get(0)
+																		: null);
 
 		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
-				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
-						+ "WHERE operacao.backup.id = :id_backup "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
-				Long.class)
+																		"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+																				+ "WHERE operacao.backup.id = :id_backup "
+																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
+																		Long.class)
 															.setParameter("id_backup", backup.getId())
 															.setParameter("status_operacao", Operacao.Status.SUCESSO)
 															.getResultList();
 
 		backup.setArmazenamentoOcupado(
-				!resultadosArmazenamentoOcupado.isEmpty() && resultadosArmazenamentoOcupado.get(0) != null ? resultadosArmazenamentoOcupado.get(0) : 0L);
+										!resultadosArmazenamentoOcupado.isEmpty()
+												&& resultadosArmazenamentoOcupado.get(0) != null	? resultadosArmazenamentoOcupado.get(0)
+																									: 0L);
 
 		return backup;
 	}

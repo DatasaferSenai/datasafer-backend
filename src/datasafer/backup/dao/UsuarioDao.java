@@ -10,8 +10,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Registrador;
-import datasafer.backup.dao.helper.Validador;
+import datasafer.backup.dao.utility.Modificador;
+import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Notificacao;
@@ -28,50 +28,54 @@ public class UsuarioDao {
 	// @Transactional
 	public Usuario obtemUsuario(String login_usuario) {
 		List<Usuario> resultadosUsuario = manager	.createQuery(
-				"SELECT usuario FROM Usuario usuario "
-						+ "WHERE usuario.login = :login_usuario ",
-				Usuario.class)
+																"SELECT usuario FROM Usuario usuario "
+																		+ "WHERE usuario.login = :login_usuario ",
+																Usuario.class)
 													.setParameter("login_usuario", login_usuario)
 													.getResultList();
 
-		return resultadosUsuario.isEmpty() ? null : resultadosUsuario.get(0);
+		return resultadosUsuario.isEmpty()	? null
+											: resultadosUsuario.get(0);
 	}
 
 	// @Transactional
 	public Usuario obtemSuperior(Usuario usuario) {
 
 		List<Usuario> resultadosSuperior = manager	.createQuery(
-				"SELECT usuario.superior "
-						+ "FROM Usuario usuario "
-						+ "WHERE usuario.id = :id_usuario",
-				Usuario.class)
+																"SELECT usuario.superior "
+																		+ "FROM Usuario usuario "
+																		+ "WHERE usuario.id = :id_usuario",
+																Usuario.class)
 													.setParameter("id_usuario", usuario.getId())
 													.getResultList();
 
-		return resultadosSuperior.isEmpty() ? null : resultadosSuperior.get(0);
+		return resultadosSuperior.isEmpty()	? null
+											: resultadosSuperior.get(0);
 	}
 
 	// @Transactional
 	public Usuario carregaInfos(Usuario proprietario) {
 
 		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
-				"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
-						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
-				Long.class)
+																		"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+																				+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
+																		Long.class)
 															.setParameter("id_proprietario", proprietario.getId())
 															.setParameter("status_operacao", Operacao.Status.SUCESSO)
 															.getResultList();
 
 		proprietario.setArmazenamentoOcupado(
-				!resultadosArmazenamentoOcupado.isEmpty() && resultadosArmazenamentoOcupado.get(0) != null ? resultadosArmazenamentoOcupado.get(0) : 0L);
+												!resultadosArmazenamentoOcupado.isEmpty()
+														&& resultadosArmazenamentoOcupado.get(0) != null	? resultadosArmazenamentoOcupado.get(0)
+																											: 0L);
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusBackups = manager	.createQuery(
-				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-						+ "GROUP BY operacao.status ")
+																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+																			+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+																			+ "GROUP BY operacao.status ")
 														.setParameter("id_proprietario", proprietario.getId())
 														.getResultList();
 
@@ -97,8 +101,10 @@ public class UsuarioDao {
 								Usuario superior,
 								Usuario usuario) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
-		superior = (superior == null ? null : manager.find(Usuario.class, superior.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
+		superior = (superior == null	? null
+										: manager.find(Usuario.class, superior.getId()));
 
 		Validador.validar(usuario);
 
@@ -108,7 +114,7 @@ public class UsuarioDao {
 		}
 
 		usuario	.getRegistros()
-				.addAll(Registrador.insere(solicitante, usuario));
+				.addAll(Modificador.modifica(solicitante, usuario, null));
 
 		if (superior != null) {
 			superior.getColaboradores()
@@ -124,7 +130,8 @@ public class UsuarioDao {
 								Usuario usuario,
 								Usuario valores) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		usuario = manager.find(Usuario.class, usuario.getId());
 
 		if (valores.getLogin() != null && !valores	.getLogin()
@@ -137,7 +144,7 @@ public class UsuarioDao {
 
 		}
 
-		List<Registro> registros = Registrador.modifica(solicitante, usuario, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
 
 		Validador.validar(usuario);
 
@@ -150,10 +157,10 @@ public class UsuarioDao {
 	@Transactional
 	public List<Usuario> obtemColaboradores(Usuario superior) {
 		return manager	.createQuery(
-				"SELECT c FROM Usuario c "
-						+ "JOIN FETCH c.superior superior "
-						+ "WHERE superior.id = :id_superior ",
-				Usuario.class)
+									"SELECT c FROM Usuario c "
+											+ "JOIN FETCH c.superior superior "
+											+ "WHERE superior.id = :id_superior ",
+									Usuario.class)
 						.setParameter("id_superior", superior.getId())
 						.getResultList();
 	}
@@ -161,10 +168,10 @@ public class UsuarioDao {
 	@Transactional
 	public List<Backup> obtemBackups(Usuario proprietario) {
 		return manager	.createQuery(
-				"SELECT b FROM Backup b "
-						+ "JOIN FETCH b.proprietario proprietario "
-						+ "WHERE proprietario.id = :id_proprietario ",
-				Backup.class)
+									"SELECT b FROM Backup b "
+											+ "JOIN FETCH b.proprietario proprietario "
+											+ "WHERE proprietario.id = :id_proprietario ",
+									Backup.class)
 						.setParameter("id_proprietario", proprietario.getId())
 						.getResultList();
 	}
@@ -172,10 +179,10 @@ public class UsuarioDao {
 	@Transactional
 	public List<Estacao> obtemEstacoes(Usuario gerenciador) {
 		return manager	.createQuery(
-				"SELECT e FROM Estacao e "
-						+ "JOIN FETCH e.gerenciador gerenciador "
-						+ "WHERE gerenciador.id = :id_gerenciador ",
-				Estacao.class)
+									"SELECT e FROM Estacao e "
+											+ "JOIN FETCH e.gerenciador gerenciador "
+											+ "WHERE gerenciador.id = :id_gerenciador ",
+									Estacao.class)
 						.setParameter("id_gerenciador", gerenciador.getId())
 						.getResultList();
 	}
@@ -183,10 +190,10 @@ public class UsuarioDao {
 	@Transactional
 	public List<Notificacao> obtemNotificacoes(Usuario usuario) {
 		return manager	.createQuery(
-				"SELECT n FROM Notificacao n "
-						+ "JOIN FETCH n.usuario usuario "
-						+ "WHERE usuario.id = :id_usuario ",
-				Notificacao.class)
+									"SELECT n FROM Notificacao n "
+											+ "JOIN FETCH n.usuario usuario "
+											+ "WHERE usuario.id = :id_usuario ",
+									Notificacao.class)
 						.setParameter("id_usuario", usuario.getId())
 						.getResultList();
 	}
@@ -194,14 +201,15 @@ public class UsuarioDao {
 	// @Transactional
 	public Usuario login(Usuario usuario) {
 		List<Usuario> results = manager	.createQuery(
-				"SELECT usuario FROM Usuario usuario "
-						+ "WHERE usuario.login = :login_usuario "
-						+ "AND usuario.senha = :senha_usuario ",
-				Usuario.class)
+													"SELECT usuario FROM Usuario usuario "
+															+ "WHERE usuario.login = :login_usuario "
+															+ "AND usuario.senha = :senha_usuario ",
+													Usuario.class)
 										.setParameter("login_usuario", usuario.getLogin())
 										.setParameter("senha_usuario", usuario.getSenha())
 										.getResultList();
 
-		return results.isEmpty() ? null : results.get(0);
+		return results.isEmpty()	? null
+									: results.get(0);
 	}
 }

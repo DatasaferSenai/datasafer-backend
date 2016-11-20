@@ -23,17 +23,17 @@ public class NotificacaoRestController {
 	@RequestMapping(value = "/notificacoes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<String> insereNotificacao(@RequestAttribute Usuario solicitante,
 													@RequestBody Notificacao notificacao) {
-		try {
-			notificacaoDao.insereNotificacao(solicitante, notificacao);
 
-			return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		notificacaoDao.insereNotificacao(solicitante, notificacao);
+		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 
-	public void enviaNotificacao() {
+	@RequestMapping(value = "/notificacoes", method = RequestMethod.DELETE, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<String> excluiNotificacao(@RequestBody Notificacao notificacao) {
+
+		notificacaoDao.excluiNotificacao(notificacao);
+		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 
 	}
+
 }

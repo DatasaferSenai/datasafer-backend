@@ -1,9 +1,6 @@
 package datasafer.backup.controller;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -29,51 +26,24 @@ public class BackupRestController {
 												@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao,
 												@RequestBody Backup backup) {
-		try {
-			try {
-				backupDao.insereBackup(solicitante, usuario, estacao, backup);
-				return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-			} catch (DataIntegrityViolationException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.CONFLICT);
-			}
 
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		backupDao.insereBackup(solicitante, usuario, estacao, backup);
+		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 
 	@RequestMapping(value = "/backup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemBackup(	@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao,
 												@RequestAttribute Backup backup) {
-		try {
 
-			try {
-
-				return new ResponseEntity<>(backupDao.carregaInfos(backup), HttpStatus.OK);
-			} catch (DataRetrievalFailureException e) {
-				return new ResponseEntity<>(new JSONObject().put("erro", e.getMessage())
-															.toString(),
-						HttpStatus.NOT_FOUND);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return new ResponseEntity<>(backupDao.carregaInfos(backup), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemOperacoes(	@RequestAttribute Usuario usuario,
 													@RequestAttribute Estacao estacao,
 													@RequestAttribute Backup backup) {
-		try {
-			return new ResponseEntity<>(backupDao.obtemOperacoes(backup), HttpStatus.OK);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+
+		return new ResponseEntity<>(backupDao.obtemOperacoes(backup), HttpStatus.OK);
 	}
 }

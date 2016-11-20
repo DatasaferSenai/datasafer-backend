@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
@@ -37,7 +38,8 @@ public class ValidadorFilter implements Filter {
 	public void doFilter(	ServletRequest req,
 							ServletResponse resp,
 							FilterChain chain)
-			throws IOException, ServletException {
+												throws IOException, ServletException, DataIntegrityViolationException {
+
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;

@@ -14,8 +14,10 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import datasafer.backup.dao.UsuarioDao;
@@ -32,7 +34,7 @@ public class PermissaoFilter implements Filter {
 	public void doFilter(	ServletRequest req,
 							ServletResponse resp,
 							FilterChain chain)
-			throws IOException, ServletException {
+												throws IOException, ServletException {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
@@ -65,7 +67,7 @@ public class PermissaoFilter implements Filter {
 				}
 
 				for (Usuario relacionado = usuarioDao.obtemSuperior(solicitante); relacionado != null; relacionado = usuarioDao.obtemSuperior(
-						relacionado)) {
+																																				relacionado)) {
 
 					if (permissoes.isEmpty()) {
 						permissoes.addAll(solicitante.getDelegacoes());
@@ -102,10 +104,12 @@ public class PermissaoFilter implements Filter {
 						|| (request	.getMethod()
 									.equals("DELETE")
 								&& !permissoes.contains(Permissao.EXCLUIR_USUARIOS))) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "O usuário não possui permissão para realizar a operação solicitada").toString());
 					return;
 				}
-
 			}
 
 			if (request	.getRequestURI()
@@ -126,7 +130,10 @@ public class PermissaoFilter implements Filter {
 						|| (request	.getMethod()
 									.equals("DELETE")
 								&& !permissoes.contains(Permissao.EXCLUIR_ESTACOES))) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+					
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "O usuário não possui permissão para realizar a operação solicitada").toString());
 					return;
 				}
 
@@ -153,7 +160,10 @@ public class PermissaoFilter implements Filter {
 						|| (request	.getMethod()
 									.equals("DELETE")
 								&& !permissoes.contains(Permissao.EXCLUIR_BACKUPS))) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "O usuário não possui permissão para realizar a operação solicitada").toString());
 					return;
 				}
 			}
@@ -175,7 +185,10 @@ public class PermissaoFilter implements Filter {
 						|| (request	.getMethod()
 									.equals("DELETE")
 								&& !permissoes.contains(Permissao.EXCLUIR_OPERACOES))) {
-					response.sendError(HttpStatus.FORBIDDEN.value(), "O usuário não possui permissão para realizar a operação solicitada");
+
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "O usuário não possui permissão para realizar a operação solicitada").toString());
 					return;
 				}
 			}

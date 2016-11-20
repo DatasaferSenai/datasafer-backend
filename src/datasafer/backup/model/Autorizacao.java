@@ -1,6 +1,6 @@
 package datasafer.backup.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,13 +17,12 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonPropertyOrder({ "token", "emissao", "expiracao" })
 @Entity
-public class Token {
+public class Autorizacao {
 
-	public Token() {
+	public Autorizacao() {
 		this.usuario = null;
-		this.chave = null;
+		this.token = null;
 		this.emissao = null;
-		this.expiracao = null;
 	}
 
 	@JsonIgnore
@@ -31,10 +30,10 @@ public class Token {
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 
-	@JsonProperty(value = "token", access = Access.READ_ONLY)
+	@JsonProperty(access = Access.READ_ONLY)
 	@Id
 	@Column(length = 255, nullable = false)
-	private String chave;
+	private String token;
 
 	@JsonIgnore
 	@Column(length = 64, nullable = false)
@@ -42,22 +41,18 @@ public class Token {
 
 	@JsonIgnore
 	@Column(nullable = false)
-	private Date emissao;
+	private Timestamp emissao;
 
 	@JsonIgnore
 	@Column(nullable = true)
-	private Date expiracao;
+	private Timestamp ultimoAcesso;
 
-	@JsonIgnore
-	@Column(nullable = true)
-	private Date ultimaUtilizacao;
-
-	public Date getUltimaUtilizacao() {
-		return ultimaUtilizacao;
+	public Timestamp getUltimoAcesso() {
+		return ultimoAcesso;
 	}
 
-	public void setUltimaUtilizacao(Date ultimaUtilizacao) {
-		this.ultimaUtilizacao = ultimaUtilizacao;
+	public void setUltimoAcesso(Timestamp ultimoAcesso) {
+		this.ultimoAcesso = ultimoAcesso;
 	}
 
 	public String getIp() {
@@ -68,20 +63,12 @@ public class Token {
 		this.ip = ip;
 	}
 
-	public Date getEmissao() {
+	public Timestamp getEmissao() {
 		return emissao;
 	}
 
-	public void setEmissao(Date emissao) {
+	public void setEmissao(Timestamp emissao) {
 		this.emissao = emissao;
-	}
-
-	public Date getExpiracao() {
-		return expiracao;
-	}
-
-	public void setExpiracao(Date expiracao) {
-		this.expiracao = expiracao;
 	}
 
 	public Usuario getUsuario() {
@@ -92,12 +79,12 @@ public class Token {
 		this.usuario = usuario;
 	}
 
-	public String getChave() {
-		return chave;
+	public String getToken() {
+		return token;
 	}
 
-	public void setChave(String chave) {
-		this.chave = chave;
+	public void setToken(String token) {
+		this.token = token;
 	}
 
 }

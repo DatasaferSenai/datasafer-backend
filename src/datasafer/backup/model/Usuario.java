@@ -3,9 +3,9 @@ package datasafer.backup.model;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -37,8 +37,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "login_superior", "delegacoes", "login", "senha", "status", "permissoes", "nome", "email", "armazenamento", "ocupado", "tentativas",
-		"ultimaTentativa", "backups" })
+import datasafer.backup.dao.utility.Modificador.Modificavel;
+import datasafer.backup.dao.utility.Validador.Validar;
+
+@JsonPropertyOrder({	"login_superior", "delegacoes", "login", "senha", "status", "permissoes", "nome", "email", "armazenamento", "ocupado", "tentativas",
+						"ultimaTentativa", "backups" })
 @Entity
 public class Usuario {
 
@@ -49,7 +52,7 @@ public class Usuario {
 		this.estacoes = new ArrayList<Estacao>();
 		this.backups = new ArrayList<Backup>();
 		this.registros = new ArrayList<Registro>();
-		this.tokens = new ArrayList<Token>();
+		this.autorizacoes = new ArrayList<Autorizacao>();
 		this.delegacoes = new HashSet<Permissao>();
 		this.login = null;
 		this.senha = null;
@@ -138,7 +141,7 @@ public class Usuario {
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	@OrderBy("nome")
+	@OrderBy(value = "nome ASC")
 	private List<Estacao> estacoes;
 
 	@JsonIgnore
@@ -157,44 +160,61 @@ public class Usuario {
 	@OrderBy("data")
 	private List<Registro> registros;
 
+	@Modificavel(autoModificavel = false)
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@OrderBy("emissao")
-	private List<Token> tokens;
+	private List<Autorizacao> autorizacoes;
 
+	@Modificavel(autoModificavel = false)
+	@Validar
 	@JsonProperty
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> delegacoes;
 
+	@Modificavel(autoModificavel = false)
+	@Validar
 	@JsonProperty
 	@ElementCollection(fetch = FetchType.EAGER)
 	@Column(nullable = true)
 	@Enumerated(EnumType.STRING)
 	private Set<Permissao> permissoes;
 
+	@Modificavel(autoModificavel = false)
+	@Validar(comprimentoMinimo = 3, comprimentoMaximo = 20)
 	@JsonProperty
 	@Column(length = 20, unique = true, nullable = false)
 	private String login;
 
+	@Modificavel(autoModificavel = true)
+	@Validar(comprimentoMinimo = 6, comprimentoMaximo = 32)
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@Column(nullable = false)
+	@Column(length = 32, nullable = false)
 	private String senha;
 
+	@Modificavel(autoModificavel = false)
+	@Validar
 	@JsonProperty
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private Status status;
 
+	@Modificavel
+	@Validar
 	@JsonProperty
 	@Column(length = 40, nullable = false)
 	private String nome;
 
+	@Modificavel
+	@Validar
 	@JsonProperty
 	@Column(length = 50, nullable = false)
 	private String email;
 
+	@Modificavel(autoModificavel = false)
+	@Validar
 	@JsonProperty
 	@Column(nullable = false)
 	private long armazenamento;
@@ -214,7 +234,7 @@ public class Usuario {
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = true)
-	private Date ultimaTentativa;
+	private Timestamp ultimaTentativa;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -258,12 +278,12 @@ public class Usuario {
 		this.statusBackups = statusBackups;
 	}
 
-	public List<Token> getTokens() {
-		return tokens;
+	public List<Autorizacao> getAutorizacoes() {
+		return autorizacoes;
 	}
 
-	public void setTokens(List<Token> tokens) {
-		this.tokens = tokens;
+	public void setAutorizacoes(List<Autorizacao> autorizacoes) {
+		this.autorizacoes = autorizacoes;
 	}
 
 	public List<Usuario> getColaboradores() {
@@ -290,11 +310,11 @@ public class Usuario {
 		this.tentativas = tentativas;
 	}
 
-	public Date getUltimaTentativa() {
+	public Timestamp getUltimaTentativa() {
 		return ultimaTentativa;
 	}
 
-	public void setUltimaTentativa(Date ultimaTentativa) {
+	public void setUltimaTentativa(Timestamp ultimaTentativa) {
 		this.ultimaTentativa = ultimaTentativa;
 	}
 
@@ -365,8 +385,9 @@ public class Usuario {
 	public void setSenha(String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
-			PBEKeySpec spec = new PBEKeySpec(senha.toCharArray(),
-					"J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO".getBytes(StandardCharsets.UTF_8), 65535, 128);
+			PBEKeySpec spec = new PBEKeySpec(	senha.toCharArray(),
+												"J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO".getBytes(StandardCharsets.UTF_8), 65535,
+												128);
 			SecretKey key = skf.generateSecret(spec);
 			this.senha = Base64	.getEncoder()
 								.encodeToString(key.getEncoded());

@@ -1,6 +1,6 @@
 package datasafer.backup.model;
 
-import java.util.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -44,7 +44,7 @@ public class Registro {
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Date data;
+	private Timestamp data;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
@@ -62,7 +62,7 @@ public class Registro {
 	public String getLoginSolicitante() {
 		return solicitante.getLogin();
 	}
-	
+
 	public String getAtributo() {
 		return atributo;
 	}
@@ -95,11 +95,11 @@ public class Registro {
 		this.id = id;
 	}
 
-	public Date getData() {
+	public Timestamp getData() {
 		return data;
 	}
 
-	public void setData(Date data) {
+	public void setData(Timestamp data) {
 		this.data = data;
 	}
 

@@ -1,9 +1,6 @@
 package datasafer.backup.filter;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,13 +12,15 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
-import datasafer.backup.dao.TokenDao;
+import datasafer.backup.dao.AutorizacaoDao;
 import datasafer.backup.dao.UsuarioDao;
-import datasafer.backup.model.Token;
+import datasafer.backup.model.Autorizacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
@@ -31,23 +30,16 @@ public class SegurancaFilter implements Filter {
 	@Autowired
 	private UsuarioDao usuarioDao;
 	@Autowired
-	private TokenDao tokenDao;
+	private AutorizacaoDao tokenDao;
 
 	@Override
 	public void doFilter(	ServletRequest req,
 							ServletResponse resp,
 							FilterChain chain)
-			throws IOException, ServletException {
+												throws IOException, ServletException {
 
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
-
-		response.setHeader("Access-Control-Allow-Origin", "*");
-
-		if (request	.getMethod()
-					.equals("OPTIONS")) {
-			return;
-		}
 
 		if (request	.getRequestURI()
 					.contains("login")) {
@@ -59,51 +51,60 @@ public class SegurancaFilter implements Filter {
 		try {
 			String chave_token = (String) request.getHeader("Authorization");
 			if (chave_token == null) {
-				response.sendError(HttpStatus.UNAUTHORIZED.value(), "Autorização nula");
+
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject().put("erro", "Autorização nula").toString());
 				return;
 			}
 
-			Token token = tokenDao.obtemToken(req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), chave_token);
+			Autorizacao token = tokenDao.obtemAutorizacao(	req.getRemoteAddr() != null	? req.getRemoteAddr()
+																						: req.getLocalAddr(),
+															chave_token);
 			if (token == null) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização inválida");
+
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject().put("erro", "Autorização inválida").toString());
 				return;
 			}
-
-			Date agora = Date.from(LocalDateTime.now()
-												.atZone(ZoneId.systemDefault())
-												.toInstant());
-
-			if (token.getExpiracao() != null && token	.getExpiracao()
-														.before(agora)) {
-				tokenDao.revogaToken(token);
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Autorização expirada");
-				return;
-			}
-
-			tokenDao.modificaUltimaUtilizacao(token, agora);
 
 			Usuario solicitante = token.getUsuario();
-			Usuario usuario = request.getHeader("usuario") != null ? usuarioDao.obtemUsuario(request.getHeader("usuario")) : solicitante;
+			Usuario usuario = request.getHeader("usuario") != null	? usuarioDao.obtemUsuario(request.getHeader("usuario"))
+																	: solicitante;
 
 			if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject().put("erro", "Solicitante inválido ou não encontrado").toString());
 				return;
 			}
 
 			if (solicitante.getStatus() != Status.ATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), solicitante.getStatus()
-																			.toString());
+
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject()	.put("erro", solicitante.getStatus()
+																					.toString())
+															.toString());
 				return;
 			}
 
 			if (usuario == null || usuario.getStatus() == Status.INATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), "Usuário inválido ou não encontrado");
+				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject().put("erro", "Usuário inválido ou não encontrado").toString());
 				return;
 			}
 
 			if (usuario.getStatus() != Status.ATIVO) {
-				response.sendError(HttpStatus.FORBIDDEN.value(), usuario.getStatus()
-																		.toString());
+
+				response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+				response.getWriter().write(new JSONObject()	.put("erro", usuario.getStatus()
+																				.toString())
+															.toString());
 				return;
 			}
 

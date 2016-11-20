@@ -8,8 +8,8 @@ import javax.persistence.PersistenceContext;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Registrador;
-import datasafer.backup.dao.helper.Validador;
+import datasafer.backup.dao.utility.Modificador;
+import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
@@ -26,13 +26,14 @@ public class OperacaoDao {
 								Backup backup,
 								Operacao operacao) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		backup = manager.find(Backup.class, backup.getId());
 
 		Validador.validar(operacao);
 
 		operacao.getRegistros()
-				.addAll(Registrador.insere(solicitante, operacao));
+				.addAll(Modificador.modifica(solicitante, operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -46,10 +47,11 @@ public class OperacaoDao {
 									Operacao operacao,
 									Operacao valores) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		operacao = manager.find(Operacao.class, operacao.getId());
 
-		List<Registro> registros = Registrador.modifica(solicitante, operacao, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, operacao, valores);
 
 		Validador.validar(operacao);
 

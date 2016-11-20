@@ -1,13 +1,13 @@
 package datasafer.backup.model;
 
+import java.sql.Timestamp;
+
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -25,17 +25,12 @@ public class Notificacao {
 	}
 
 	@JsonIgnore
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "usuario_id")
 	private Usuario usuario;
 
 	@JsonProperty
-	@Column(nullable = false)
+	@Id
 	private String token;
 
 	@JsonProperty
@@ -43,18 +38,22 @@ public class Notificacao {
 	@Enumerated(EnumType.STRING)
 	private Tipo tipo;
 
+	
 	@JsonProperty("login_usuario")
 	public String getLoginUsuario() {
 		return usuario.getLogin();
 	}
 	
-	
-	public Long getId() {
-		return id;
+	@JsonIgnore
+	@Column(nullable = true)
+	private Timestamp ultimaNotificacao;
+
+	public Timestamp getUltimaNotificacao() {
+		return ultimaNotificacao;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setUltimaNotificacao(Timestamp ultimaNotificacao) {
+		this.ultimaNotificacao = ultimaNotificacao;
 	}
 
 	public Usuario getUsuario() {

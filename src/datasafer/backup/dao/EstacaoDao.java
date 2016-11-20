@@ -10,8 +10,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.dao.helper.Registrador;
-import datasafer.backup.dao.helper.Validador;
+import datasafer.backup.dao.utility.Modificador;
+import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
@@ -27,13 +27,14 @@ public class EstacaoDao {
 	// @Transactional
 	public Estacao obtemEstacao(String nome_estacao) {
 		List<Estacao> resultadosEstacao = manager	.createQuery(
-				"SELECT estacao FROM Estacao estacao "
-						+ "WHERE estacao.nome = :nome_estacao ",
-				Estacao.class)
+																"SELECT estacao FROM Estacao estacao "
+																		+ "WHERE estacao.nome = :nome_estacao ",
+																Estacao.class)
 													.setParameter("nome_estacao", nome_estacao)
 													.getResultList();
 
-		return resultadosEstacao.isEmpty() ? null : resultadosEstacao.get(0);
+		return resultadosEstacao.isEmpty()	? null
+											: resultadosEstacao.get(0);
 	}
 
 	@Transactional
@@ -41,7 +42,8 @@ public class EstacaoDao {
 								Estacao estacao,
 								Estacao valores) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		estacao = manager.find(Estacao.class, estacao.getId());
 
 		if (valores.getNome() != null && !valores	.getNome()
@@ -53,7 +55,7 @@ public class EstacaoDao {
 			}
 		}
 
-		List<Registro> registros = Registrador.modifica(solicitante, estacao, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, estacao, valores);
 		if (estacao.getRegistros() == null) {
 			estacao.setRegistros(registros);
 		} else {
@@ -71,7 +73,8 @@ public class EstacaoDao {
 								Usuario gerenciador,
 								Estacao estacao) {
 
-		solicitante = (solicitante == null ? null : manager.find(Usuario.class, solicitante.getId()));
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
 		gerenciador = manager.find(Usuario.class, gerenciador.getId());
 
 		Validador.validar(estacao);
@@ -82,7 +85,7 @@ public class EstacaoDao {
 		}
 
 		estacao	.getRegistros()
-				.addAll(Registrador.insere(solicitante, estacao));
+				.addAll(Modificador.modifica(solicitante, estacao, null));
 
 		gerenciador	.getEstacoes()
 					.add(estacao);
@@ -95,12 +98,12 @@ public class EstacaoDao {
 	public List<Backup> obtemBackups(	Usuario proprietario,
 										Estacao estacao) {
 		return manager	.createQuery(
-				"SELECT backup FROM Backup backup "
-						+ "JOIN FETCH backup.estacao estacao "
-						+ "JOIN FETCH backup.proprietario proprietario "
-						+ "WHERE estacao.id = :id_estacao "
-						+ "AND proprietario.id = :id_proprietario ",
-				Backup.class)
+									"SELECT backup FROM Backup backup "
+											+ "JOIN FETCH backup.estacao estacao "
+											+ "JOIN FETCH backup.proprietario proprietario "
+											+ "WHERE estacao.id = :id_estacao "
+											+ "AND proprietario.id = :id_proprietario ",
+									Backup.class)
 						.setParameter("id_estacao", estacao.getId())
 						.setParameter("id_proprietario", proprietario.getId())
 						.getResultList();
@@ -109,25 +112,25 @@ public class EstacaoDao {
 	@Transactional
 	public List<Backup> obtemBackups(Estacao estacao) {
 		return manager	.createQuery(
-				"SELECT backup FROM Backup backup "
-						+ "JOIN FETCH backup.estacao estacao "
-						+ "WHERE estacao.id = :id_estacao ",
-				Backup.class)
+									"SELECT backup FROM Backup backup "
+											+ "JOIN FETCH backup.estacao estacao "
+											+ "WHERE estacao.id = :id_estacao ",
+									Backup.class)
 						.setParameter("id_estacao", estacao.getId())
 						.getResultList();
 	}
 
 	// @Transactional
-	public Estacao carregaInfos(	Usuario proprietario,
-										Estacao estacao) {
+	public Estacao carregaInfos(Usuario proprietario,
+								Estacao estacao) {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusBackups = manager	.createQuery(
-				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-						+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-						+ "AND operacao.backup.estacao.id = :id_estacao  "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-						+ "GROUP BY operacao.status ")
+																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+																			+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+																			+ "AND operacao.backup.estacao.id = :id_estacao  "
+																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+																			+ "GROUP BY operacao.status ")
 														.setParameter("id_proprietario", proprietario.getId())
 														.setParameter("id_estacao", estacao.getId())
 														.getResultList();
@@ -146,10 +149,10 @@ public class EstacaoDao {
 
 		@SuppressWarnings("unchecked")
 		List<Object> resultadosStatusBackups = manager	.createQuery(
-				"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-						+ "WHERE operacao.backup.estacao.id = :id_estacao "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-						+ "GROUP BY operacao.status ")
+																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+																			+ "WHERE operacao.backup.estacao.id = :id_estacao "
+																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+																			+ "GROUP BY operacao.status ")
 														.setParameter("id_estacao", estacao.getId())
 														.getResultList();
 
@@ -164,7 +167,7 @@ public class EstacaoDao {
 
 	// @Transactional
 	public List<Estacao> carregaInfos(	Usuario proprietario,
-												List<Estacao> estacoes) {
+										List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
 			this.carregaInfos(proprietario, estacao);
 		}
@@ -173,7 +176,7 @@ public class EstacaoDao {
 
 	// @Transactional
 	public List<Estacao> carregaInfos(
-												List<Estacao> estacoes) {
+										List<Estacao> estacoes) {
 		for (Estacao estacao : estacoes) {
 			this.carregaInfos(estacao);
 		}

@@ -1,7 +1,7 @@
 package datasafer.backup.model;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,7 +84,7 @@ public class Backup {
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Date inicio;
+	private Timestamp inicio;
 
 	@JsonProperty
 	@Column(nullable = false)
@@ -105,23 +105,19 @@ public class Backup {
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
 	@Transient
 	private long armazenamentoOcupado;
-	
+
 	@JsonProperty("nome_estacao")
 	public String getNomeEstacao() {
 		return estacao.getNome();
 	}
-	
+
 	public long getArmazenamentoOcupado() {
 		return armazenamentoOcupado;
 	}
 
-
-
 	public void setArmazenamentoOcupado(long armazenamentoOcupado) {
 		this.armazenamentoOcupado = armazenamentoOcupado;
 	}
-
-
 
 	public Operacao getUltimaOperacao() {
 		return ultimaOperacao;
@@ -187,11 +183,11 @@ public class Backup {
 		this.operacoes = operacoes;
 	}
 
-	public Date getInicio() {
+	public Timestamp getInicio() {
 		return inicio;
 	}
 
-	public void setInicio(Date inicio) {
+	public void setInicio(Timestamp inicio) {
 		this.inicio = inicio;
 	}
 

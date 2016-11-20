@@ -4,13 +4,10 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.TimeZone;
 
 import javax.annotation.PostConstruct;
 
@@ -72,8 +69,8 @@ public class Inicializador {
 
 		System.out.println(" ==== POPULA ==== ");
 
-		for (String nome : Arrays.asList("Giovanni Campaner", "Henrique Francisco da Silva", "Sheila Barreto", "Fellipe Thufik Costa", "Felipe Lemes Discher",
-				"Hugo Henrique")) {
+		for (String nome : Arrays.asList(	"Giovanni Campaner", "Henrique Francisco da Silva", "Sheila Barreto", "Fellipe Thufik Costa", "Felipe Lemes Discher",
+											"Hugo Henrique")) {
 			List<String> nomes = Arrays.asList(nome	.toLowerCase()
 													.split(" "));
 			String login = nomes.get(0);
@@ -94,14 +91,15 @@ public class Inicializador {
 
 				Set<Permissao> permissoes = new HashSet<Permissao>();
 				permissoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
-						Permissao.VISUALIZAR_OPERACOES,
-						Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
-						Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS, Permissao.EXCLUIR_BACKUPS));
+												Permissao.VISUALIZAR_OPERACOES,
+												Permissao.INSERIR_USUARIOS, Permissao.INSERIR_ESTACOES, Permissao.INSERIR_BACKUPS, Permissao.INSERIR_OPERACOES,
+												Permissao.MODIFICAR_USUARIOS, Permissao.MODIFICAR_BACKUPS, Permissao.EXCLUIR_USUARIOS,
+												Permissao.EXCLUIR_BACKUPS));
 				usuario.setPermissoes(permissoes);
 
 				Set<Permissao> delegacoes = new HashSet<Permissao>();
 				delegacoes.addAll(Arrays.asList(Permissao.VISUALIZAR_USUARIOS, Permissao.VISUALIZAR_ESTACOES, Permissao.VISUALIZAR_BACKUPS,
-						Permissao.VISUALIZAR_OPERACOES));
+												Permissao.VISUALIZAR_OPERACOES));
 				usuario.setDelegacoes(delegacoes);
 
 				usuarioDao.insereUsuario(solicitante, superior, usuario);
@@ -119,9 +117,7 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(5) + 5;
-
-		for (int n = 0; n < quantidade; n++) {
+		for (int n = gerador.nextInt(5) + 5; n > 0; n--) {
 			int tipo_index = gerador.nextInt(tiposDispositivos.size());
 			int nome_index = gerador.nextInt(nomesDispositivos.size());
 			int separador_index = gerador.nextInt(separadores.size());
@@ -143,32 +139,26 @@ public class Inicializador {
 								Usuario proprietario,
 								Estacao estacao) {
 
-		List<String> nomes_backups = Arrays.asList("Meus arquivos", "Minhas fotos", "Arquivos", "Fotos", "Imagens", "Meus videos", "Videos", "Midia",
-				"Programas", "Importante", "Coisas importantes", "Arquivos importantes", "Software", "Banco de dados", "DB", "Apresentações", "Planilhas",
-				"Planilhas importantes");
+		List<String> nomes_backups = Arrays.asList(	"Meus arquivos", "Minhas fotos", "Arquivos", "Fotos", "Imagens", "Meus videos", "Videos", "Midia",
+													"Programas", "Importante", "Coisas importantes", "Arquivos importantes", "Software", "Banco de dados", "DB",
+													"Apresentações", "Planilhas",
+													"Planilhas importantes");
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(5) + 5;
-
-		for (int n = 0; n < quantidade; n++) {
-			int nomeIndex = gerador.nextInt(nomes_backups.size());
-			long intervalo = gerador.nextInt(1000000);
-			int inicio = gerador.nextInt(60);
-
-			String nomeBackup = nomes_backups.get(nomeIndex);
+		for (int n = gerador.nextInt(5) + 5; n > 0; n--) {
+			String nomeBackup = nomes_backups.get(gerador.nextInt(nomes_backups.size()));
 
 			Backup backup = backupDao.obtemBackup(proprietario, estacao, nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
 
-				backup.setIntervalo(intervalo);
+				backup.setIntervalo(gerador.nextInt(1000000));
 
-				backup.setInicio(new Date(Calendar	.getInstance(TimeZone.getDefault())
-													.getTime()
-													.getTime()
-						+ (1000 * 60 * 60 * 24 * inicio)));
+				backup.setInicio(Timestamp.from(LocalDateTime	.now().plusDays(gerador.nextInt(60))
+																.atZone(ZoneId.systemDefault())
+																.toInstant()));
 				backup.setPasta("C:\\" + nomeBackup	.toLowerCase()
 													.replace(' ', '_'));
 
@@ -186,15 +176,12 @@ public class Inicializador {
 
 		Random gerador = new Random();
 
-		int quantidade = gerador.nextInt(10) + 5;
-
-		for (int n = 0; n < quantidade; n++) {
+		for (int n = gerador.nextInt(10) + 5; n > 0; n--) {
 
 			Operacao operacao = new Operacao();
-			operacao.setData(Timestamp.from(LocalDateTime	.now()
+			operacao.setData(Timestamp.from(LocalDateTime	.now().plusDays(gerador.nextInt(365))
 															.atZone(ZoneId.systemDefault())
-															.toInstant()
-															.plusSeconds(gerador.nextInt(365) * 24 * 60)));
+															.toInstant()));
 			operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 			operacao.setTamanho((long) gerador.nextInt(10000000));
 

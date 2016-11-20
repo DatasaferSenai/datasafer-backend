@@ -1,5 +1,6 @@
 package datasafer.backup.controller;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
@@ -16,21 +17,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.dao.TokenDao;
+import datasafer.backup.dao.AutorizacaoDao;
 import datasafer.backup.dao.UsuarioDao;
-import datasafer.backup.model.Token;
+import datasafer.backup.model.Autorizacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
 
 @RestController
-public class TokenRestController {
+public class AutorizacaoRestController {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
 	@Autowired
-	private TokenDao tokenDao;
+	private AutorizacaoDao tokenDao;
 
-	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
+					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> logar(HttpServletRequest req,
 										@RequestBody String corpo_usuario) {
 		try {
@@ -44,27 +46,28 @@ public class TokenRestController {
 			if (existente == null || existente.getStatus() == Usuario.Status.INATIVO) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
-						HttpStatus.UNAUTHORIZED);
+											HttpStatus.UNAUTHORIZED);
 			}
 
 			Usuario logado = usuarioDao.login(usuario);
 			if (logado == null) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
-						HttpStatus.UNAUTHORIZED);
+											HttpStatus.UNAUTHORIZED);
 			}
 
 			if (logado.getStatus() != Status.ATIVO) {
 				return new ResponseEntity<>(new JSONObject().put("erro", logado.getStatus())
 															.toString(),
-						HttpStatus.FORBIDDEN);
+											HttpStatus.FORBIDDEN);
 			}
 
 			int tentativas = existente.getTentativas();
 			Date ultimaTentativa = existente.getUltimaTentativa();
 			if (ultimaTentativa == null || tentativas < 3) {
 
-				Token token = tokenDao.emiteToken(existente, req.getRemoteAddr() != null ? req.getRemoteAddr() : req.getLocalAddr(), 0);
+				Autorizacao token = tokenDao.emiteAutorizacao(existente, req.getRemoteAddr() != null	? req.getRemoteAddr()
+																										: req.getLocalAddr());
 
 				existente.setTentativas(0);
 				existente.setUltimaTentativa(null);
@@ -73,15 +76,15 @@ public class TokenRestController {
 			} else {
 
 				existente.setTentativas(++tentativas);
-				existente.setUltimaTentativa(Date.from(LocalDateTime.now()
-																	.atZone(ZoneId.systemDefault())
-																	.toInstant()));
+				existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
+																			.atZone(ZoneId.systemDefault())
+																			.toInstant()));
 
 				usuarioDao.modificaUsuario(null, usuario, usuario);
 
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
-						HttpStatus.UNAUTHORIZED);
+											HttpStatus.UNAUTHORIZED);
 			}
 
 		} catch (Exception e) {
