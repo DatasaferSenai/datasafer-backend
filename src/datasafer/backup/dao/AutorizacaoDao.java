@@ -10,7 +10,6 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,8 +111,8 @@ public class AutorizacaoDao {
 		manager	.createQuery("DELETE "
 				+ "FROM Autorizacao a "
 				+ "WHERE a.ultimoAcesso IS NOT NULL "
-				+ "AND a.ultimoAcesso > :data ")
-				.setParameter("data", Timestamp.from(LocalDateTime	.now().plusDays(30)
+				+ "AND a.ultimoAcesso < :data ")
+				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(30)
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()))
 				.executeUpdate();

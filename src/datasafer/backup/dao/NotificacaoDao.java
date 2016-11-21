@@ -43,8 +43,8 @@ public class NotificacaoDao {
 		manager	.createQuery("DELETE "
 				+ "FROM Notificacao n "
 				+ "WHERE n.ultimaNotificacao IS NOT NULL "
-				+ "AND n.ultimaNotificacao > :data ")
-				.setParameter("data", Timestamp.from(LocalDateTime	.now().plusDays(30)
+				+ "AND n.ultimaNotificacao < :data ")
+				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(30)
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()))
 				.executeUpdate();

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:tx="http://www.springframework.org/schema/tx"
@@ -16,31 +16,8 @@
 	http://www.springframework.org/schema/task
 	http://www.springframework.org/schema/task/spring-task-4.3.xsd">
 
-	<!--  <context:component-scan base-package="datasafer.backup" />
+	<context:component-scan base-package="datasafer.backup" />
 	<mvc:annotation-driven />
-	<mvc:default-servlet-handler />-->
-
-	<context:annotation-config />
-	<tx:annotation-driven />
-	<task:annotation-driven />
-
-	<bean id="mysqlDataSource" class="org.apache.commons.dbcp2.BasicDataSource">
-		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
-		<property name="url" value="jdbc:mysql://localhost:3306/datasafer" />
-		<property name="username" value="root" />
-		<property name="password" value="Jet@8neXE=aW" />
-	</bean>
-
-	<bean id="entityManagerFactory"
-		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean">
-		<property name="dataSource" ref="mysqlDataSource" />
-		<property name="jpaVendorAdapter">
-			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
-		</property>
-	</bean>
-
-	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
-		<property name="entityManagerFactory" ref="entityManagerFactory" />
-	</bean>
+	<mvc:default-servlet-handler />
 
 </beans>
