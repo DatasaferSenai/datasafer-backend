@@ -106,7 +106,6 @@ public class AutorizacaoDao {
 
 	}
 
-	@Scheduled(cron = "*/60 * * * * *") /* Todos os dias as 12:00:00 (24HR) */
 	@Transactional
 	public void limpaAutorizacoes() {
 
