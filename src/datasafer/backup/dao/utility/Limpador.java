@@ -13,7 +13,7 @@ public class Limpador {
 	@Autowired
 	private static AutorizacaoDao autorizacaoDao;
 
-	@Scheduled(cron = "*/60 * * * * *") /* Todos os dias as 12:00:00 (24HR) */
+	@Scheduled(cron = "0 0 12 * * *") /* Todos os dias as 12:00:00 (24HR) */
 	public static void excecutaLimpeza() {
 		notificacaoDao.limpaNotificacoes();
 		autorizacaoDao.limpaAutorizacoes();
