@@ -11,6 +11,7 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -27,26 +28,33 @@ public class Notificacao {
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
+	private Usuario usuario = null;
 
 	@JsonProperty
 	@Id
 	@Column(length = 255, nullable = false)
-	private String token;
+	private String token  = null;
 
 	@JsonProperty
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private Tipo tipo;
-
-	@JsonProperty("login_usuario")
-	public String getLoginUsuario() {
-		return usuario.getLogin();
-	}
+	private Tipo tipo  = null;
 
 	@JsonIgnore
 	@Column(nullable = true)
-	private Timestamp ultimaNotificacao;
+	private Timestamp ultimaNotificacao  = null;
+
+	@JsonProperty("login_usuario")
+	@Transient
+	private String loginUsuario  = null;
+	
+	public String getLoginUsuario() {
+		return loginUsuario;
+	}
+
+	public void setLoginUsuario(String loginUsuario) {
+		this.loginUsuario = loginUsuario;
+	}
 
 	public Timestamp getUltimaNotificacao() {
 		return ultimaNotificacao;

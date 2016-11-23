@@ -1,6 +1,6 @@
 package datasafer.backup.dao;
 
-import java.util.Set;
+import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -51,7 +51,7 @@ public class OperacaoDao {
 											: manager.find(Usuario.class, solicitante.getId()));
 		operacao = manager.find(Operacao.class, operacao.getId());
 
-		Set<Registro> registros = Modificador.modifica(solicitante, operacao, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, operacao, valores);
 
 		Validador.validar(operacao);
 

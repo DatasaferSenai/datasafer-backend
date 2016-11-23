@@ -1,10 +1,12 @@
 package datasafer.backup.model;
 
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,84 +30,86 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Entity
 public class Backup {
 
-	public Backup() {
-		this.id = null;
-		this.proprietario = null;
-		this.estacao = null;
-		this.operacoes = new HashSet<Operacao>();
-		this.registros = new HashSet<Registro>();
-		this.nome = null;
-		this.descricao = null;
-		this.inicio = null;
-		this.intervalo = 0L;
-		this.pasta = "";
-
-		this.statusOperacoes = new HashMap<Operacao.Status, Long>();
-		for (Operacao.Status s : Operacao.Status.values()) {
-			this.statusOperacoes.put(s, 0L);
-		}
-	}
-
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long id = null;
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "priorietario_id")
-	private Usuario proprietario;
+	private Usuario proprietario = null;
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "estacao_id")
-	private Estacao estacao;
+	private Estacao estacao = null;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "backup", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private Set<Operacao> operacoes;
+	private List<Operacao> operacoes = new ArrayList<Operacao>();
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "backup_id")
-	private Set<Registro> registros;
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonProperty
 	@Column(length = 40, nullable = false)
-	private String nome;
+	private String nome = null;
 
 	@JsonProperty
 	@Column(length = 100, nullable = true)
-	private String descricao;
+	private String descricao = "";
 
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Timestamp inicio;
+	private Timestamp inicio = null;
 
 	@JsonProperty
 	@Column(nullable = false)
-	private long intervalo;
+	private long intervalo = 0L;
 
 	@JsonProperty
 	@Column(nullable = false)
-	private String pasta;
+	private String pasta = null;
 
 	@JsonProperty(value = "ultima_operacao", access = Access.READ_ONLY)
 	@Transient
-	private Operacao ultimaOperacao;
+	private Operacao ultimaOperacao = null;
 
 	@JsonProperty(value = "status_operacoes", access = Access.READ_ONLY)
 	@Transient
-	private Map<Operacao.Status, Long> statusOperacoes;
+	private Map<Operacao.Status, Long> statusOperacoes = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
 	@Transient
-	private long armazenamentoOcupado;
+	private long armazenamentoOcupado = 0L;
 
 	@JsonProperty("nome_estacao")
+	@Transient
+	private String nomeEstacao = null;
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "backup_id")
+	private List<Permissao> permissoes = new ArrayList<Permissao>();
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
+	}
+
 	public String getNomeEstacao() {
-		return estacao.getNome();
+		return nomeEstacao;
+	}
+
+	public void setNomeEstacao(String nomeEstacao) {
+		this.nomeEstacao = nomeEstacao;
 	}
 
 	public long getArmazenamentoOcupado() {
@@ -172,11 +176,11 @@ public class Backup {
 		this.estacao = estacao;
 	}
 
-	public Set<Operacao> getOperacoes() {
+	public List<Operacao> getOperacoes() {
 		return operacoes;
 	}
 
-	public void setOperacoes(Set<Operacao> operacoes) {
+	public void setOperacoes(List<Operacao> operacoes) {
 		this.operacoes = operacoes;
 	}
 
@@ -204,11 +208,11 @@ public class Backup {
 		this.pasta = pasta;
 	}
 
-	public Set<Registro> getRegistros() {
+	public List<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(Set<Registro> registros) {
+	public void setRegistros(List<Registro> registros) {
 		this.registros = registros;
 	}
 

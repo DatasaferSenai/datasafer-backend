@@ -2,7 +2,6 @@ package datasafer.backup.dao;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -145,7 +144,7 @@ public class UsuarioDao {
 
 		}
 
-		Set<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
+		List<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
 
 		Validador.validar(usuario);
 

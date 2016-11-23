@@ -1,8 +1,8 @@
 package datasafer.backup.model;
 
 import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,24 +16,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "data", "status", "tamanho" })
 @Entity
 public class Operacao {
-
-	public Operacao() {
-		this.id = null;
-		this.backup = null;
-		this.registros = new HashSet<Registro>();
-		this.data = null;
-		this.status = null;
-		this.tamanho = null;
-	}
 
 	public enum Status {
 		SUCESSO("Sucesso"),
@@ -57,35 +47,55 @@ public class Operacao {
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long id = null;
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "backup_id")
-	private Backup backup;
+	private Backup backup = null;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "operacao_id")
-	private Set<Registro> registros;
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonProperty
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Timestamp data;
+	private Timestamp data = null;
 
 	@JsonProperty
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private Status status;
+	private Status status = null;
 
 	@JsonProperty
 	@Column(nullable = true)
-	private Long tamanho;
+	private Long tamanho = null;
 
 	@JsonProperty("nome_backup")
+	@Transient
+	private String nomeBackup = null;
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "operacao_id")
+	private List<Permissao> permissoes = new ArrayList<Permissao>();
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
+	}
+
 	public String getNomeBackup() {
-		return backup.getNome();
+		return nomeBackup;
+	}
+
+	public void setNomeBackup(String nomeBackup) {
+		this.nomeBackup = nomeBackup;
 	}
 
 	public Long getId() {
@@ -128,11 +138,11 @@ public class Operacao {
 		this.tamanho = tamanho;
 	}
 
-	public Set<Registro> getRegistros() {
+	public List<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(Set<Registro> registros) {
+	public void setRegistros(List<Registro> registros) {
 		this.registros = registros;
 	}
 

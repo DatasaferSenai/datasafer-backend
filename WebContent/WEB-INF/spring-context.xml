@@ -16,9 +16,9 @@
 	http://www.springframework.org/schema/task
 	http://www.springframework.org/schema/task/spring-task-4.3.xsd">
 
-	<!--  <context:component-scan base-package="datasafer.backup" />
+	<context:component-scan base-package="datasafer.backup" />
 	<mvc:annotation-driven />
-	<mvc:default-servlet-handler />-->
+	<mvc:default-servlet-handler />
 
 	<context:annotation-config />
 	<tx:annotation-driven />

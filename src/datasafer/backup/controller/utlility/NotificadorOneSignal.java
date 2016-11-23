@@ -2,8 +2,8 @@ package datasafer.backup.controller.utlility;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -25,24 +25,39 @@ public class NotificadorOneSignal {
 
 		try {
 			if (!notificacoes.isEmpty()) {
-				JSONObject job = new JSONObject();
-				job.put("app_id", APP_ID);
 
-				JSONObject content = new JSONObject().put("en", mensagem);
-				job.put("contents", content);
+				/* ResponseEntity<String> response = */restTemplate.postForEntity(	new URI(APP_URL), RequestEntity	.method(HttpMethod.POST, new URI(APP_URL))
+																													.header("Authorization", "Basic " + APP_KEY)
+																													.contentType(MediaType.APPLICATION_JSON_UTF8)
+																													.body(new JSONObject()	.put("app_id", APP_ID)
+																																			.put(	"contents",
+																																					new Object() {
+																																						String en = mensagem;
+																																					})
+																																			.put(	"include_ios_tokens",
+																																					notificacoes.stream()
+																																								.filter(n -> n	.getTipo()
+																																												.equals(Notificacao.Tipo.DISPOSITIVO_IOS))
+																																								.collect(Collectors.toList()))
+																																			.toString(1)),
+																					String.class);
 
-				JSONArray tokens = new JSONArray();
-				for (Notificacao n : notificacoes) {
-					tokens.put(n.getToken());
-				}
-				job.put("include_ios_tokens", tokens);
+				/* ResponseEntity<String> response = */restTemplate.postForEntity(	new URI(APP_URL), RequestEntity	.method(HttpMethod.POST, new URI(APP_URL))
+																													.header("Authorization", "Basic " + APP_KEY)
+																													.contentType(MediaType.APPLICATION_JSON_UTF8)
+																													.body(new JSONObject()	.put("app_id", APP_ID)
+																																			.put(	"contents",
+																																					new Object() {
+																																						String en = mensagem;
+																																					})
+																																			.put(	"include_player_ids",
+																																					notificacoes.stream()
+																																								.filter(n -> !n	.getTipo()
+																																												.equals(Notificacao.Tipo.DISPOSITIVO_IOS))
+																																								.collect(Collectors.toList()))
+																																			.toString(1)),
+																					String.class);
 
-				RequestEntity<String> request = RequestEntity	.method(HttpMethod.POST, new URI(APP_URL))
-																.header("Authorization", "Basic " + APP_KEY)
-																.contentType(MediaType.APPLICATION_JSON_UTF8)
-																.body(job.toString(1));
-
-				/* ResponseEntity<String> response = */restTemplate.postForEntity(request.getUrl(), request, String.class);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -19,33 +19,27 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @Entity
 public class Autorizacao {
 
-	public Autorizacao() {
-		this.usuario = null;
-		this.token = null;
-		this.emissao = null;
-	}
-
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "usuario_id")
-	private Usuario usuario;
+	private Usuario usuario = null;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Id
 	@Column(length = 255, nullable = false)
-	private String token;
+	private String token = null;
 
 	@JsonIgnore
 	@Column(length = 64, nullable = false)
-	private String ip;
+	private String ip = null;
 
 	@JsonIgnore
 	@Column(nullable = false)
-	private Timestamp emissao;
+	private Timestamp emissao = null;
 
 	@JsonIgnore
 	@Column(nullable = true)
-	private Timestamp ultimoAcesso;
+	private Timestamp ultimoAcesso = null;
 
 	public Timestamp getUltimoAcesso() {
 		return ultimoAcesso;

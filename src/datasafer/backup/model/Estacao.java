@@ -1,9 +1,11 @@
 package datasafer.backup.model;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -20,56 +22,53 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "login_gerenciador", "nome", "descricao", "backups" })
 @Entity
 public class Estacao {
-
-	public Estacao() {
-		this.id = null;
-		this.gerenciador = null;
-		this.backups = new HashSet<Backup>();
-		this.registros = new HashSet<Registro>();
-		this.nome = null;
-		this.descricao = null;
-
-		this.statusBackups = new HashMap<Operacao.Status, Long>();
-		for (Operacao.Status s : Operacao.Status.values()) {
-			this.statusBackups.put(s, 0L);
-		}
-	}
 
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long id = null;
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "gerenciador_id")
-	private Usuario gerenciador;
+	private Usuario gerenciador = null;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private Set<Backup> backups;
+	private List<Backup> backups = new ArrayList<Backup>();
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
-	private Set<Registro> registros;
+	private List<Registro> registros = new ArrayList<Registro>();
 
 	@JsonProperty
 	@Column(length = 40, unique = true, nullable = false)
-	private String nome;
+	private String nome = null;
 
 	@JsonProperty
 	@Column(length = 100, nullable = true)
-	private String descricao;
+	private String descricao = null;
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
 	@Transient
-	private Map<Operacao.Status, Long> statusBackups;
+	private Map<Operacao.Status, Long> statusBackups = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
+
+	@JsonIgnore
+	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@JoinColumn(name = "estacao_id")
+	private List<Permissao> permissoes = new ArrayList<Permissao>();
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
+	}
 
 	public Map<Operacao.Status, Long> getStatusBackups() {
 		return statusBackups;
@@ -103,11 +102,11 @@ public class Estacao {
 		this.nome = nome;
 	}
 
-	public Set<Backup> getBackups() {
+	public List<Backup> getBackups() {
 		return backups;
 	}
 
-	public void setBackups(Set<Backup> backups) {
+	public void setBackups(List<Backup> backups) {
 		this.backups = backups;
 	}
 
@@ -119,11 +118,11 @@ public class Estacao {
 		this.descricao = descricao;
 	}
 
-	public Set<Registro> getRegistros() {
+	public List<Registro> getRegistros() {
 		return registros;
 	}
 
-	public void setRegistros(Set<Registro> registros) {
+	public void setRegistros(List<Registro> registros) {
 		this.registros = registros;
 	}
 

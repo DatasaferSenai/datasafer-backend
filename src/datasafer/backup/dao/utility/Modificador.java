@@ -12,9 +12,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
 import org.springframework.security.access.AccessDeniedException;
 
@@ -35,11 +35,11 @@ public class Modificador {
 
 	}
 
-	public static <T> Set<Registro> modifica(	Usuario solicitante,
+	public static <T> List<Registro> modifica(	Usuario solicitante,
 												T destino,
 												T origem) throws AccessDeniedException {
 
-		Set<Registro> registros = new HashSet<Registro>();
+		List<Registro> registros = new ArrayList<Registro>();
 		for (Field f : destino	.getClass()
 								.getDeclaredFields()) {
 			try {

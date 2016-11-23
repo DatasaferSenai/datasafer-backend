@@ -15,7 +15,7 @@ public class Limpador {
 	@Autowired
 	private AutorizacaoDao autorizacaoDao;
 
-	@Scheduled(cron = "*/10 * * * * *")
+	//@Scheduled(cron = "*/10 * * * * *")
 	public void excecutaLimpeza() {
 		try {
 			notificacaoDao.limpaNotificacoes();

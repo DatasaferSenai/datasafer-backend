@@ -11,56 +11,53 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "login_solicitante", "data", "atributo", "de", "para" })
 @Entity
 public class Registro {
-
-	public Registro() {
-		this.id = null;
-		this.solicitante = null;
-		this.data = null;
-		this.atributo = null;
-		this.de = null;
-		this.para = null;
-	}
 
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long id = null;
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "solicitante_id")
-	private Usuario solicitante;
+	private Usuario solicitante = null;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
 	@Column(nullable = false)
-	private Timestamp data;
+	private Timestamp data = null;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(nullable = false)
-	private String atributo;
+	private String atributo = null;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(length = 1023, nullable = true)
-	private String de;
+	private String de = null;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column(length = 1023, nullable = false)
-	private String para;
+	private String para = null;
 
 	@JsonProperty("login_solicitante")
+	@Transient
+	private String loginSolicitante = null;
+
 	public String getLoginSolicitante() {
-		return solicitante.getLogin();
+		return loginSolicitante;
+	}
+
+	public void setLoginSolicitante(String loginSolicitante) {
+		this.loginSolicitante = loginSolicitante;
 	}
 
 	public String getAtributo() {
