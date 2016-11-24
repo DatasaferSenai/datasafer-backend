@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,9 @@ public class EstacaoDao {
 	@PersistenceContext
 	private EntityManager manager;
 
+	@Autowired
+	private Modificador modificador;
+	
 	// @Transactional
 	public Estacao obtemEstacao(String nome_estacao) {
 		List<Estacao> resultadosEstacao = manager	.createQuery(
@@ -55,7 +59,7 @@ public class EstacaoDao {
 		}
 
 		estacao	.getRegistros()
-				.addAll(Modificador.modifica(solicitante, estacao, valores));
+				.addAll(modificador.modifica(solicitante, estacao, valores));
 
 		Validador.validar(estacao);
 
@@ -79,7 +83,7 @@ public class EstacaoDao {
 		}
 
 		estacao	.getRegistros()
-				.addAll(Modificador.modifica(solicitante, estacao, null));
+				.addAll(modificador.modifica(solicitante, estacao, null));
 
 		gerenciador	.getEstacoes()
 					.add(estacao);

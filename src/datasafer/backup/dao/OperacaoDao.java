@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +22,9 @@ public class OperacaoDao {
 	@PersistenceContext
 	private EntityManager manager;
 
+	@Autowired
+	private Modificador modificador;
+	
 	@Transactional
 	public void insereOperacao(	Usuario solicitante,
 								Backup backup,
@@ -33,7 +37,7 @@ public class OperacaoDao {
 		Validador.validar(operacao);
 
 		operacao.getRegistros()
-				.addAll(Modificador.modifica(solicitante, operacao, null));
+				.addAll(modificador.modifica(solicitante, operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -51,7 +55,7 @@ public class OperacaoDao {
 											: manager.find(Usuario.class, solicitante.getId()));
 		operacao = manager.find(Operacao.class, operacao.getId());
 
-		List<Registro> registros = Modificador.modifica(solicitante, operacao, valores);
+		List<Registro> registros = modificador.modifica(solicitante, operacao, valores);
 
 		Validador.validar(operacao);
 

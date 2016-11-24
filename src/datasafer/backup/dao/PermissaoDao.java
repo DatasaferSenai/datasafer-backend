@@ -9,11 +9,13 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.model.Permissao;
+import datasafer.backup.model.Permissao.Tipo;
 import datasafer.backup.model.Usuario;
 
 @Repository
@@ -21,6 +23,9 @@ public class PermissaoDao {
 
 	@PersistenceContext
 	private EntityManager manager;
+
+	@Autowired
+	private UsuarioDao usuarioDao;
 
 	public <T> List<Permissao> obtemPermissoes(T objeto) {
 		try {
@@ -58,9 +63,67 @@ public class PermissaoDao {
 						.getResultList();
 	}
 
+	public Permissao resolvePermissao(	Usuario recebedor,
+										Usuario usuario,
+										String atributo,
+										Tipo tipo) {
+
+		for (Usuario usuarioAux = recebedor; usuarioAux != null; usuarioAux = usuarioDao.obtemSuperior(usuarioAux)) {
+
+			System.out.println("+++aux Especifico = " + usuarioAux.getLogin());
+
+			List<Permissao> resultadosPermissaoEspecifica = manager	.createQuery(
+																				"SELECT p FROM Usuario u "
+																						+ "INNER JOIN u.permissoes p "
+																						+ "WHERE u.id = :id_usuario "
+																						+ "AND p.recebedor.id = :id_recebedor "
+																						+ "AND p.atributo = :atributo "
+																						+ "AND p.tipo = :tipo",
+																				Permissao.class)
+																	.setParameter("id_usuario", usuario.getId())
+																	.setParameter("id_recebedor", usuarioAux.getId())
+																	.setParameter("atributo", atributo)
+																	.setParameter("tipo", tipo)
+																	.getResultList();
+
+			if (!resultadosPermissaoEspecifica.isEmpty()) {
+				return resultadosPermissaoEspecifica.get(0);
+			}
+
+			System.out.println("ESPECIFICO NOT FOUND");
+		}
+
+		for (Usuario usuarioAux = recebedor; usuarioAux != null; usuarioAux = usuarioDao.obtemSuperior(usuarioAux)) {
+
+			System.out.println("+++aux Geral = " + usuarioAux.getLogin());
+
+			List<Permissao> resultadosPermissaoGeral = manager	.createQuery(
+																			"SELECT p FROM Usuario u "
+																					+ "INNER JOIN u.permissoes p "
+																					+ "WHERE u.id = :id_usuario "
+																					+ "AND p.recebedor.id = :id_recebedor "
+																					+ "AND p.atributo IS NULL "
+																					+ "AND p.tipo = :tipo",
+																			Permissao.class)
+																.setParameter("id_usuario", usuario.getId())
+																.setParameter("id_recebedor", usuarioAux.getId())
+																.setParameter("tipo", tipo)
+																.getResultList();
+
+			if (!resultadosPermissaoGeral.isEmpty()) {
+				return resultadosPermissaoGeral.get(0);
+			}
+
+			System.out.println("GERAL NOT FOUND");
+		}
+
+		return null;
+	}
+
 	public <T> Permissao obtemPermissao(Usuario recebedor,
 										T objeto,
-										String atributo) {
+										String atributo,
+										Tipo tipo) {
 
 		try {
 
@@ -69,12 +132,14 @@ public class PermissaoDao {
 																				+ "INNER JOIN o.permissoes p "
 																				+ "WHERE o.id = :id_objeto "
 																				+ "AND p.recebedor.id = :id_recebedor "
-																				+ "AND p.atributo = :atributo ",
+																				+ "AND p.atributo = :atributo "
+																				+ "AND p.tipo = :tipo",
 																		Permissao.class)
-															.setParameter("id_recebedor", recebedor.getId())
-															.setParameter("atributo", atributo)
 															.setParameter("id_objeto", (Long) new PropertyDescriptor("id", objeto.getClass())	.getReadMethod()
 																																				.invoke(objeto))
+															.setParameter("id_recebedor", recebedor.getId())
+															.setParameter("atributo", atributo)
+															.setParameter("tipo", tipo)
 															.getResultList();
 
 			return resultadosPermissao.isEmpty()	? null
@@ -96,27 +161,36 @@ public class PermissaoDao {
 			Usuario atribuidor = (permissao.getAtribuidor() == null	? null
 																	: manager.find(Usuario.class, permissao.getAtribuidor().getId()));
 
-			Usuario recebedor = manager.find(Usuario.class, permissao.getRecebedor().getId());
-
-			objeto = (T) manager.find(objeto.getClass(), (Long) new PropertyDescriptor("id", objeto.getClass()).getReadMethod().invoke(objeto));
-
-			if (this.obtemPermissao(recebedor, objeto, permissao.getAtributo()) != null) {
-				throw new DataIntegrityViolationException("Permissão do atributo " + permissao.getAtributo() + " existe na entidade "
-						+ objeto.getClass().getName());
-			}
-
 			if (atribuidor != null) {
-				this.obtemPermissoesAtribuidas(atribuidor).add(permissao);
-				permissao.setAtribuidor(atribuidor);
+				if (this.obtemPermissao(atribuidor, objeto, permissao.getAtributo(), permissao.getTipo()) == null) {
+					throw new DataIntegrityViolationException("O solicitante não possui a permissão " + permissao.getTipo() + " do atributo "
+							+ permissao.getAtributo() + " da entidade "
+							+ objeto.getClass().getName() + ", portanto não pode atribuí-la");
+				}
 			}
 
-			this.obtemPermissoesRecebidas(recebedor).add(permissao);
-			permissao.setRecebedor(recebedor);
+			Usuario recebedor = permissao.getRecebedor() == null ? null : manager.find(Usuario.class, permissao.getRecebedor().getId());
+			if (recebedor != null) {
+				if (this.obtemPermissao(recebedor, objeto, permissao.getAtributo(), permissao.getTipo()) != null) {
+					throw new DataIntegrityViolationException("A permissão " + permissao.getTipo() + " do atributo " + permissao.getAtributo()
+							+ " já existe na entidade "
+							+ objeto.getClass().getName());
+				}
 
-			((List<Permissao>) new PropertyDescriptor("permissoes", objeto.getClass()).getReadMethod().invoke(objeto)).add(permissao);
-			
-			manager.persist(permissao);
+				objeto = (T) manager.find(objeto.getClass(), (Long) new PropertyDescriptor("id", objeto.getClass()).getReadMethod().invoke(objeto));
 
+				if (atribuidor != null) {
+					this.obtemPermissoesAtribuidas(atribuidor).add(permissao);
+					permissao.setAtribuidor(atribuidor);
+				}
+
+				this.obtemPermissoesRecebidas(recebedor).add(permissao);
+				permissao.setRecebedor(recebedor);
+
+				((List<Permissao>) new PropertyDescriptor("permissoes", objeto.getClass()).getReadMethod().invoke(objeto)).add(permissao);
+
+				manager.persist(permissao);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

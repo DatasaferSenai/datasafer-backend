@@ -1,6 +1,5 @@
 package datasafer.backup;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -54,7 +53,7 @@ public class Inicializador {
 			usuario_admin.setEmail("admin@admin.com");
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
-			
+
 			usuarioDao.insereUsuario(null, null, usuario_admin);
 		}
 
@@ -87,15 +86,6 @@ public class Inicializador {
 				usuario.setStatus(Status.ATIVO);
 
 				usuarioDao.insereUsuario(solicitante, superior, usuario);
-
-				for (Field f : Usuario.class.getDeclaredFields()) {
-					Permissao permissao = new Permissao();
-					permissao.setAtribuidor(solicitante);
-					permissao.setRecebedor(superior);
-					permissao.setAtributo(f.getName());
-					permissaoDao.inserirPermissao(usuario, permissao);
-				}
-
 				populaEstacoes(solicitante, usuario);
 			}
 		}
@@ -122,15 +112,6 @@ public class Inicializador {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);
 				estacaoDao.insereEstacao(solicitante, gerenciador, estacao);
-
-				for (Field f : Estacao.class.getDeclaredFields()) {
-					Permissao permissao = new Permissao();
-					permissao.setAtribuidor(solicitante);
-					permissao.setRecebedor(gerenciador);
-					permissao.setAtributo(f.getName());
-					permissaoDao.inserirPermissao(estacao, permissao);
-				}
-				
 				populaBackups(solicitante, gerenciador, estacao);
 			}
 		}
@@ -164,15 +145,6 @@ public class Inicializador {
 													.replace(' ', '_'));
 
 				backupDao.insereBackup(solicitante, proprietario, estacao, backup);
-
-				for (Field f : Backup.class.getDeclaredFields()) {
-					Permissao permissao = new Permissao();
-					permissao.setAtribuidor(solicitante);
-					permissao.setRecebedor(proprietario);
-					permissao.setAtributo(f.getName());
-					permissaoDao.inserirPermissao(backup, permissao);
-				}
-				
 				populaOperacoes(solicitante, proprietario, estacao, backup);
 			}
 		}
@@ -193,16 +165,8 @@ public class Inicializador {
 															.toInstant()));
 			operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 			operacao.setTamanho((long) gerador.nextInt(10000000));
-			
+
 			operacaoDao.insereOperacao(solicitante, backup, operacao);
-			
-			for (Field f : Operacao.class.getDeclaredFields()) {
-				Permissao permissao = new Permissao();
-				permissao.setAtribuidor(solicitante);
-				permissao.setRecebedor(proprietario);
-				permissao.setAtributo(f.getName());
-				permissaoDao.inserirPermissao(operacao, permissao);
-			}
 		}
 
 	}

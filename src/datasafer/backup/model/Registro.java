@@ -21,6 +21,16 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 @Entity
 public class Registro {
 
+	public Registro() {}
+
+	public Registro(Usuario solicitante, Timestamp data, String atributo, String de, String para) {
+		this.solicitante = solicitante;
+		this.data = data;
+		this.atributo = atributo;
+		this.de = de;
+		this.para = para;
+	}
+
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

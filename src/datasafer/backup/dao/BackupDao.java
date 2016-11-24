@@ -9,6 +9,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +26,9 @@ public class BackupDao {
 
 	@PersistenceContext
 	private EntityManager manager;
+	
+	@Autowired
+	private Modificador modificador;
 
 	// @Transactional
 	public Backup obtemBackup(	Usuario proprietario,
@@ -60,11 +64,11 @@ public class BackupDao {
 		Backup existente = this.obtemBackup(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
-						.addAll(Modificador.modifica(solicitante, existente, backup));
+						.addAll(modificador.modifica(solicitante, existente, backup));
 			backup = existente;
 		} else {
 			backup	.getRegistros()
-					.addAll(Modificador.modifica(solicitante, backup, null));
+					.addAll(modificador.modifica(solicitante, backup, null));
 		}
 
 		Operacao operacao = new Operacao();
@@ -73,7 +77,7 @@ public class BackupDao {
 														.toInstant()));
 		operacao.setStatus(Operacao.Status.AGENDADO);
 		operacao.setTamanho(null);
-		operacao.setRegistros(Modificador.modifica(solicitante, operacao, null));
+		operacao.setRegistros(modificador.modifica(solicitante, operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -109,7 +113,7 @@ public class BackupDao {
 		}
 
 		backup	.getRegistros()
-				.addAll(Modificador.modifica(solicitante, backup, valores));
+				.addAll(modificador.modifica(solicitante, backup, valores));
 
 		Validador.validar(backup);
 

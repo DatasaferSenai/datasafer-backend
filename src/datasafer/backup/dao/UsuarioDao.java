@@ -6,6 +6,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +17,7 @@ import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Notificacao;
 import datasafer.backup.model.Operacao;
+import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
 
@@ -24,6 +26,11 @@ public class UsuarioDao {
 
 	@PersistenceContext
 	private EntityManager manager;
+
+	@Autowired
+	private Modificador modificador;
+	@Autowired
+	private PermissaoDao permissaoDao;
 
 	// @Transactional
 	public Usuario obtemUsuario(String login_usuario) {
@@ -42,9 +49,9 @@ public class UsuarioDao {
 	public Usuario obtemSuperior(Usuario usuario) {
 
 		List<Usuario> resultadosSuperior = manager	.createQuery(
-																"SELECT usuario.superior "
-																		+ "FROM Usuario usuario "
-																		+ "WHERE usuario.id = :id_usuario",
+																"SELECT u.superior "
+																		+ "FROM Usuario u "
+																		+ "WHERE u.id = :id_usuario",
 																Usuario.class)
 													.setParameter("id_usuario", usuario.getId())
 													.getResultList();
@@ -85,6 +92,15 @@ public class UsuarioDao {
 						.put((Operacao.Status) obj[0], (Long) obj[1]);
 		}
 
+		List<String> resultadosLoginSuperior = manager	.createQuery(
+																	"SELECT u.superior.login FROM Usuario u "
+																			+ "WHERE u.id = :id_usuario ",
+																	String.class)
+														.setParameter("id_usuario", proprietario.getId())
+														.getResultList();
+
+		proprietario.setLoginSuperior(resultadosLoginSuperior.isEmpty() ? null : resultadosLoginSuperior.get(0));
+
 		return proprietario;
 	}
 
@@ -114,7 +130,7 @@ public class UsuarioDao {
 		}
 
 		usuario	.getRegistros()
-				.addAll(Modificador.modifica(solicitante, usuario, null));
+				.addAll(modificador.modifica(solicitante, usuario, null));
 
 		if (superior != null) {
 			superior.getColaboradores()
@@ -123,6 +139,16 @@ public class UsuarioDao {
 		usuario.setSuperior(superior);
 
 		manager.persist(usuario);
+
+		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.VISUALIZAR, true));
+		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.EDITAR, true));
+		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.INSERIR, true));
+		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.REMOVER, true));
+
+		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.VISUALIZAR, false));
+		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.EDITAR, false));
+		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.INSERIR, false));
+		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.REMOVER, false));
 	}
 
 	@Transactional
@@ -144,7 +170,7 @@ public class UsuarioDao {
 
 		}
 
-		List<Registro> registros = Modificador.modifica(solicitante, usuario, valores);
+		List<Registro> registros = modificador.modifica(solicitante, usuario, valores);
 
 		Validador.validar(usuario);
 

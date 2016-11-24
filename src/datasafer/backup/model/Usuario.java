@@ -29,6 +29,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,6 +39,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import datasafer.backup.dao.utility.Modificador.Modificavel;
 import datasafer.backup.dao.utility.Validador.Validar;
 
+@JsonAutoDetect(setterVisibility = Visibility.DEFAULT)
 @Entity
 public class Usuario {
 
@@ -57,39 +60,6 @@ public class Usuario {
 			return this.descricao;
 		}
 	};
-
-	// public enum Permissao {
-	// ADMINISTRADOR("Administrador"),
-	//
-	// VISUALIZAR_USUARIOS("Visualizar usuários"),
-	// INSERIR_USUARIOS("Inserir usuários"),
-	// MODIFICAR_USUARIOS("Modificar usuários"),
-	// EXCLUIR_USUARIOS("Excluir usuários"),
-	//
-	// VISUALIZAR_ESTACOES("Visualizar estacaos"),
-	// INSERIR_ESTACOES("Inserir estacaos"),
-	// EXCLUIR_ESTACOES("Excluir estacaos"),
-	//
-	// VISUALIZAR_BACKUPS("Visualizar backups"),
-	// INSERIR_BACKUPS("Inserir backups"),
-	// MODIFICAR_BACKUPS("Modificar backups"),
-	// EXCLUIR_BACKUPS("Excluir backups"),
-	//
-	// VISUALIZAR_OPERACOES("Visualizar operações"),
-	// INSERIR_OPERACOES("Inserir operações"),
-	// EXCLUIR_OPERACOES("Excluir operações");
-	//
-	// private String descricao;
-	//
-	// private Permissao(String descricao) {
-	// this.descricao = descricao;
-	// }
-	//
-	// @Override
-	// public String toString() {
-	// return this.descricao;
-	// }
-	// }
 
 	@JsonIgnore
 	@Id
@@ -125,22 +95,6 @@ public class Usuario {
 	@JsonIgnore
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Autorizacao> autorizacoes = new ArrayList<Autorizacao>();
-
-	// @Modificavel(autoModificavel = false)
-	// @Validar
-	// @JsonProperty
-	// @ElementCollection(fetch = FetchType.EAGER)
-	// @Column(nullable = true)
-	// @Enumerated(EnumType.STRING)
-	// private List<Permissao> delegacoes;
-
-	// @Modificavel(autoModificavel = false)
-	// @Validar
-	// @JsonProperty
-	// @ElementCollection(fetch = FetchType.EAGER)
-	// @Column(nullable = true)
-	// @Enumerated(EnumType.STRING)
-	// private List<Permissao> permissoes;
 
 	@Modificavel(autoModificavel = false)
 	@Validar(comprimentoMinimo = 3, comprimentoMaximo = 20)
