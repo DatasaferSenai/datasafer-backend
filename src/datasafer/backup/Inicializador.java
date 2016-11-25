@@ -86,6 +86,18 @@ public class Inicializador {
 				usuario.setStatus(Status.ATIVO);
 
 				usuarioDao.insereUsuario(solicitante, superior, usuario);
+				
+
+				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.VISUALIZAR, true));
+				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.EDITAR, true));
+				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.INSERIR, true));
+				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.REMOVER, true));
+
+//				permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.VISUALIZAR, false));
+//				permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.EDITAR, false));
+//				permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.INSERIR, false));
+//				permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.REMOVER, false));
+				
 				populaEstacoes(solicitante, usuario);
 			}
 		}

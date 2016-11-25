@@ -8,11 +8,11 @@ import javax.persistence.PersistenceContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.dao.utility.Modificador;
-import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Notificacao;
@@ -26,7 +26,6 @@ public class UsuarioDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-
 	@Autowired
 	private Modificador modificador;
 	@Autowired
@@ -117,20 +116,19 @@ public class UsuarioDao {
 								Usuario superior,
 								Usuario usuario) throws DataIntegrityViolationException {
 
+		if (solicitante != null && !permissaoDao.temPermissao(solicitante, superior, "colaboradores", Permissao.Tipo.INSERIR)) {
+			throw new AccessDeniedException("O solicitante não tem permissão para inserir colaboradores neste usuário");
+		}
+
 		solicitante = (solicitante == null	? null
 											: manager.find(Usuario.class, solicitante.getId()));
 		superior = (superior == null	? null
 										: manager.find(Usuario.class, superior.getId()));
 
-		Validador.validar(usuario);
-
 		Usuario existente = this.obtemUsuario(usuario.getLogin());
 		if (existente != null) {
 			throw new DataIntegrityViolationException("O usuário " + usuario.getLogin() + " já existe");
 		}
-
-		usuario	.getRegistros()
-				.addAll(modificador.modifica(solicitante, usuario, null));
 
 		if (superior != null) {
 			superior.getColaboradores()
@@ -139,16 +137,6 @@ public class UsuarioDao {
 		usuario.setSuperior(superior);
 
 		manager.persist(usuario);
-
-		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.VISUALIZAR, true));
-		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.EDITAR, true));
-		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.INSERIR, true));
-		permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.REMOVER, true));
-
-		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.VISUALIZAR, false));
-		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.EDITAR, false));
-		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.INSERIR, false));
-		permissaoDao.inserirPermissao(superior, new Permissao(solicitante, usuario, null, Permissao.Tipo.REMOVER, false));
 	}
 
 	@Transactional
@@ -171,8 +159,6 @@ public class UsuarioDao {
 		}
 
 		List<Registro> registros = modificador.modifica(solicitante, usuario, valores);
-
-		Validador.validar(usuario);
 
 		usuario	.getRegistros()
 				.addAll(registros);

@@ -43,10 +43,6 @@
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>
 	<filter-mapping>
-		<filter-name>PermissaoFilter</filter-name>
-		<url-pattern>/*</url-pattern>
-	</filter-mapping>
-	<filter-mapping>
 		<filter-name>ValidadorFilter</filter-name>
 		<url-pattern>/*</url-pattern>
 	</filter-mapping>

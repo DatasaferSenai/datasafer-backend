@@ -73,7 +73,7 @@ public class SegurancaFilter implements Filter {
 			Usuario usuario = request.getHeader("usuario") != null	? usuarioDao.obtemUsuario(request.getHeader("usuario"))
 																	: solicitante;
 
-			if (solicitante == null || solicitante.getStatus() == Status.INATIVO) {
+			if (solicitante == null) {
 
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
@@ -91,7 +91,7 @@ public class SegurancaFilter implements Filter {
 				return;
 			}
 
-			if (usuario == null || usuario.getStatus() == Status.INATIVO) {
+			if (usuario == null) {
 				response.setStatus(HttpServletResponse.SC_NOT_FOUND);
 				response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
 				response.getWriter().write(new JSONObject().put("erro", "Usuário inválido ou não encontrado").toString());

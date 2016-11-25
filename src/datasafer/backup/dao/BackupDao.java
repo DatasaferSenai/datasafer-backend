@@ -15,7 +15,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.dao.utility.Modificador;
-import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
@@ -26,7 +25,7 @@ public class BackupDao {
 
 	@PersistenceContext
 	private EntityManager manager;
-	
+
 	@Autowired
 	private Modificador modificador;
 
@@ -59,17 +58,16 @@ public class BackupDao {
 		proprietario = manager.find(Usuario.class, proprietario.getId());
 		estacao = manager.find(Estacao.class, estacao.getId());
 
-		Validador.validar(backup);
-
 		Backup existente = this.obtemBackup(proprietario, estacao, backup.getNome());
 		if (existente != null) {
 			existente	.getRegistros()
 						.addAll(modificador.modifica(solicitante, existente, backup));
 			backup = existente;
-		} else {
-			backup	.getRegistros()
-					.addAll(modificador.modifica(solicitante, backup, null));
 		}
+		// else {
+		// backup .getRegistros()
+		// .addAll(modificador.modifica(solicitante, backup, null));
+		// }
 
 		Operacao operacao = new Operacao();
 		operacao.setData(Timestamp.from(LocalDateTime	.now()
@@ -77,7 +75,8 @@ public class BackupDao {
 														.toInstant()));
 		operacao.setStatus(Operacao.Status.AGENDADO);
 		operacao.setTamanho(null);
-		operacao.setRegistros(modificador.modifica(solicitante, operacao, null));
+		// operacao.getRegistros().addAll(modificador.modifica(solicitante,
+		// operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -114,8 +113,6 @@ public class BackupDao {
 
 		backup	.getRegistros()
 				.addAll(modificador.modifica(solicitante, backup, valores));
-
-		Validador.validar(backup);
 
 		manager.persist(backup);
 
@@ -185,6 +182,21 @@ public class BackupDao {
 			this.carregaInfos(backup);
 		}
 		return backups;
+	}
+
+	// @Transactional
+	public Usuario obtemProprietario(Backup backup) {
+
+		List<Usuario> resultadosProprietario = manager	.createQuery(
+																	"SELECT b.proprietario "
+																			+ "FROM Backup b "
+																			+ "WHERE b.id = :id_backup",
+																	Usuario.class)
+														.setParameter("id_backup", backup.getId())
+														.getResultList();
+
+		return resultadosProprietario.isEmpty()	? null
+												: resultadosProprietario.get(0);
 	}
 
 }

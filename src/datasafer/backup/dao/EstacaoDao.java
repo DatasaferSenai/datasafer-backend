@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.dao.utility.Modificador;
-import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
@@ -26,7 +25,7 @@ public class EstacaoDao {
 
 	@Autowired
 	private Modificador modificador;
-	
+
 	// @Transactional
 	public Estacao obtemEstacao(String nome_estacao) {
 		List<Estacao> resultadosEstacao = manager	.createQuery(
@@ -61,8 +60,6 @@ public class EstacaoDao {
 		estacao	.getRegistros()
 				.addAll(modificador.modifica(solicitante, estacao, valores));
 
-		Validador.validar(estacao);
-
 		manager.persist(estacao);
 	}
 
@@ -75,15 +72,13 @@ public class EstacaoDao {
 											: manager.find(Usuario.class, solicitante.getId()));
 		gerenciador = manager.find(Usuario.class, gerenciador.getId());
 
-		Validador.validar(estacao);
-
 		Estacao existente = this.obtemEstacao(estacao.getNome());
 		if (existente != null) {
 			throw new DataIntegrityViolationException("Estação '" + estacao.getNome() + "' já existente");
 		}
 
-		estacao	.getRegistros()
-				.addAll(modificador.modifica(solicitante, estacao, null));
+		// estacao .getRegistros()
+		// .addAll(modificador.modifica(solicitante, estacao, null));
 
 		gerenciador	.getEstacoes()
 					.add(estacao);
@@ -179,6 +174,20 @@ public class EstacaoDao {
 			this.carregaInfos(estacao);
 		}
 		return estacoes;
+	}
+
+	// @Transactional
+	public Usuario obtemGerenciador(Estacao estacao) {
+		List<Usuario> resultadosGerenciador = manager	.createQuery(
+																	"SELECT e.gerenciador "
+																			+ "FROM Estacao e "
+																			+ "WHERE e.id = :id_estacao",
+																	Usuario.class)
+														.setParameter("id_estacao", estacao.getId())
+														.getResultList();
+
+		return resultadosGerenciador.isEmpty()	? null
+												: resultadosGerenciador.get(0);
 	}
 
 }

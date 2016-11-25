@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import datasafer.backup.dao.utility.Modificador;
-import datasafer.backup.dao.utility.Validador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Registro;
@@ -24,7 +23,7 @@ public class OperacaoDao {
 
 	@Autowired
 	private Modificador modificador;
-	
+
 	@Transactional
 	public void insereOperacao(	Usuario solicitante,
 								Backup backup,
@@ -34,10 +33,8 @@ public class OperacaoDao {
 											: manager.find(Usuario.class, solicitante.getId()));
 		backup = manager.find(Backup.class, backup.getId());
 
-		Validador.validar(operacao);
-
-		operacao.getRegistros()
-				.addAll(modificador.modifica(solicitante, operacao, null));
+		// operacao.getRegistros()
+		// .addAll(modificador.modifica(solicitante, operacao, null));
 
 		backup	.getOperacoes()
 				.add(operacao);
@@ -56,8 +53,6 @@ public class OperacaoDao {
 		operacao = manager.find(Operacao.class, operacao.getId());
 
 		List<Registro> registros = modificador.modifica(solicitante, operacao, valores);
-
-		Validador.validar(operacao);
 
 		operacao.getRegistros()
 				.addAll(registros);

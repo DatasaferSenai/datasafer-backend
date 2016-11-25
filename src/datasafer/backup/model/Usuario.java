@@ -28,6 +28,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
@@ -36,8 +39,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import datasafer.backup.dao.utility.Modificador.Modificavel;
-import datasafer.backup.dao.utility.Validador.Validar;
+import datasafer.backup.model.utility.Validador.Email;
+import datasafer.backup.model.utility.Validador.Senha;
 
 @JsonAutoDetect(setterVisibility = Visibility.DEFAULT)
 @Entity
@@ -96,41 +99,41 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Autorizacao> autorizacoes = new ArrayList<Autorizacao>();
 
-	@Modificavel(autoModificavel = false)
-	@Validar(comprimentoMinimo = 3, comprimentoMaximo = 20)
 	@JsonProperty
-	@Column(length = 20, unique = true, nullable = false)
+	@Size(min = 4, max = 20, message = "O login deve ter no mínimo de 6 e no máximo 20 caracteres")
+	@NotNull(message = "Login inválido")
+	@Column(unique = true)
 	private String login = null;
 
-	@Modificavel(autoModificavel = true)
-	@Validar(comprimentoMinimo = 6, comprimentoMaximo = 32)
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@Column(length = 32, nullable = false)
+	@Senha
+	@Size(max = 32, message = "A senha deve ter no máximo 32 caracteres")
+	@NotNull(message = "Senha inválida")
 	private String senha = null;
 
-	@Modificavel(autoModificavel = false)
-	@Validar
+	// @Validar
 	@JsonProperty
 	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
+	@NotNull(message = "Status inválido")
 	private Status status = Usuario.Status.ATIVO;
 
-	@Modificavel
-	@Validar
+	// @Validar
 	@JsonProperty
-	@Column(length = 40, nullable = false)
+	@Size(min = 3, max = 40, message = "O nome deve ter no mínimo 3 e no máximo 40 caracteres")
+	@NotNull(message = "O nome não pode ser nulo")
 	private String nome = null;
 
-	@Modificavel
-	@Validar
+	// @Validar
 	@JsonProperty
-	@Column(length = 50, nullable = false)
+	@Email
+	@Size(max = 50, message = "O email deve ter máximo 50 caracteres")
+	@NotNull(message = "O email não pode ser nulo")
 	private String email = null;
 
-	@Modificavel(autoModificavel = false)
-	@Validar
+	// @Validar
 	@JsonProperty
-	@Column(nullable = false)
+	@Min(value = 0, message = "O armazenamento dever ser no mínimo 0")
+	@NotNull(message = "O armazenamento não pode ser nulo")
 	private long armazenamento = 0L;
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
@@ -142,7 +145,7 @@ public class Usuario {
 	private Map<Operacao.Status, Long> statusBackups = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
 
 	@JsonProperty(access = Access.READ_ONLY)
-	@Column(nullable = false)
+	@Column
 	private int tentativas = 0;
 
 	@JsonProperty(access = Access.READ_ONLY)
@@ -175,7 +178,8 @@ public class Usuario {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
 			PBEKeySpec spec = new PBEKeySpec(	senha.toCharArray(),
-												"J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO".getBytes(StandardCharsets.UTF_8), 65535,
+												"J0pjgqSuFXmCw8RQMPWaYT8XSBTneN0nDfMjLgUQ37Tp6l6I2SjQmhn5i7jCLZpO".getBytes(StandardCharsets.UTF_8),
+												65535,
 												128);
 			SecretKey key = skf.generateSecret(spec);
 			this.senha = Base64	.getEncoder()

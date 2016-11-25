@@ -14,6 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import datasafer.backup.model.Backup;
+import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Permissao.Tipo;
 import datasafer.backup.model.Usuario;
@@ -26,12 +28,18 @@ public class PermissaoDao {
 
 	@Autowired
 	private UsuarioDao usuarioDao;
+	@Autowired
+	private EstacaoDao estacaoDao;
+	@Autowired
+	private BackupDao backupDao;
 
 	public <T> List<Permissao> obtemPermissoes(T objeto) {
 		try {
-			return manager	.createQuery("SELECT p FROM " + objeto.getClass().getSimpleName() + " o "
-					+ "INNER JOIN o.permissoes p "
-					+ "WHERE o.id = :id_objeto ", Permissao.class)
+			return manager	.createQuery(
+										"SELECT p FROM " + objeto.getClass().getSimpleName() + " o "
+												+ "INNER JOIN o.permissoes p "
+												+ "WHERE o.id = :id_objeto ",
+										Permissao.class)
 							.setParameter("id_objeto", (Long) new PropertyDescriptor("id", objeto.getClass())	.getReadMethod()
 																												.invoke(objeto))
 							.getResultList();
@@ -63,61 +71,66 @@ public class PermissaoDao {
 						.getResultList();
 	}
 
-	public Permissao resolvePermissao(	Usuario recebedor,
-										Usuario usuario,
-										String atributo,
-										Tipo tipo) {
+	public <T> boolean temPermissao(Usuario recebedor,
+									T objeto,
+									String atributo,
+									Tipo tipo) {
 
-		for (Usuario usuarioAux = recebedor; usuarioAux != null; usuarioAux = usuarioDao.obtemSuperior(usuarioAux)) {
-
-			System.out.println("+++aux Especifico = " + usuarioAux.getLogin());
-
-			List<Permissao> resultadosPermissaoEspecifica = manager	.createQuery(
-																				"SELECT p FROM Usuario u "
-																						+ "INNER JOIN u.permissoes p "
-																						+ "WHERE u.id = :id_usuario "
-																						+ "AND p.recebedor.id = :id_recebedor "
-																						+ "AND p.atributo = :atributo "
-																						+ "AND p.tipo = :tipo",
-																				Permissao.class)
-																	.setParameter("id_usuario", usuario.getId())
-																	.setParameter("id_recebedor", usuarioAux.getId())
-																	.setParameter("atributo", atributo)
-																	.setParameter("tipo", tipo)
-																	.getResultList();
-
-			if (!resultadosPermissaoEspecifica.isEmpty()) {
-				return resultadosPermissaoEspecifica.get(0);
+		{
+			Permissao permissao = this.obtemPermissao(recebedor, objeto, atributo, tipo);
+			if (permissao != null) {
+				return permissao.isPermitido();
 			}
-
-			System.out.println("ESPECIFICO NOT FOUND");
 		}
 
-		for (Usuario usuarioAux = recebedor; usuarioAux != null; usuarioAux = usuarioDao.obtemSuperior(usuarioAux)) {
-
-			System.out.println("+++aux Geral = " + usuarioAux.getLogin());
-
-			List<Permissao> resultadosPermissaoGeral = manager	.createQuery(
-																			"SELECT p FROM Usuario u "
-																					+ "INNER JOIN u.permissoes p "
-																					+ "WHERE u.id = :id_usuario "
-																					+ "AND p.recebedor.id = :id_recebedor "
-																					+ "AND p.atributo IS NULL "
-																					+ "AND p.tipo = :tipo",
-																			Permissao.class)
-																.setParameter("id_usuario", usuario.getId())
-																.setParameter("id_recebedor", usuarioAux.getId())
-																.setParameter("tipo", tipo)
-																.getResultList();
-
-			if (!resultadosPermissaoGeral.isEmpty()) {
-				return resultadosPermissaoGeral.get(0);
+		{
+			Usuario usuarioAux = null;
+			if (objeto instanceof Usuario) {
+				usuarioAux = usuarioDao.obtemSuperior((Usuario) objeto);
+			} else if (objeto instanceof Estacao) {
+				usuarioAux = estacaoDao.obtemGerenciador((Estacao) objeto);
+			} else if (objeto instanceof Backup) {
+				usuarioAux = backupDao.obtemProprietario((Backup) objeto);
 			}
-
-			System.out.println("GERAL NOT FOUND");
+			if (usuarioAux != null) {
+				while (usuarioAux != null) {
+					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, atributo, tipo);
+					if (permissao != null) {
+						return permissao.isPermitido();
+					}
+					usuarioAux = usuarioDao.obtemSuperior(usuarioAux);
+				}
+			}
 		}
 
-		return null;
+		{
+			Permissao permissao = this.obtemPermissao(recebedor, objeto, null, tipo);
+			if (permissao != null) {
+				return permissao.isPermitido();
+			}
+		}
+
+		{
+			Usuario usuarioAux = null;
+			if (objeto instanceof Usuario) {
+				usuarioAux = usuarioDao.obtemSuperior((Usuario) objeto);
+			} else if (objeto instanceof Estacao) {
+				usuarioAux = estacaoDao.obtemGerenciador((Estacao) objeto);
+			} else if (objeto instanceof Backup) {
+				usuarioAux = backupDao.obtemProprietario((Backup) objeto);
+			}
+			if (usuarioAux != null) {
+				while (usuarioAux != null) {
+					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, null, tipo);
+					if (permissao != null) {
+						return permissao.isPermitido();
+					}
+					usuarioAux = usuarioDao.obtemSuperior(usuarioAux);
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public <T> Permissao obtemPermissao(Usuario recebedor,
@@ -126,17 +139,17 @@ public class PermissaoDao {
 										Tipo tipo) {
 
 		try {
-
 			List<Permissao> resultadosPermissao = manager	.createQuery(
-																		"SELECT p FROM " + objeto.getClass().getSimpleName() + " o "
-																				+ "INNER JOIN o.permissoes p "
-																				+ "WHERE o.id = :id_objeto "
-																				+ "AND p.recebedor.id = :id_recebedor "
-																				+ "AND p.atributo = :atributo "
-																				+ "AND p.tipo = :tipo",
-																		Permissao.class)
-															.setParameter("id_objeto", (Long) new PropertyDescriptor("id", objeto.getClass())	.getReadMethod()
-																																				.invoke(objeto))
+																			"SELECT p FROM " + objeto.getClass().getSimpleName() + " o "
+																					+ "INNER JOIN o.permissoes p "
+																					+ "WHERE o.id = :id_objeto "
+																					+ "AND p.recebedor.id = :id_recebedor "
+																					+ "AND (p.atributo = :atributo OR (:atributo IS NULL AND p.atributo IS NULL)) "
+																					+ "AND p.tipo = :tipo",
+																			Permissao.class)
+															.setParameter(	"id_objeto",
+																			(Long) new PropertyDescriptor("id", objeto.getClass())	.getReadMethod()
+																																	.invoke(objeto))
 															.setParameter("id_recebedor", recebedor.getId())
 															.setParameter("atributo", atributo)
 															.setParameter("tipo", tipo)

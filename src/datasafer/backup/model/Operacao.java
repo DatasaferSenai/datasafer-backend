@@ -30,7 +30,8 @@ public class Operacao {
 		EXECUTANDO("Executando"),
 		FALHA("Falha"),
 		AGENDADO("Agendado"),
-		EXCLUIDO("Excluído");
+		EXCLUIDO("Excluído"),
+		RESTAURADO("Restaurado");
 
 		private String descricao;
 
