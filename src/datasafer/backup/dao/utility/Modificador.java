@@ -7,7 +7,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -57,7 +57,7 @@ public class Modificador {
 					}
 
 					registros.add(new Registro(	solicitante,
-												Timestamp.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()),
+												Timestamp.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)),
 												property != null && !property.value().isEmpty() ? property.value() : f.getName(),
 												valorDestino == null	? null
 																		: valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)

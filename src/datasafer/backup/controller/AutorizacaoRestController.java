@@ -2,7 +2,7 @@ package datasafer.backup.controller;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,8 +47,7 @@ public class AutorizacaoRestController {
 					if (tentativas < 3) {
 						existente.setTentativas(++tentativas);
 						existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
-																					.atZone(ZoneId.systemDefault())
-																					.toInstant()));
+																					.toInstant(ZoneOffset.UTC)));
 
 						usuarioDao.modificaUsuario(null, existente, existente);
 					}

@@ -4,7 +4,7 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -41,8 +41,7 @@ public class AutorizacaoDao {
 
 		if (autorizacao != null) {
 			autorizacao.setUltimoAcesso(Timestamp.from(LocalDateTime.now()
-																	.atZone(ZoneId.systemDefault())
-																	.toInstant()));
+																	.toInstant(ZoneOffset.UTC)));
 		}
 
 		return autorizacao;
@@ -71,8 +70,7 @@ public class AutorizacaoDao {
 		autorizacao.setToken(novo_token);
 		autorizacao.setIp(ip);
 		autorizacao.setEmissao(Timestamp.from(LocalDateTime	.now()
-															.atZone(ZoneId.systemDefault())
-															.toInstant()));
+															.toInstant(ZoneOffset.UTC)));
 
 		usuario	.getAutorizacoes()
 				.add(autorizacao);
@@ -113,8 +111,7 @@ public class AutorizacaoDao {
 				+ "WHERE a.ultimoAcesso IS NOT NULL "
 				+ "AND a.ultimoAcesso < :data ")
 				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(dias)
-																	.atZone(ZoneId.systemDefault())
-																	.toInstant()))
+																	.toInstant(ZoneOffset.UTC)))
 				.executeUpdate();
 	}
 

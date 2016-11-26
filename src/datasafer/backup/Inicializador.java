@@ -2,7 +2,7 @@ package datasafer.backup;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
@@ -173,8 +173,7 @@ public class Inicializador {
 				backup.setIntervalo(gerador.nextInt(1000000));
 
 				backup.setInicio(Timestamp.from(LocalDateTime	.now().plusDays(gerador.nextInt(60))
-																.atZone(ZoneId.systemDefault())
-																.toInstant()));
+																.toInstant(ZoneOffset.UTC)));
 				backup.setPasta("C:\\" + nomeBackup	.toLowerCase()
 													.replace(' ', '_'));
 
@@ -195,8 +194,7 @@ public class Inicializador {
 
 			Operacao operacao = new Operacao();
 			operacao.setData(Timestamp.from(LocalDateTime	.now().plusDays(gerador.nextInt(365))
-															.atZone(ZoneId.systemDefault())
-															.toInstant()));
+															.toInstant(ZoneOffset.UTC)));
 			operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 			operacao.setTamanho((long) gerador.nextInt(10000000));
 

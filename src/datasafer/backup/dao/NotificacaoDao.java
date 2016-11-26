@@ -2,7 +2,7 @@ package datasafer.backup.dao;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -45,8 +45,7 @@ public class NotificacaoDao {
 				+ "WHERE n.ultimaNotificacao IS NOT NULL "
 				+ "AND n.ultimaNotificacao < :data ")
 				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(dias)
-																	.atZone(ZoneId.systemDefault())
-																	.toInstant()))
+																	.toInstant(ZoneOffset.UTC)))
 				.executeUpdate();
 	}
 

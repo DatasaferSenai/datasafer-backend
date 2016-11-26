@@ -104,7 +104,6 @@ public class Usuario {
 	private String login = null;
 
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@Senha
 	@Size(max = 32, message = "A senha deve ter no máximo 32 caracteres")
 	@NotNull(message = "Senha inválida")
 	private String senha = null;
@@ -182,7 +181,7 @@ public class Usuario {
 	@OneToMany(mappedBy = "recebedor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Permissao> permissoesRecebidas = new ArrayList<Permissao>();
 
-	public void setSenha(String senha) {
+	public void setSenha(@Senha String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
 			PBEKeySpec spec = new PBEKeySpec(	senha.toCharArray(),
