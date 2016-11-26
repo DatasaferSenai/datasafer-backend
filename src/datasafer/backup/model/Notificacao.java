@@ -19,6 +19,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @Entity
 public class Notificacao {
 
+	public Notificacao() {}
+
+	public Notificacao(Usuario usuario, String token, Tipo tipo) {
+		this.usuario = usuario;
+		this.token = token;
+		this.tipo = tipo;
+	}
+
 	public enum Tipo {
 		DISPOSITIVO_IOS,
 		DISPOSITIVO_ANDROID,
@@ -33,21 +41,21 @@ public class Notificacao {
 	@JsonProperty
 	@Id
 	@Column(length = 255, nullable = false)
-	private String token  = null;
+	private String token = null;
 
 	@JsonProperty
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
-	private Tipo tipo  = null;
+	private Tipo tipo = null;
 
 	@JsonIgnore
 	@Column(nullable = true)
-	private Timestamp ultimaNotificacao  = null;
+	private Timestamp ultimaNotificacao = null;
 
 	@JsonProperty("login_usuario")
 	@Transient
-	private String loginUsuario  = null;
-	
+	private String loginUsuario = null;
+
 	public String getLoginUsuario() {
 		return loginUsuario;
 	}

@@ -28,7 +28,7 @@ public class EstacaoRestController {
 	public ResponseEntity<Object> obtem(@RequestAttribute Usuario usuario,
 										@RequestAttribute Estacao estacao) {
 
-		return new ResponseEntity<>(this.estacaoDao.carregaInfos(usuario, estacao), HttpStatus.OK);
+		return new ResponseEntity<>(this.carregador.carregaTransientes(estacao), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/estacao/backups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)

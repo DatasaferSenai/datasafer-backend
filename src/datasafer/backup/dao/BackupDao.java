@@ -1,9 +1,5 @@
 package datasafer.backup.dao;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -81,61 +77,6 @@ public class BackupDao {
 									Operacao.class)
 						.setParameter("id_backup", backup.getId())
 						.getResultList();
-	}
-
-	// @Transactional
-	public Backup carregaInfos(Backup backup) {
-
-		@SuppressWarnings("unchecked")
-		List<Object> resultadosStatusOperacoes = manager.createQuery(
-																		"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-																				+ "WHERE operacao.backup.id = :id_backup "
-																				+ "GROUP BY operacao.status ")
-														.setParameter("id_backup", backup.getId())
-														.getResultList();
-
-		for (Iterator<Object> iterator = resultadosStatusOperacoes.iterator(); iterator.hasNext();) {
-			Object obj[] = (Object[]) iterator.next();
-			backup	.getStatusOperacoes()
-					.put((Operacao.Status) obj[0], (Long) obj[1]);
-		}
-
-		List<Operacao> resultadosUltimaOperacao = manager	.createQuery(
-																		"SELECT operacao FROM Operacao operacao "
-																				+ "WHERE operacao.backup.id = :id_backup "
-																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE ultimaOperacao.backup = operacao.backup)",
-																		Operacao.class)
-															.setParameter("id_backup", backup.getId())
-															.getResultList();
-
-		backup.setUltimaOperacao(
-									!resultadosUltimaOperacao.isEmpty()	? resultadosUltimaOperacao.get(0)
-																		: null);
-
-		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
-																		"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
-																				+ "WHERE operacao.backup.id = :id_backup "
-																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
-																		Long.class)
-															.setParameter("id_backup", backup.getId())
-															.setParameter("status_operacao", Operacao.Status.SUCESSO)
-															.getResultList();
-
-		backup.setArmazenamentoOcupado(
-										!resultadosArmazenamentoOcupado.isEmpty()
-												&& resultadosArmazenamentoOcupado.get(0) != null	? resultadosArmazenamentoOcupado.get(0)
-																									: 0L);
-
-		return backup;
-	}
-
-	// @Transactional
-	public List<Backup> carregaInfos(
-										List<Backup> backups) {
-		for (Backup backup : backups) {
-			this.carregaInfos(backup);
-		}
-		return backups;
 	}
 
 	// @Transactional

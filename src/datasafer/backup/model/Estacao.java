@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
+import datasafer.backup.dao.utility.Carregador.FormulaHql;
+
 @Entity
 public class Estacao {
 
@@ -55,6 +57,11 @@ public class Estacao {
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+						+ "WHERE operacao.backup.estacao.id = :id_estacao  "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+						+ "GROUP BY operacao.status ")
 	private Map<Operacao.Status, Long> statusBackups = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
 
 	@JsonIgnore

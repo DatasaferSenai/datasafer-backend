@@ -102,14 +102,33 @@ public class Backup {
 	@JsonProperty("nome_estacao")
 	@Transient
 	@FormulaHql(identificador = "id",
-				formula = "SELECT backup.proprietario.login FROM Backup backup "
+				formula = "SELECT backup.estacao.nome FROM Backup backup "
 						+ "WHERE backup.id = :id")
 	private String nomeEstacao = null;
+
+	@JsonProperty("login_proprietario")
+	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT backup.proprietario.login FROM Backup backup "
+						+ "WHERE backup.id = :id")
+	private String loginProprietario = null;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "backup_id")
 	private List<Permissao> permissoes = new ArrayList<Permissao>();
+
+	public String getLoginProprietario() {
+		return loginProprietario;
+	}
+
+	public void setLoginProprietario(String loginProprietario) {
+		this.loginProprietario = loginProprietario;
+	}
+
+	public void setArmazenamentoOcupado(Long armazenamentoOcupado) {
+		this.armazenamentoOcupado = armazenamentoOcupado;
+	}
 
 	public List<Permissao> getPermissoes() {
 		return permissoes;

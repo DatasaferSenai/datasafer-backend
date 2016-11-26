@@ -95,68 +95,68 @@ public class EstacaoDao {
 						.getResultList();
 	}
 
-	// @Transactional
-	public Estacao carregaInfos(Usuario proprietario,
-								Estacao estacao) {
-
-		@SuppressWarnings("unchecked")
-		List<Object> resultadosStatusBackups = manager	.createQuery(
-																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-																			+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-																			+ "AND operacao.backup.estacao.id = :id_estacao  "
-																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-																			+ "GROUP BY operacao.status ")
-														.setParameter("id_proprietario", proprietario.getId())
-														.setParameter("id_estacao", estacao.getId())
-														.getResultList();
-
-		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
-			Object obj[] = (Object[]) iterator.next();
-			estacao	.getStatusBackups()
-					.put((Operacao.Status) obj[0], (Long) obj[1]);
-		}
-
-		return estacao;
-	}
-
-	// @Transactional
-	public Estacao carregaInfos(Estacao estacao) {
-
-		@SuppressWarnings("unchecked")
-		List<Object> resultadosStatusBackups = manager	.createQuery(
-																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-																			+ "WHERE operacao.backup.estacao.id = :id_estacao "
-																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-																			+ "GROUP BY operacao.status ")
-														.setParameter("id_estacao", estacao.getId())
-														.getResultList();
-
-		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
-			Object obj[] = (Object[]) iterator.next();
-			estacao	.getStatusBackups()
-					.put((Operacao.Status) obj[0], (Long) obj[1]);
-		}
-
-		return estacao;
-	}
-
-	// @Transactional
-	public List<Estacao> carregaInfos(	Usuario proprietario,
-										List<Estacao> estacoes) {
-		for (Estacao estacao : estacoes) {
-			this.carregaInfos(proprietario, estacao);
-		}
-		return estacoes;
-	}
-
-	// @Transactional
-	public List<Estacao> carregaInfos(
-										List<Estacao> estacoes) {
-		for (Estacao estacao : estacoes) {
-			this.carregaInfos(estacao);
-		}
-		return estacoes;
-	}
+//	// @Transactional
+//	public Estacao carregaInfos(Usuario proprietario,
+//								Estacao estacao) {
+//
+//		@SuppressWarnings("unchecked")
+//		List<Object> resultadosStatusBackups = manager	.createQuery(
+//																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+//																			+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
+//																			+ "AND operacao.backup.estacao.id = :id_estacao  "
+//																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+//																			+ "GROUP BY operacao.status ")
+//														.setParameter("id_proprietario", proprietario.getId())
+//														.setParameter("id_estacao", estacao.getId())
+//														.getResultList();
+//
+//		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
+//			Object obj[] = (Object[]) iterator.next();
+//			estacao	.getStatusBackups()
+//					.put((Operacao.Status) obj[0], (Long) obj[1]);
+//		}
+//
+//		return estacao;
+//	}
+//
+//	// @Transactional
+//	public Estacao carregaInfos(Estacao estacao) {
+//
+//		@SuppressWarnings("unchecked")
+//		List<Object> resultadosStatusBackups = manager	.createQuery(
+//																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+//																			+ "WHERE operacao.backup.estacao.id = :id_estacao "
+//																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+//																			+ "GROUP BY operacao.status ")
+//														.setParameter("id_estacao", estacao.getId())
+//														.getResultList();
+//
+//		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
+//			Object obj[] = (Object[]) iterator.next();
+//			estacao	.getStatusBackups()
+//					.put((Operacao.Status) obj[0], (Long) obj[1]);
+//		}
+//
+//		return estacao;
+//	}
+//
+//	// @Transactional
+//	public List<Estacao> carregaInfos(	Usuario proprietario,
+//										List<Estacao> estacoes) {
+//		for (Estacao estacao : estacoes) {
+//			this.carregaInfos(proprietario, estacao);
+//		}
+//		return estacoes;
+//	}
+//
+//	// @Transactional
+//	public List<Estacao> carregaInfos(
+//										List<Estacao> estacoes) {
+//		for (Estacao estacao : estacoes) {
+//			this.carregaInfos(estacao);
+//		}
+//		return estacoes;
+//	}
 
 	// @Transactional
 	public Usuario obtemGerenciador(Estacao estacao) {
@@ -189,23 +189,14 @@ public class EstacaoDao {
 						.addAll(modificador.modifica(solicitante, existente, backup));
 			backup = existente;
 		}
-		// else {
-		// backup .getRegistros()
-		// .addAll(modificador.modifica(solicitante, backup, null));
-		// }
-
-		Operacao operacao = new Operacao();
-		operacao.setData(Timestamp.from(LocalDateTime	.now()
-														.atZone(ZoneId.systemDefault())
-														.toInstant()));
-		operacao.setStatus(Operacao.Status.AGENDADO);
-		operacao.setTamanho(null);
-		// operacao.getRegistros().addAll(modificador.modifica(solicitante,
-		// operacao, null));
 
 		backup	.getOperacoes()
-				.add(operacao);
-		operacao.setBackup(backup);
+				.add(new Operacao(	backup,
+									Timestamp.from(LocalDateTime.now()
+																.atZone(ZoneId.systemDefault())
+																.toInstant()),
+									Operacao.Status.AGENDADO,
+									null));
 
 		proprietario.getBackups()
 					.add(backup);

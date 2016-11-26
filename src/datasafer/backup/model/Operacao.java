@@ -27,6 +27,15 @@ import datasafer.backup.dao.utility.Carregador.FormulaHql;
 @Entity
 public class Operacao {
 
+	public Operacao() {}
+
+	public Operacao(Backup backup, Timestamp data, Status status, Long tamanho) {
+		this.backup = backup;
+		this.data = data;
+		this.status = status;
+		this.tamanho = tamanho;
+	}
+
 	public enum Status {
 		SUCESSO("Sucesso"),
 		EXECUTANDO("Executando"),
@@ -84,8 +93,8 @@ public class Operacao {
 	@JsonProperty("nome_backup")
 	@Transient
 	@FormulaHql(identificador = "id",
-				formula = "SELECT operacao.backup.nome FROM Operacao operacao"
-						+ "WHERE operacao.id = :id")
+				formula = "SELECT operacao.backup.nome FROM Operacao operacao "
+						+ "WHERE operacao.id = :id ")
 	private String nomeBackup = null;
 
 	public String getNomeBackup() {

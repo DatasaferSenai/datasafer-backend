@@ -25,7 +25,16 @@ public class ExcecoesRest extends ResponseEntityExceptionHandler {
 																			final HttpStatus status,
 																			final WebRequest request) {
 
-		return null;
+		String response = null;
+		try {
+			response = new JSONObject().put("erro", "Método " + ex.getMethod() + " não suportado").toString();
+		} catch (JSONException e) {
+			response = null;
+		}
+
+		headers.setContentType(MediaType.APPLICATION_JSON_UTF8);
+
+		return new ResponseEntity<>(response, headers, HttpStatus.METHOD_NOT_ALLOWED);
 	}
 
 	@ExceptionHandler(value = { DataIntegrityViolationException.class })
