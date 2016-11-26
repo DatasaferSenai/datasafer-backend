@@ -96,7 +96,7 @@ public class Operacao {
 				formula = "SELECT operacao.backup.nome FROM Operacao operacao "
 						+ "WHERE operacao.id = :id ")
 	private String nomeBackup = null;
-c
+
 	public String getNomeBackup() {
 		return nomeBackup;
 	}
