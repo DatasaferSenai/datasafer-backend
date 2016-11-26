@@ -19,7 +19,6 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import datasafer.backup.dao.BackupDao;
 import datasafer.backup.dao.EstacaoDao;
-import datasafer.backup.dao.OperacaoDao;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
@@ -31,8 +30,6 @@ public class ValidadorFilter implements Filter {
 	EstacaoDao estacaoDao;
 	@Autowired
 	BackupDao backupDao;
-	@Autowired
-	OperacaoDao operacaoDao;
 
 	@Override
 	public void doFilter(	ServletRequest req,

@@ -48,52 +48,6 @@ public class BackupDao {
 	}
 
 	@Transactional
-	public void insereBackup(	Usuario solicitante,
-								Usuario proprietario,
-								Estacao estacao,
-								Backup backup) {
-
-		solicitante = (solicitante == null	? null
-											: manager.find(Usuario.class, solicitante.getId()));
-		proprietario = manager.find(Usuario.class, proprietario.getId());
-		estacao = manager.find(Estacao.class, estacao.getId());
-
-		Backup existente = this.obtemBackup(proprietario, estacao, backup.getNome());
-		if (existente != null) {
-			existente	.getRegistros()
-						.addAll(modificador.modifica(solicitante, existente, backup));
-			backup = existente;
-		}
-		// else {
-		// backup .getRegistros()
-		// .addAll(modificador.modifica(solicitante, backup, null));
-		// }
-
-		Operacao operacao = new Operacao();
-		operacao.setData(Timestamp.from(LocalDateTime	.now()
-														.atZone(ZoneId.systemDefault())
-														.toInstant()));
-		operacao.setStatus(Operacao.Status.AGENDADO);
-		operacao.setTamanho(null);
-		// operacao.getRegistros().addAll(modificador.modifica(solicitante,
-		// operacao, null));
-
-		backup	.getOperacoes()
-				.add(operacao);
-		operacao.setBackup(backup);
-
-		proprietario.getBackups()
-					.add(backup);
-		backup.setProprietario(proprietario);
-
-		estacao	.getBackups()
-				.add(backup);
-		backup.setEstacao(estacao);
-
-		manager.persist(backup);
-	}
-
-	@Transactional
 	public void modificaBackup(	Usuario solicitante,
 								Backup backup,
 								Backup valores) {
@@ -197,6 +151,25 @@ public class BackupDao {
 
 		return resultadosProprietario.isEmpty()	? null
 												: resultadosProprietario.get(0);
+	}
+
+	@Transactional
+	public void insereOperacao(	Usuario solicitante,
+								Backup backup,
+								Operacao operacao) {
+
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
+		backup = manager.find(Backup.class, backup.getId());
+
+		// operacao.getRegistros()
+		// .addAll(modificador.modifica(solicitante, operacao, null));
+
+		backup	.getOperacoes()
+				.add(operacao);
+		operacao.setBackup(backup);
+
+		manager.persist(operacao);
 	}
 
 }

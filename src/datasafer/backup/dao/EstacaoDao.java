@@ -1,5 +1,8 @@
 package datasafer.backup.dao;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +25,9 @@ public class EstacaoDao {
 
 	@PersistenceContext
 	private EntityManager manager;
+
+	@Autowired
+	private BackupDao backupDao;
 
 	@Autowired
 	private Modificador modificador;
@@ -59,30 +65,6 @@ public class EstacaoDao {
 
 		estacao	.getRegistros()
 				.addAll(modificador.modifica(solicitante, estacao, valores));
-
-		manager.persist(estacao);
-	}
-
-	@Transactional
-	public void insereEstacao(	Usuario solicitante,
-								Usuario gerenciador,
-								Estacao estacao) {
-
-		solicitante = (solicitante == null	? null
-											: manager.find(Usuario.class, solicitante.getId()));
-		gerenciador = manager.find(Usuario.class, gerenciador.getId());
-
-		Estacao existente = this.obtemEstacao(estacao.getNome());
-		if (existente != null) {
-			throw new DataIntegrityViolationException("Estação '" + estacao.getNome() + "' já existente");
-		}
-
-		// estacao .getRegistros()
-		// .addAll(modificador.modifica(solicitante, estacao, null));
-
-		gerenciador	.getEstacoes()
-					.add(estacao);
-		estacao.setGerenciador(gerenciador);
 
 		manager.persist(estacao);
 	}
@@ -188,6 +170,52 @@ public class EstacaoDao {
 
 		return resultadosGerenciador.isEmpty()	? null
 												: resultadosGerenciador.get(0);
+	}
+
+	@Transactional
+	public void insereBackup(	Usuario solicitante,
+								Usuario proprietario,
+								Estacao estacao,
+								Backup backup) {
+
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
+		proprietario = manager.find(Usuario.class, proprietario.getId());
+		estacao = manager.find(Estacao.class, estacao.getId());
+
+		Backup existente = backupDao.obtemBackup(proprietario, estacao, backup.getNome());
+		if (existente != null) {
+			existente	.getRegistros()
+						.addAll(modificador.modifica(solicitante, existente, backup));
+			backup = existente;
+		}
+		// else {
+		// backup .getRegistros()
+		// .addAll(modificador.modifica(solicitante, backup, null));
+		// }
+
+		Operacao operacao = new Operacao();
+		operacao.setData(Timestamp.from(LocalDateTime	.now()
+														.atZone(ZoneId.systemDefault())
+														.toInstant()));
+		operacao.setStatus(Operacao.Status.AGENDADO);
+		operacao.setTamanho(null);
+		// operacao.getRegistros().addAll(modificador.modifica(solicitante,
+		// operacao, null));
+
+		backup	.getOperacoes()
+				.add(operacao);
+		operacao.setBackup(backup);
+
+		proprietario.getBackups()
+					.add(backup);
+		backup.setProprietario(proprietario);
+
+		estacao	.getBackups()
+				.add(backup);
+		backup.setEstacao(estacao);
+
+		manager.persist(backup);
 	}
 
 }
