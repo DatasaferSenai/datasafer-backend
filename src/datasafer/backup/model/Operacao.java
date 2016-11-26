@@ -41,6 +41,7 @@ public class Operacao {
 		EXECUTADO("Executado"),
 		EXECUTANDO("Executando"),
 		FALHA("Falha"),
+		RESTAURAR("Restaurar"),
 		RESTAURANDO("Restaurando"),
 		RESTAURADO("Restaurado");
 
