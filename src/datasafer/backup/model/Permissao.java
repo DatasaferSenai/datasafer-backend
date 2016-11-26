@@ -41,12 +41,12 @@ public class Permissao {
 	private Long id = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "atribuidor_id")
 	private Usuario atribuidor = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "recebedor_id")
 	private Usuario recebedor = null;
 
@@ -61,7 +61,7 @@ public class Permissao {
 
 	@JsonProperty
 	@Column(nullable = false, columnDefinition = "TINYINT(1)")
-	private boolean permitido = false;
+	private Boolean permitido = false;
 
 	public boolean isPermitido() {
 		return permitido;

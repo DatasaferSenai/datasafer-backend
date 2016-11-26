@@ -40,7 +40,6 @@ public class ValidadorFilter implements Filter {
 							FilterChain chain)
 												throws IOException, ServletException, DataIntegrityViolationException {
 
-
 		HttpServletRequest request = (HttpServletRequest) req;
 		HttpServletResponse response = (HttpServletResponse) resp;
 
@@ -74,6 +73,7 @@ public class ValidadorFilter implements Filter {
 
 			if (request.getHeader("estacao") != null) {
 				estacao = estacaoDao.obtemEstacao((String) request.getHeader("estacao"));
+				estacao.setGerenciador(usuario);
 			}
 			if (estacao == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value(), "Estação inválida ou não encontrada");
@@ -100,6 +100,7 @@ public class ValidadorFilter implements Filter {
 
 			if (request.getHeader("backup") != null) {
 				backup = backupDao.obtemBackup(usuario, estacao, (String) request.getHeader("backup"));
+				backup.setProprietario(usuario);
 			}
 			if (backup == null) {
 				response.sendError(HttpStatus.NOT_FOUND.value(), "Backup inválido ou não encontrado");

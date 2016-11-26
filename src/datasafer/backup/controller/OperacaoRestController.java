@@ -25,16 +25,11 @@ public class OperacaoRestController {
 	@Autowired
 	private OperacaoDao operacaoDao;
 
-	@RequestMapping(value = "/operacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obtem(@RequestAttribute Operacao operacao) {
-
-		return new ResponseEntity<>(operacao, HttpStatus.OK);
-	}
-
 	@RequestMapping(value = "/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> insere(	@RequestAttribute Usuario solicitante,
-											@RequestAttribute Backup backup,
-											@RequestBody Operacao operacao) {
+	public ResponseEntity<Object> insereOperacao(	@RequestAttribute Usuario solicitante,
+	                                             	@RequestAttribute Usuario usuario,
+													@RequestAttribute Backup backup,
+													@RequestBody Operacao operacao) {
 
 		operacaoDao.insereOperacao(solicitante, backup, operacao);
 
@@ -42,12 +37,12 @@ public class OperacaoRestController {
 					.equals(Operacao.Status.SUCESSO)
 				|| operacao	.getStatus()
 							.equals(Operacao.Status.FALHA)) {
-			NotificadorOneSignal.envia(	usuarioDao.obtemNotificacoes(solicitante),
-								"O backup " + backup.getNome() + " do " + backup.getEstacao()
-																				.getNome()
-										+ (operacao	.getStatus()
-													.equals(Operacao.Status.SUCESSO)	? " foi concluído com " + operacao.getStatus()
-																						: " falhou"));
+			NotificadorOneSignal.envia(	usuarioDao.obtemNotificacoes(backup.getProprietario()),
+										"O backup " + backup.getNome() + " do " + backup.getEstacao()
+																						.getNome()
+												+ (operacao	.getStatus()
+															.equals(Operacao.Status.SUCESSO)	? " foi concluído com " + operacao.getStatus()
+																								: " falhou"));
 		}
 
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);

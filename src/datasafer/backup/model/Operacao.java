@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import datasafer.backup.dao.utility.Carregador.FormulaHql;
+
 @Entity
 public class Operacao {
 
@@ -51,7 +53,7 @@ public class Operacao {
 	private Long id = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "backup_id")
 	private Backup backup = null;
 
@@ -74,22 +76,17 @@ public class Operacao {
 	@Column(nullable = true)
 	private Long tamanho = null;
 
-	@JsonProperty("nome_backup")
-	@Transient
-	private String nomeBackup = null;
-
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "operacao_id")
 	private List<Permissao> permissoes = new ArrayList<Permissao>();
 
-	public List<Permissao> getPermissoes() {
-		return permissoes;
-	}
-
-	public void setPermissoes(List<Permissao> permissoes) {
-		this.permissoes = permissoes;
-	}
+	@JsonProperty("nome_backup")
+	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT operacao.backup.nome FROM Operacao operacao"
+						+ "WHERE operacao.id = :id")
+	private String nomeBackup = null;
 
 	public String getNomeBackup() {
 		return nomeBackup;
@@ -97,6 +94,14 @@ public class Operacao {
 
 	public void setNomeBackup(String nomeBackup) {
 		this.nomeBackup = nomeBackup;
+	}
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
 	}
 
 	public Long getId() {

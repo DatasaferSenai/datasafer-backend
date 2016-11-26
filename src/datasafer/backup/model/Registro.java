@@ -37,7 +37,7 @@ public class Registro {
 	private Long id = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "solicitante_id")
 	private Usuario solicitante = null;
 

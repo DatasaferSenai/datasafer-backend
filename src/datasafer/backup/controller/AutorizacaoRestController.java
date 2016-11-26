@@ -21,7 +21,6 @@ import datasafer.backup.dao.AutorizacaoDao;
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.model.Autorizacao;
 import datasafer.backup.model.Usuario;
-import datasafer.backup.model.Usuario.Status;
 
 @RestController
 public class AutorizacaoRestController {
@@ -43,7 +42,7 @@ public class AutorizacaoRestController {
 			usuario.setSenha(jobj.getString("senha"));
 
 			Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
-			if (existente == null || existente.getStatus() == Usuario.Status.INATIVO) {
+			if (existente == null || !existente.getStatus().equals(Usuario.Status.ATIVO)) {
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
 											HttpStatus.UNAUTHORIZED);
@@ -56,7 +55,7 @@ public class AutorizacaoRestController {
 											HttpStatus.UNAUTHORIZED);
 			}
 
-			if (logado.getStatus() != Status.ATIVO) {
+			if (!logado.getStatus().equals(Usuario.Status.ATIVO)) {
 				return new ResponseEntity<>(new JSONObject().put("erro", logado.getStatus())
 															.toString(),
 											HttpStatus.FORBIDDEN);

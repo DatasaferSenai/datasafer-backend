@@ -26,7 +26,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-@JsonPropertyOrder({ "login_proprietario", "nome", "descricao", "inicio", "intervalo", "pasta", "ultimaOperacao", "status_operacoes" })
+import datasafer.backup.dao.utility.Carregador.FormulaHql;
+
 @Entity
 public class Backup {
 
@@ -41,7 +42,7 @@ public class Backup {
 	private Usuario proprietario = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
 	private Estacao estacao = null;
 
@@ -77,18 +78,33 @@ public class Backup {
 
 	@JsonProperty(value = "ultima_operacao", access = Access.READ_ONLY)
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT operacao FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE ultimaOperacao.backup = operacao.backup)")
 	private Operacao ultimaOperacao = null;
 
 	@JsonProperty(value = "status_operacoes", access = Access.READ_ONLY)
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT operacao.status, COUNT(operacao.status) FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id "
+						+ "GROUP BY operacao.status ")
 	private Map<Operacao.Status, Long> statusOperacoes = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
 	@Transient
-	private long armazenamentoOcupado = 0L;
+	@FormulaHql(identificador = "id",
+				formula = "SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+						+ "WHERE operacao.backup.id = :id "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = 'SUCESSO') ")
+	private Long armazenamentoOcupado = 0L;
 
 	@JsonProperty("nome_estacao")
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT backup.proprietario.login FROM Backup backup "
+						+ "WHERE backup.id = :id")
 	private String nomeEstacao = null;
 
 	@JsonIgnore

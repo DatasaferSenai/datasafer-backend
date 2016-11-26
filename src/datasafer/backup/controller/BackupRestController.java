@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import datasafer.backup.dao.BackupDao;
+import datasafer.backup.dao.utility.Carregador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
@@ -20,6 +21,8 @@ public class BackupRestController {
 
 	@Autowired
 	private BackupDao backupDao;
+	@Autowired
+	private Carregador carregador;
 
 	@RequestMapping(value = "/backup", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insereBackup(	@RequestAttribute Usuario solicitante,
@@ -36,7 +39,7 @@ public class BackupRestController {
 												@RequestAttribute Estacao estacao,
 												@RequestAttribute Backup backup) {
 
-		return new ResponseEntity<>(backupDao.carregaInfos(backup), HttpStatus.OK);
+		return new ResponseEntity<>(carregador.carregaTransientes(backup), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/backup/operacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -44,6 +47,6 @@ public class BackupRestController {
 													@RequestAttribute Estacao estacao,
 													@RequestAttribute Backup backup) {
 
-		return new ResponseEntity<>(backupDao.obtemOperacoes(backup), HttpStatus.OK);
+		return new ResponseEntity<>(carregador.carregaTransientes(backupDao.obtemOperacoes(backup)), HttpStatus.OK);
 	}
 }

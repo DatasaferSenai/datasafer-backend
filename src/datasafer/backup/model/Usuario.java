@@ -32,25 +32,23 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
+import datasafer.backup.dao.utility.Carregador.FormulaHql;
 import datasafer.backup.model.utility.Validador.Email;
 import datasafer.backup.model.utility.Validador.Senha;
 
-@JsonAutoDetect(setterVisibility = Visibility.DEFAULT)
 @Entity
 public class Usuario {
 
 	public enum Status {
 		ATIVO("Usuário ativo"),
 		INATIVO("Usuário inativo"),
-		SUSPENSO_ADMINISTRADOR("Suspenso pelo administrador"),
-		SUSPENSO_TENTATIVAS("Suspenso por excesso de tentativas");
+		SUSPENSO_ADMINISTRADOR("Usuário suspenso pelo administrador"),
+		SUSPENSO_TENTATIVAS("Usuário suspenso por excesso de tentativas");
 
 		private String descricao;
 
@@ -70,7 +68,7 @@ public class Usuario {
 	private Long id = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "superior_id")
 	private Usuario superior = null;
 
@@ -123,14 +121,12 @@ public class Usuario {
 	@NotNull(message = "O nome não pode ser nulo")
 	private String nome = null;
 
-	// @Validar
 	@JsonProperty
 	@Email
 	@Size(max = 50, message = "O email deve ter máximo 50 caracteres")
 	@NotNull(message = "O email não pode ser nulo")
 	private String email = null;
 
-	// @Validar
 	@JsonProperty
 	@Min(value = 0, message = "O armazenamento dever ser no mínimo 0")
 	@NotNull(message = "O armazenamento não pode ser nulo")
@@ -138,15 +134,24 @@ public class Usuario {
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
 	@Transient
-	private long armazenamentoOcupado = 0L;
+	@FormulaHql(identificador = "id",
+				formula = "SELECT SUM(operacao.tamanho) FROM Operacao operacao "
+						+ "WHERE operacao.backup.proprietario.id = :id "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = 'SUCESSO') ")
+	private Long armazenamentoOcupado = 0L;
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
+						+ "WHERE operacao.backup.proprietario.id = :id "
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
+						+ "GROUP BY operacao.status ")
 	private Map<Operacao.Status, Long> statusBackups = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@Column
-	private int tentativas = 0;
+	private Integer tentativas = 0;
 
 	@JsonProperty(access = Access.READ_ONLY)
 	@JsonFormat(pattern = "dd/MM/yyyy HH:mm:ss")
@@ -159,6 +164,9 @@ public class Usuario {
 
 	@JsonProperty("login_superior")
 	@Transient
+	@FormulaHql(identificador = "id",
+				formula = "SELECT u.superior.login FROM Usuario u "
+						+ "WHERE u.id = :id ")
 	private String loginSuperior = null;
 
 	@JsonIgnore

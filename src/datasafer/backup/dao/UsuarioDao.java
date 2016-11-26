@@ -1,6 +1,5 @@
 package datasafer.backup.dao;
 
-import java.util.Iterator;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -16,7 +15,6 @@ import datasafer.backup.dao.utility.Modificador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Notificacao;
-import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
@@ -59,62 +57,10 @@ public class UsuarioDao {
 											: resultadosSuperior.get(0);
 	}
 
-	// @Transactional
-	public Usuario carregaInfos(Usuario proprietario) {
-
-		List<Long> resultadosArmazenamentoOcupado = manager	.createQuery(
-																		"SELECT SUM(operacao.tamanho) FROM Operacao operacao "
-																				+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-																				+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = :status_operacao) ",
-																		Long.class)
-															.setParameter("id_proprietario", proprietario.getId())
-															.setParameter("status_operacao", Operacao.Status.SUCESSO)
-															.getResultList();
-
-		proprietario.setArmazenamentoOcupado(
-												!resultadosArmazenamentoOcupado.isEmpty()
-														&& resultadosArmazenamentoOcupado.get(0) != null	? resultadosArmazenamentoOcupado.get(0)
-																											: 0L);
-
-		@SuppressWarnings("unchecked")
-		List<Object> resultadosStatusBackups = manager	.createQuery(
-																	"SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-																			+ "WHERE operacao.backup.proprietario.id = :id_proprietario "
-																			+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
-																			+ "GROUP BY operacao.status ")
-														.setParameter("id_proprietario", proprietario.getId())
-														.getResultList();
-
-		for (Iterator<Object> iterator = resultadosStatusBackups.iterator(); iterator.hasNext();) {
-			Object obj[] = (Object[]) iterator.next();
-			proprietario.getStatusBackups()
-						.put((Operacao.Status) obj[0], (Long) obj[1]);
-		}
-
-		List<String> resultadosLoginSuperior = manager	.createQuery(
-																	"SELECT u.superior.login FROM Usuario u "
-																			+ "WHERE u.id = :id_usuario ",
-																	String.class)
-														.setParameter("id_usuario", proprietario.getId())
-														.getResultList();
-
-		proprietario.setLoginSuperior(resultadosLoginSuperior.isEmpty() ? null : resultadosLoginSuperior.get(0));
-
-		return proprietario;
-	}
-
-	// @Transactional
-	public List<Usuario> carregaInfos(List<Usuario> usuarios) {
-		for (Usuario usuario : usuarios) {
-			this.carregaInfos(usuario);
-		}
-		return usuarios;
-	}
-
 	@Transactional
 	public void insereUsuario(	Usuario solicitante,
 								Usuario superior,
-								Usuario usuario) throws DataIntegrityViolationException {
+								Usuario usuario) {
 
 		if (solicitante != null && !permissaoDao.temPermissao(solicitante, superior, "colaboradores", Permissao.Tipo.INSERIR)) {
 			throw new AccessDeniedException("O solicitante não tem permissão para inserir colaboradores neste usuário");
@@ -142,7 +88,7 @@ public class UsuarioDao {
 	@Transactional
 	public void modificaUsuario(Usuario solicitante,
 								Usuario usuario,
-								Usuario valores) throws DataIntegrityViolationException {
+								Usuario valores) {
 
 		solicitante = (solicitante == null	? null
 											: manager.find(Usuario.class, solicitante.getId()));

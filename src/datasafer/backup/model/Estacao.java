@@ -32,7 +32,7 @@ public class Estacao {
 	private Long id = null;
 
 	@JsonIgnore
-	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "gerenciador_id")
 	private Usuario gerenciador = null;
 

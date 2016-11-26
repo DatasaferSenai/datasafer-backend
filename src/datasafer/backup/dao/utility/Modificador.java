@@ -52,36 +52,27 @@ public class Modificador {
 					continue;
 				}
 
-				if (solicitante != null && !permissaoDao.temPermissao(solicitante, destino, f.getName(), Permissao.Tipo.EDITAR)) {
-					throw new AccessDeniedException("O solicitante não tem permissão para editar o atributo " + f.getName());
-				}
-
 				Object valorDestino = new PropertyDescriptor(f.getName(), destino.getClass()).getReadMethod().invoke(destino);
-				if (origem != null) {
-					Object valorOrigem = new PropertyDescriptor(f.getName(), origem.getClass()).getReadMethod().invoke(origem);
-					if (valorOrigem != null && !valorOrigem.equals(valorDestino)) {
-						registros.add(new Registro(	solicitante,
-													Timestamp.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()),
-													property != null && !property.value().isEmpty() ? property.value() : f.getName(),
-													valorDestino == null	? null
-																			: valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)
-																											: valorDestino.toString(),
-													valorOrigem == null	? null
-																		: valorOrigem instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorOrigem)
-																										: valorOrigem.toString()));
+				Object valorOrigem = new PropertyDescriptor(f.getName(), origem.getClass()).getReadMethod().invoke(origem);
+				if (valorOrigem != null && !valorOrigem.equals(valorDestino)) {
 
-						new PropertyDescriptor(f.getName(), destino.getClass()).getWriteMethod().invoke(destino, valorOrigem);
+					if (solicitante != null && !permissaoDao.temPermissao(solicitante, destino, f.getName(), Permissao.Tipo.EDITAR)) {
+						throw new AccessDeniedException("O solicitante não tem permissão para editar o atributo " + f.getName());
 					}
-				} else {
-					if (valorDestino != null) {
-						registros.add(new Registro(	solicitante,
-													Timestamp.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()),
-													property != null && !property.value().isEmpty() ? property.value() : f.getName(),
-													null,
-													valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)
-																					: valorDestino.toString()));
-					}
+
+					registros.add(new Registro(	solicitante,
+												Timestamp.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()),
+												property != null && !property.value().isEmpty() ? property.value() : f.getName(),
+												valorDestino == null	? null
+																		: valorDestino instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorDestino)
+																										: valorDestino.toString(),
+												valorOrigem == null	? null
+																	: valorOrigem instanceof Date	? new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(valorOrigem)
+																									: valorOrigem.toString()));
+
+					new PropertyDescriptor(f.getName(), destino.getClass()).getWriteMethod().invoke(destino, valorOrigem);
 				}
+
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {
 				e.printStackTrace();
 				continue;

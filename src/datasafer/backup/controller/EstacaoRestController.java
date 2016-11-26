@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import datasafer.backup.dao.BackupDao;
 import datasafer.backup.dao.EstacaoDao;
+import datasafer.backup.dao.utility.Carregador;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 
@@ -21,13 +21,13 @@ public class EstacaoRestController {
 	@Autowired
 	private EstacaoDao estacaoDao;
 	@Autowired
-	private BackupDao backupDao;
+	private Carregador carregador;
 
 	@RequestMapping(value = "/estacao", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtem(@RequestAttribute Usuario usuario,
 										@RequestAttribute Estacao estacao) {
 
-		return new ResponseEntity<>(estacaoDao.carregaInfos(usuario, estacao), HttpStatus.OK);
+		return new ResponseEntity<>(this.estacaoDao.carregaInfos(usuario, estacao), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/estacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -35,7 +35,7 @@ public class EstacaoRestController {
 											@RequestAttribute Usuario usuario,
 											@RequestBody Estacao estacao) {
 
-		estacaoDao.insereEstacao(solicitante, usuario, estacao);
+		this.estacaoDao.insereEstacao(solicitante, usuario, estacao);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 
@@ -43,7 +43,7 @@ public class EstacaoRestController {
 	public ResponseEntity<Object> listarBackups(@RequestAttribute Usuario usuario,
 												@RequestAttribute Estacao estacao) {
 
-		return new ResponseEntity<>(backupDao.carregaInfos(estacaoDao.obtemBackups(usuario, estacao)), HttpStatus.OK);
+		return new ResponseEntity<>(this.carregador.carregaTransientes(this.estacaoDao.obtemBackups(usuario, estacao)), HttpStatus.OK);
 	}
 
 }
