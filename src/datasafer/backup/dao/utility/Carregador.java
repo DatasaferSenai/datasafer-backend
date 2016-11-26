@@ -93,7 +93,7 @@ public class Carregador {
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {
 			e.printStackTrace();
 		}
-		throw new IllegalArgumentException();
+		throw new IllegalArgumentException(nome);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -90,4 +90,7 @@ public class UsuarioRestController {
 		usuarioDao.insereEstacao(solicitante, usuario, estacao);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
+	
+	
+	
 }
