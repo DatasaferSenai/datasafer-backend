@@ -48,9 +48,6 @@ public class Modificador {
 				}
 
 				JsonProperty property = f.getAnnotation(JsonProperty.class);
-				if (property != null && property.access().equals(Access.READ_ONLY)) {
-					continue;
-				}
 
 				Object valorDestino = new PropertyDescriptor(f.getName(), destino.getClass()).getReadMethod().invoke(destino);
 				Object valorOrigem = new PropertyDescriptor(f.getName(), origem.getClass()).getReadMethod().invoke(origem);

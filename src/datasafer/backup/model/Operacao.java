@@ -37,11 +37,11 @@ public class Operacao {
 	}
 
 	public enum Status {
-		SUCESSO("Sucesso"),
+		AGENDADO("Agendado"),
+		EXECUTADO("Executado"),
 		EXECUTANDO("Executando"),
 		FALHA("Falha"),
-		AGENDADO("Agendado"),
-		EXCLUIDO("Excluído"),
+		RESTAURANDO("Restaurando"),
 		RESTAURADO("Restaurado");
 
 		private String descricao;
@@ -82,7 +82,7 @@ public class Operacao {
 	private Status status = null;
 
 	@JsonProperty
-	@Column(nullable = true)
+	@Column(nullable = false)
 	private Long tamanho = null;
 
 	@JsonIgnore

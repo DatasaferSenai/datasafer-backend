@@ -96,7 +96,7 @@ public class Backup {
 	@FormulaHql(identificador = "id",
 				formula = "SELECT SUM(operacao.tamanho) FROM Operacao operacao "
 						+ "WHERE operacao.backup.id = :id "
-						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = 'SUCESSO') ")
+						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup AND ultimaOperacao.status = 'EXECUTADO') ")
 	private Long armazenamentoOcupado = 0L;
 
 	@JsonProperty("nome_estacao")

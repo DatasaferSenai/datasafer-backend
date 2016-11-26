@@ -54,14 +54,14 @@ public class BackupRestController {
 		backupDao.insereOperacao(solicitante, backup, operacao);
 
 		if (operacao.getStatus()
-					.equals(Operacao.Status.SUCESSO)
+					.equals(Operacao.Status.EXECUTADO)
 				|| operacao	.getStatus()
 							.equals(Operacao.Status.FALHA)) {
 			NotificadorOneSignal.envia(	usuarioDao.obtemNotificacoes(backup.getProprietario()),
 										"O backup " + backup.getNome() + " do " + backup.getEstacao()
 																						.getNome()
 												+ (operacao	.getStatus()
-															.equals(Operacao.Status.SUCESSO)	? " foi concluído com " + operacao.getStatus()
+															.equals(Operacao.Status.EXECUTADO)	? " foi concluído com " + operacao.getStatus()
 																								: " falhou"));
 		}
 

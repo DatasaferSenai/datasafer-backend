@@ -28,7 +28,7 @@ public class UsuarioDao {
 	private Modificador modificador;
 	@Autowired
 	private PermissaoDao permissaoDao;
-	@Autowired 
+	@Autowired
 	private EstacaoDao estacaoDao;
 
 	// @Transactional
@@ -196,5 +196,4 @@ public class UsuarioDao {
 
 		manager.persist(estacao);
 	}
-
 }

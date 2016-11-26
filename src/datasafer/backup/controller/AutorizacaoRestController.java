@@ -3,16 +3,17 @@ package datasafer.backup.controller;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,24 +33,31 @@ public class AutorizacaoRestController {
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
 					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> logar(HttpServletRequest req,
-										@RequestBody String corpo_usuario) {
+	public ResponseEntity<Object> login(HttpServletRequest req,
+										@RequestBody Usuario usuario) {
+
 		try {
-			JSONObject jobj = new JSONObject(corpo_usuario);
-
-			Usuario usuario = new Usuario();
-			usuario.setLogin(jobj.getString("login"));
-			usuario.setSenha(jobj.getString("senha"));
-
-			Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
-			if (existente == null || !existente.getStatus().equals(Usuario.Status.ATIVO)) {
-				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
-															.toString(),
-											HttpStatus.UNAUTHORIZED);
-			}
 
 			Usuario logado = usuarioDao.login(usuario);
 			if (logado == null) {
+
+				Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
+				if (existente != null) {
+					Integer tentativas = existente.getTentativas();
+					if (tentativas < 3) {
+						existente.setTentativas(++tentativas);
+						existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
+																					.atZone(ZoneId.systemDefault())
+																					.toInstant()));
+
+						usuarioDao.modificaUsuario(null, existente, existente);
+					}
+					if (tentativas >= 3) {
+						existente.setStatus(Usuario.Status.SUSPENSO_TENTATIVAS);
+						usuarioDao.modificaUsuario(null, existente, existente);
+					}
+				}
+
 				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
 															.toString(),
 											HttpStatus.UNAUTHORIZED);
@@ -61,35 +69,32 @@ public class AutorizacaoRestController {
 											HttpStatus.FORBIDDEN);
 			}
 
-			int tentativas = existente.getTentativas();
-			Date ultimaTentativa = existente.getUltimaTentativa();
-			if (ultimaTentativa == null || tentativas < 3) {
-
-				Autorizacao token = tokenDao.emiteAutorizacao(existente, req.getRemoteAddr() != null	? req.getRemoteAddr()
-																										: req.getLocalAddr());
-
-				existente.setTentativas(0);
-				existente.setUltimaTentativa(null);
-
-				return new ResponseEntity<>(token, HttpStatus.OK);
-			} else {
-
-				existente.setTentativas(++tentativas);
-				existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
-																			.atZone(ZoneId.systemDefault())
-																			.toInstant()));
-
-				usuarioDao.modificaUsuario(null, usuario, usuario);
-
-				return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
-															.toString(),
-											HttpStatus.UNAUTHORIZED);
+			if (logado.getTentativas() > 0) {
+				logado.setTentativas(0);
+				usuarioDao.modificaUsuario(null, logado, logado);
 			}
 
-		} catch (Exception e) {
+			Autorizacao token = tokenDao.emiteAutorizacao(logado, req.getRemoteAddr() != null	? req.getRemoteAddr()
+																								: req.getLocalAddr());
+			return new ResponseEntity<>(token, HttpStatus.OK);
+
+		} catch (JSONException e) {
 			e.printStackTrace();
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+
+	}
+
+	@RequestMapping(value = "/logout", method = RequestMethod.DELETE,
+					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Void> logout(	HttpServletRequest req,
+										@RequestHeader("Authorization") String token_autorizacao) {
+
+		tokenDao.revogaToken(tokenDao.obtemAutorizacao(	req.getRemoteAddr() != null	? req.getRemoteAddr()
+																					: req.getLocalAddr(),
+														token_autorizacao));
+
+		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 
 }
