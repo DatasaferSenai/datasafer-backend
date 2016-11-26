@@ -51,7 +51,7 @@ public class Estacao {
 
 	@JsonProperty
 	@Column(length = 100, nullable = true)
-	private String descricao = null;
+	private String descricao = "";
 
 	@JsonProperty(value = "status_backups", access = Access.READ_ONLY)
 	@Transient

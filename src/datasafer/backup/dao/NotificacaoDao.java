@@ -38,13 +38,13 @@ public class NotificacaoDao {
 	}
 
 	@Transactional
-	public void limpaNotificacoes() {
+	public void limpaNotificacoes(Integer dias) {
 
 		manager	.createQuery("DELETE "
 				+ "FROM Notificacao n "
 				+ "WHERE n.ultimaNotificacao IS NOT NULL "
 				+ "AND n.ultimaNotificacao < :data ")
-				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(30)
+				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(dias)
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()))
 				.executeUpdate();

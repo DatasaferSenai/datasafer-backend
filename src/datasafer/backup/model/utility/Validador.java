@@ -11,9 +11,7 @@ import javax.validation.constraints.Pattern;
 
 public class Validador {
 
-	@Pattern.List({
-					@Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
-	})
+	@Pattern(regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?")
 	@Constraint(validatedBy = {})
 	@Target({	ElementType.METHOD,
 				ElementType.FIELD,
@@ -28,21 +26,9 @@ public class Validador {
 		Class<?>[] groups() default {};
 
 		Class<? extends Payload>[] payload() default {};
-
-		@Target({	ElementType.METHOD,
-					ElementType.FIELD,
-					ElementType.ANNOTATION_TYPE,
-					ElementType.CONSTRUCTOR,
-					ElementType.PARAMETER })
-		@Retention(RetentionPolicy.RUNTIME)
-		@interface List {
-			Email[] value();
-		}
 	}
 
-	@Pattern.List({
-					@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
-	})
+	@Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,}$")
 	@Constraint(validatedBy = {})
 	@Target({	ElementType.METHOD,
 				ElementType.FIELD,
@@ -57,18 +43,6 @@ public class Validador {
 		Class<?>[] groups() default {};
 
 		Class<? extends Payload>[] payload() default {};
-
-		@Target({	ElementType.METHOD,
-					ElementType.FIELD,
-					ElementType.ANNOTATION_TYPE,
-					ElementType.CONSTRUCTOR,
-					ElementType.PARAMETER })
-		@Retention(RetentionPolicy.RUNTIME)
-		@interface List {
-			Senha[] value();
-		}
 	}
 
-	
-	
 }

@@ -30,10 +30,11 @@ public class NotificadorOneSignal {
 																					RequestEntity	.method(HttpMethod.POST, new URI(APP_URL))
 																									.header("Authorization", "Basic " + APP_KEY)
 																									.contentType(MediaType.APPLICATION_JSON_UTF8)
-																									.body(new JSONObject()	.put(					"app_id",
-																																					APP_ID)
+																									.body(new JSONObject()	.put(	"app_id",
+																																	APP_ID)
 																															.put(	"contents",
 																																	new Object() {
+																																		@SuppressWarnings("unused")
 																																		String en = mensagem;
 																																	})
 																															.put(	"include_ios_tokens",
@@ -48,10 +49,11 @@ public class NotificadorOneSignal {
 																					RequestEntity	.method(HttpMethod.POST, new URI(APP_URL))
 																									.header("Authorization", "Basic " + APP_KEY)
 																									.contentType(MediaType.APPLICATION_JSON_UTF8)
-																									.body(new JSONObject()	.put(					"app_id",
-																																					APP_ID)
+																									.body(new JSONObject()	.put(	"app_id",
+																																	APP_ID)
 																															.put(	"contents",
 																																	new Object() {
+																																		@SuppressWarnings("unused")
 																																		String en = mensagem;
 																																	})
 																															.put(	"include_player_ids",

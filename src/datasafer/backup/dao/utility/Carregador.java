@@ -102,12 +102,14 @@ public class Carregador {
 
 		try {
 			Object valor = this.obtemAtributo(objeto, nome);
-			if (Collection.class.isAssignableFrom(valor.getClass())) {
-				((Collection<Object>) new PropertyDescriptor(nome, objeto.getClass()).getReadMethod().invoke(objeto)).addAll((Collection<Object>) valor);
-			} else if (Map.class.isAssignableFrom(valor.getClass())) {
-				((Map<Object, Object>) new PropertyDescriptor(nome, objeto.getClass()).getReadMethod().invoke(objeto)).putAll((Map<Object, Object>) valor);
-			} else {
-				new PropertyDescriptor(nome, objeto.getClass()).getWriteMethod().invoke(objeto, valor);
+			if (valor != null) {
+				if (Collection.class.isAssignableFrom(valor.getClass())) {
+					((Collection<Object>) new PropertyDescriptor(nome, objeto.getClass()).getReadMethod().invoke(objeto)).addAll((Collection<Object>) valor);
+				} else if (Map.class.isAssignableFrom(valor.getClass())) {
+					((Map<Object, Object>) new PropertyDescriptor(nome, objeto.getClass()).getReadMethod().invoke(objeto)).putAll((Map<Object, Object>) valor);
+				} else {
+					new PropertyDescriptor(nome, objeto.getClass()).getWriteMethod().invoke(objeto, valor);
+				}
 			}
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {
 			e.printStackTrace();

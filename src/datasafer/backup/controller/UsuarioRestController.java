@@ -1,6 +1,11 @@
 package datasafer.backup.controller;
 
+import java.nio.file.AccessDeniedException;
+
+import javax.validation.ConstraintViolationException;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import datasafer.backup.dao.UsuarioDao;
 import datasafer.backup.dao.utility.Carregador;
+import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
 
 @RestController
@@ -26,7 +32,8 @@ public class UsuarioRestController {
 					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insereUsuario(@RequestAttribute Usuario solicitante,
 												@RequestAttribute Usuario usuario,
-												@RequestBody Usuario novo) {
+												@RequestBody Usuario novo)	throws DataIntegrityViolationException, AccessDeniedException,
+																			ConstraintViolationException {
 
 		usuarioDao.insereUsuario(solicitante, usuario, novo);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
@@ -60,7 +67,7 @@ public class UsuarioRestController {
 	@RequestMapping(value = "/usuario/usuarios", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> obtemUsuarios(@RequestAttribute Usuario usuario) {
 
-		return new ResponseEntity<>(carregador.carregaTransientes(usuario), HttpStatus.OK);
+		return new ResponseEntity<>(carregador.carregaTransientes(usuarioDao.obtemColaboradores(usuario)), HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/usuario/estacoes", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -73,5 +80,14 @@ public class UsuarioRestController {
 	public ResponseEntity<Object> obtemBackups(@RequestAttribute Usuario usuario) {
 
 		return new ResponseEntity<>(carregador.carregaTransientes(usuarioDao.obtemBackups(usuario)), HttpStatus.OK);
+	}
+
+	@RequestMapping(value = "/usuario/estacoes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Object> insereEstacao(@RequestAttribute Usuario solicitante,
+												@RequestAttribute Usuario usuario,
+												@RequestBody Estacao estacao) {
+
+		usuarioDao.insereEstacao(solicitante, usuario, estacao);
+		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
 }

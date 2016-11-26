@@ -28,6 +28,8 @@ public class UsuarioDao {
 	private Modificador modificador;
 	@Autowired
 	private PermissaoDao permissaoDao;
+	@Autowired 
+	private EstacaoDao estacaoDao;
 
 	// @Transactional
 	public Usuario obtemUsuario(String login_usuario) {
@@ -169,6 +171,30 @@ public class UsuarioDao {
 
 		return results.isEmpty()	? null
 									: results.get(0);
+	}
+
+	@Transactional
+	public void insereEstacao(	Usuario solicitante,
+								Usuario gerenciador,
+								Estacao estacao) {
+
+		solicitante = (solicitante == null	? null
+											: manager.find(Usuario.class, solicitante.getId()));
+		gerenciador = manager.find(Usuario.class, gerenciador.getId());
+
+		Estacao existente = estacaoDao.obtemEstacao(estacao.getNome());
+		if (existente != null) {
+			throw new DataIntegrityViolationException("Estação '" + estacao.getNome() + "' já existente");
+		}
+
+		// estacao .getRegistros()
+		// .addAll(modificador.modifica(solicitante, estacao, null));
+
+		gerenciador	.getEstacoes()
+					.add(estacao);
+		estacao.setGerenciador(gerenciador);
+
+		manager.persist(estacao);
 	}
 
 }

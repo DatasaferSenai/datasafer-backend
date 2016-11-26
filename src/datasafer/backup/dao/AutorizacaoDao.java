@@ -106,13 +106,13 @@ public class AutorizacaoDao {
 	}
 
 	@Transactional
-	public void limpaAutorizacoes() {
+	public void limpaAutorizacoes(Integer dias) {
 
 		manager	.createQuery("DELETE "
 				+ "FROM Autorizacao a "
 				+ "WHERE a.ultimoAcesso IS NOT NULL "
 				+ "AND a.ultimoAcesso < :data ")
-				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(30)
+				.setParameter("data", Timestamp.from(LocalDateTime	.now().minusDays(dias)
 																	.atZone(ZoneId.systemDefault())
 																	.toInstant()))
 				.executeUpdate();
