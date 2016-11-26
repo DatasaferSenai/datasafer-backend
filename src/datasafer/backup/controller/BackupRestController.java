@@ -45,7 +45,7 @@ public class BackupRestController {
 		return new ResponseEntity<>(carregador.carregaTransientes(backupDao.obtemOperacoes(backup)), HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/operacao", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(value = "/backup/operacoes", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> insereOperacao(	@RequestAttribute Usuario solicitante,
 													@RequestAttribute Usuario usuario,
 													@RequestAttribute Backup backup,

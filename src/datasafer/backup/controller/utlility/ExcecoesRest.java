@@ -1,6 +1,5 @@
 package datasafer.backup.controller.utlility;
 
-import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
 import org.json.JSONException;
