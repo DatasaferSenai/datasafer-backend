@@ -2,7 +2,7 @@ package datasafer.backup.dao;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -197,9 +197,7 @@ public class EstacaoDao {
 
 		backup	.getOperacoes()
 				.add(new Operacao(	backup,
-									Timestamp.from(LocalDateTime.now()
-																.atZone(ZoneId.systemDefault())
-																.toInstant()),
+									Timestamp.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)),
 									Operacao.Status.AGENDADO,
 									0L));
 

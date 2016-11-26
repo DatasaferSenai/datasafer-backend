@@ -18,7 +18,6 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.dao.PermissaoDao;
 import datasafer.backup.model.Permissao;
