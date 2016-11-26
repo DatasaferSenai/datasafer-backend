@@ -29,11 +29,11 @@ public class CORSFilter implements Filter {
 
 		response.setHeader("Access-Control-Allow-Origin", "*");
 		response.setHeader("Access-Control-Allow-Headers", "Content-Type, Accept, Authorization, usuario, estacao, backup, operacao");
-		response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");
+		response.setHeader("Access-Control-Allow-Methods", "OPTIONS, GET, POST, PUT, DELETE");
 		response.setHeader("Access-Control-Max-Age", "3600");
 
-		if (request.getMethod().equals(HttpMethod.OPTIONS)) {
-			response.setHeader("Allow", "GET,POST,PUT,DELETE,OPTIONS");
+		if (request.getMethod().equals("OPTIONS")) {
+			response.setHeader("Allow", "GET, POST, PUT, DELETE,OPTIONS");
 			return;
 		}
 

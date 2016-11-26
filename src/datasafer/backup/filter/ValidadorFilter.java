@@ -12,9 +12,11 @@ import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import datasafer.backup.dao.BackupDao;
@@ -49,78 +51,97 @@ public class ValidadorFilter implements Filter {
 
 		Usuario usuario = (Usuario) request.getAttribute("usuario");
 
-		Estacao estacao = null;
-		if ((request.getRequestURI()
-					.contains("operacao")
-				&& !request	.getRequestURI()
-							.contains("operacoes"))
-				|| (request	.getRequestURI()
-							.contains("backup")
-						&& !request	.getRequestURI()
-									.contains("backups"))
-				|| (request	.getRequestURI()
-							.contains("estacao")
-						&& !request	.getRequestURI()
-									.contains("estacoes"))) {
+		try {
 
-			if (usuario == null) {
-				response.sendError(HttpStatus.BAD_REQUEST.value(), "Usuário não espeficado");
-				return;
+			Estacao estacao = null;
+			if ((request.getRequestURI()
+						.contains("operacao")
+					&& !request	.getRequestURI()
+								.contains("operacoes"))
+					|| (request	.getRequestURI()
+								.contains("backup")
+							&& !request	.getRequestURI()
+										.contains("backups"))
+					|| (request	.getRequestURI()
+								.contains("estacao")
+							&& !request	.getRequestURI()
+										.contains("estacoes"))) {
+
+				if (usuario == null) {
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "Usuário não espeficado").toString());
+					return;
+				}
+
+				if (request.getHeader("estacao") != null) {
+					estacao = estacaoDao.obtemEstacao((String) request.getHeader("estacao"));
+				}
+				if (estacao == null) {
+					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "Estação inválida ou não encontrada").toString());
+					return;
+				} else {
+					estacao.setGerenciador(usuario);
+				}
+
+				request.setAttribute("estacao", estacao);
 			}
 
-			if (request.getHeader("estacao") != null) {
-				estacao = estacaoDao.obtemEstacao((String) request.getHeader("estacao"));
-				estacao.setGerenciador(usuario);
-			}
-			if (estacao == null) {
-				response.sendError(HttpStatus.NOT_FOUND.value(), "Estação inválida ou não encontrada");
-				return;
+			Backup backup = null;
+			if ((request.getRequestURI()
+						.contains("operacao")
+					&& !request	.getRequestURI()
+								.contains("operacoes"))
+					|| (request	.getRequestURI()
+								.contains("backup")
+							&& !request	.getRequestURI()
+										.contains("backups"))) {
+
+				if (estacao == null) {
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "Estação não espeficada").toString());
+					return;
+				}
+
+				if (request.getHeader("backup") != null) {
+					backup = backupDao.obtemBackup(usuario, estacao, (String) request.getHeader("backup"));
+				}
+				if (backup == null) {
+					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "Backup inválido ou não encontrado").toString());
+					return;
+				} else {
+					backup.setProprietario(usuario);
+				}
+
+				request.setAttribute("backup", backup);
+
 			}
 
-			request.setAttribute("estacao", estacao);
+			if ((request.getRequestURI()
+						.contains("operacao")
+					&& !request	.getRequestURI()
+								.contains("operacoes"))) {
+
+				if (backup == null) {
+					response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+					response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
+					response.getWriter().write(new JSONObject().put("erro", "Backup não espeficado").toString());
+					return;
+				}
+
+			}
+
+			chain.doFilter(req, resp);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
-
-		Backup backup = null;
-		if ((request.getRequestURI()
-					.contains("operacao")
-				&& !request	.getRequestURI()
-							.contains("operacoes"))
-				|| (request	.getRequestURI()
-							.contains("backup")
-						&& !request	.getRequestURI()
-									.contains("backups"))) {
-
-			if (estacao == null) {
-				response.sendError(HttpStatus.BAD_REQUEST.value(), "Estação não espeficada");
-				return;
-			}
-
-			if (request.getHeader("backup") != null) {
-				backup = backupDao.obtemBackup(usuario, estacao, (String) request.getHeader("backup"));
-				backup.setProprietario(usuario);
-			}
-			if (backup == null) {
-				response.sendError(HttpStatus.NOT_FOUND.value(), "Backup inválido ou não encontrado");
-				return;
-			}
-
-			request.setAttribute("backup", backup);
-
-		}
-
-		if ((request.getRequestURI()
-					.contains("operacao")
-				&& !request	.getRequestURI()
-							.contains("operacoes"))) {
-
-			if (backup == null) {
-				response.sendError(HttpStatus.BAD_REQUEST.value(), "Backup não espeficado");
-				return;
-			}
-
-		}
-
-		chain.doFilter(req, resp);
 
 	}
 
