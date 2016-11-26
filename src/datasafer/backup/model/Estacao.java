@@ -59,7 +59,7 @@ public class Estacao {
 	@Transient
 	@FormulaHql(identificador = "id",
 				formula = "SELECT operacao.status, COUNT(DISTINCT operacao.backup) FROM Operacao operacao "
-						+ "WHERE operacao.backup.estacao.id = :id_estacao  "
+						+ "WHERE operacao.backup.estacao.id = :id  "
 						+ "AND operacao.data = (SELECT MAX(ultimaOperacao.data) FROM Operacao ultimaOperacao WHERE operacao.backup = ultimaOperacao.backup) "
 						+ "GROUP BY operacao.status ")
 	private Map<Operacao.Status, Long> statusBackups = Arrays.stream(Operacao.Status.values()).collect(Collectors.toMap(Function.identity(), p -> 0L));
