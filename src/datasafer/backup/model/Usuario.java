@@ -30,6 +30,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -38,8 +39,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 import datasafer.backup.dao.utility.Carregador.FormulaHql;
-import datasafer.backup.model.utility.Validador.Email;
-import datasafer.backup.model.utility.Validador.Senha;
 
 @Entity
 public class Usuario {
@@ -69,15 +68,15 @@ public class Usuario {
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "superior_id")
-	private Usuario superior = null;
+	@JoinColumn(name = "proprietario_id")
+	private Usuario proprietario = null;
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "superior", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-	private List<Usuario> colaboradores = new ArrayList<Usuario>();
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	private List<Usuario> usuarios = new ArrayList<Usuario>();
 
 	@JsonIgnore
-	@OneToMany(mappedBy = "gerenciador", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "proprietario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Estacao> estacoes = new ArrayList<Estacao>();
 
 	@JsonIgnore
@@ -103,9 +102,10 @@ public class Usuario {
 	@Column(unique = true)
 	private String login = null;
 
+	@Pattern(	regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,32}$",
+				message = "Senha inválida. Deve conter ao menos um número, uma letra minúscula e uma letra maíuscula, não pode conter espaços e deve ter no mínimo 8 e no máximo 32 caracteres")
 	@JsonProperty(access = Access.WRITE_ONLY)
-	@Size(max = 32, message = "A senha deve ter no máximo 32 caracteres")
-	@NotNull(message = "Senha inválida")
+	@Column(nullable = false)
 	private String senha = null;
 
 	// @Validar
@@ -121,7 +121,8 @@ public class Usuario {
 	private String nome = null;
 
 	@JsonProperty
-	@Email
+	@Pattern(	regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
+				message = "Email inválido")
 	@Size(max = 50, message = "O email deve ter máximo 50 caracteres")
 	@NotNull(message = "O email não pode ser nulo")
 	private String email = null;
@@ -164,9 +165,9 @@ public class Usuario {
 	@JsonProperty("login_superior")
 	@Transient
 	@FormulaHql(identificador = "id",
-				formula = "SELECT u.superior.login FROM Usuario u "
+				formula = "SELECT u.proprietario.login FROM Usuario u "
 						+ "WHERE u.id = :id ")
-	private String loginSuperior = null;
+	private String loginProprietario = null;
 
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -181,7 +182,7 @@ public class Usuario {
 	@OneToMany(mappedBy = "recebedor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Permissao> permissoesRecebidas = new ArrayList<Permissao>();
 
-	public void setSenha(@Senha String senha) {
+	public void setSenha(String senha) {
 		try {
 			SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA512");
 			PBEKeySpec spec = new PBEKeySpec(	senha.toCharArray(),
@@ -204,20 +205,20 @@ public class Usuario {
 		this.id = id;
 	}
 
-	public Usuario getSuperior() {
-		return superior;
+	public Usuario getProprietario() {
+		return proprietario;
 	}
 
-	public void setSuperior(Usuario superior) {
-		this.superior = superior;
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
-	public List<Usuario> getColaboradores() {
-		return colaboradores;
+	public List<Usuario> getUsuarios() {
+		return usuarios;
 	}
 
-	public void setColaboradores(List<Usuario> colaboradores) {
-		this.colaboradores = colaboradores;
+	public void setUsuarios(List<Usuario> usuarios) {
+		this.usuarios = usuarios;
 	}
 
 	public List<Estacao> getEstacoes() {
@@ -300,11 +301,11 @@ public class Usuario {
 		this.armazenamento = armazenamento;
 	}
 
-	public long getArmazenamentoOcupado() {
+	public Long getArmazenamentoOcupado() {
 		return armazenamentoOcupado;
 	}
 
-	public void setArmazenamentoOcupado(long armazenamentoOcupado) {
+	public void setArmazenamentoOcupado(Long armazenamentoOcupado) {
 		this.armazenamentoOcupado = armazenamentoOcupado;
 	}
 
@@ -316,11 +317,11 @@ public class Usuario {
 		this.statusBackups = statusBackups;
 	}
 
-	public int getTentativas() {
+	public Integer getTentativas() {
 		return tentativas;
 	}
 
-	public void setTentativas(int tentativas) {
+	public void setTentativas(Integer tentativas) {
 		this.tentativas = tentativas;
 	}
 
@@ -340,12 +341,12 @@ public class Usuario {
 		this.notificacoes = notificacoes;
 	}
 
-	public String getLoginSuperior() {
-		return loginSuperior;
+	public String getLoginProprietario() {
+		return loginProprietario;
 	}
 
-	public void setLoginSuperior(String loginSuperior) {
-		this.loginSuperior = loginSuperior;
+	public void setLoginProprietario(String loginProprietario) {
+		this.loginProprietario = loginProprietario;
 	}
 
 	public List<Permissao> getPermissoes() {

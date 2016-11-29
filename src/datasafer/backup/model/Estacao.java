@@ -35,8 +35,8 @@ public class Estacao {
 
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-	@JoinColumn(name = "gerenciador_id")
-	private Usuario gerenciador = null;
+	@JoinColumn(name = "proprietario_id")
+	private Usuario proprietario = null;
 
 	@JsonIgnore
 	@OneToMany(mappedBy = "estacao", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -69,30 +69,6 @@ public class Estacao {
 	@JoinColumn(name = "estacao_id")
 	private List<Permissao> permissoes = new ArrayList<Permissao>();
 
-	public List<Permissao> getPermissoes() {
-		return permissoes;
-	}
-
-	public void setPermissoes(List<Permissao> permissoes) {
-		this.permissoes = permissoes;
-	}
-
-	public Map<Operacao.Status, Long> getStatusBackups() {
-		return statusBackups;
-	}
-
-	public void setStatusBackups(Map<Operacao.Status, Long> statusBackups) {
-		this.statusBackups = statusBackups;
-	}
-
-	public Usuario getGerenciador() {
-		return gerenciador;
-	}
-
-	public void setGerenciador(Usuario gerenciador) {
-		this.gerenciador = gerenciador;
-	}
-
 	public Long getId() {
 		return id;
 	}
@@ -101,12 +77,12 @@ public class Estacao {
 		this.id = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public Usuario getProprietario() {
+		return proprietario;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
 	public List<Backup> getBackups() {
@@ -117,6 +93,22 @@ public class Estacao {
 		this.backups = backups;
 	}
 
+	public List<Registro> getRegistros() {
+		return registros;
+	}
+
+	public void setRegistros(List<Registro> registros) {
+		this.registros = registros;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
 	public String getDescricao() {
 		return descricao;
 	}
@@ -125,12 +117,20 @@ public class Estacao {
 		this.descricao = descricao;
 	}
 
-	public List<Registro> getRegistros() {
-		return registros;
+	public Map<Operacao.Status, Long> getStatusBackups() {
+		return statusBackups;
 	}
 
-	public void setRegistros(List<Registro> registros) {
-		this.registros = registros;
+	public void setStatusBackups(Map<Operacao.Status, Long> statusBackups) {
+		this.statusBackups = statusBackups;
+	}
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
 	}
 
 }

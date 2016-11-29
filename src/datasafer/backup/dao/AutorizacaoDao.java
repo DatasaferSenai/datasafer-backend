@@ -115,4 +115,18 @@ public class AutorizacaoDao {
 				.executeUpdate();
 	}
 
+	
+	public Usuario login(Usuario usuario) {
+		List<Usuario> results = manager	.createQuery(
+													"SELECT usuario FROM Usuario usuario "
+															+ "WHERE usuario.login = :login_usuario "
+															+ "AND usuario.senha = :senha_usuario ",
+													Usuario.class)
+										.setParameter("login_usuario", usuario.getLogin())
+										.setParameter("senha_usuario", usuario.getSenha())
+										.getResultList();
+
+		return results.isEmpty()	? null
+									: results.get(0);
+	}
 }

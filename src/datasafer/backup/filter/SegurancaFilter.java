@@ -19,7 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
 import datasafer.backup.dao.AutorizacaoDao;
-import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.dao.utility.Carregador;
 import datasafer.backup.model.Autorizacao;
 import datasafer.backup.model.Usuario;
 import datasafer.backup.model.Usuario.Status;
@@ -28,7 +28,7 @@ import datasafer.backup.model.Usuario.Status;
 public class SegurancaFilter implements Filter {
 
 	@Autowired
-	private UsuarioDao usuarioDao;
+	private Carregador carregador;
 	@Autowired
 	private AutorizacaoDao tokenDao;
 
@@ -70,7 +70,7 @@ public class SegurancaFilter implements Filter {
 			}
 
 			Usuario solicitante = token.getUsuario();
-			Usuario usuario = request.getHeader("usuario") != null	? usuarioDao.obtemUsuario(request.getHeader("usuario"))
+			Usuario usuario = request.getHeader("usuario") != null	? carregador.obtemEntidade(Usuario.class, "login", request.getHeader("usuario"))
 																	: solicitante;
 
 			if (solicitante == null) {

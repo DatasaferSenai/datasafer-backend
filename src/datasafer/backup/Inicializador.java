@@ -12,10 +12,9 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import datasafer.backup.dao.BackupDao;
-import datasafer.backup.dao.EstacaoDao;
 import datasafer.backup.dao.PermissaoDao;
-import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.dao.utility.Carregador;
+import datasafer.backup.dao.utility.Modificador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
@@ -27,20 +26,18 @@ import datasafer.backup.model.Usuario.Status;
 public class Inicializador {
 
 	@Autowired
-	private UsuarioDao usuarioDao;
+	private Modificador modificador;
 	@Autowired
-	private EstacaoDao estacaoDao;
-	@Autowired
-	private BackupDao backupDao;
+	private Carregador carregador;
+
 	@Autowired
 	private PermissaoDao permissaoDao;
 
 	@PostConstruct
-	private void popula() {
+	private void popula() throws NoSuchFieldException {
 
 		System.out.println("==== Inicializando ====");
-
-		Usuario usuario_admin = usuarioDao.obtemUsuario("admin");
+		Usuario usuario_admin = carregador.obtemEntidade(Usuario.class, "login", "admin");
 		if (usuario_admin == null) {
 			usuario_admin = new Usuario();
 
@@ -51,14 +48,18 @@ public class Inicializador {
 			usuario_admin.setSenha("admin");
 			usuario_admin.setStatus(Status.ATIVO);
 
-			usuarioDao.insereUsuario(null, null, usuario_admin);
+			try {
+				modificador.insere(null, null, null, "usuarios", usuario_admin);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 		populaUsuarios(null, usuario_admin);
 	}
 
 	public void populaUsuarios(	Usuario solicitante,
-								Usuario superior) {
+								Usuario superior) throws NoSuchFieldException {
 
 		System.out.println(" ==== POPULA ==== ");
 
@@ -76,7 +77,7 @@ public class Inicializador {
 								.charAt(0);
 			}
 
-			Usuario usuario = usuarioDao.obtemUsuario(login);
+			Usuario usuario = carregador.obtemEntidade(Usuario.class, "login", login);
 			if (usuario == null) {
 				usuario = new Usuario();
 				usuario.setNome(nome);
@@ -86,13 +87,18 @@ public class Inicializador {
 				usuario.setSenha(login);
 				usuario.setStatus(Status.ATIVO);
 
-				usuarioDao.insereUsuario(solicitante, superior, usuario);
+				usuario.setProprietario(superior);
 
-				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.VISUALIZAR, true));
-				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.EDITAR, true));
-				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.INSERIR, true));
-				permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.REMOVER, true));
+				try {
+					modificador.insere(solicitante, superior, superior, "usuarios", usuario);
 
+					permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.VISUALIZAR, true));
+					permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.EDITAR, true));
+					permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.INSERIR, true));
+					permissaoDao.inserirPermissao(usuario, new Permissao(solicitante, superior, null, Permissao.Tipo.REMOVER, true));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				// permissaoDao.inserirPermissao(superior, new
 				// Permissao(solicitante, usuario, null,
 				// Permissao.Tipo.VISUALIZAR, false));
@@ -112,7 +118,7 @@ public class Inicializador {
 	}
 
 	public void populaEstacoes(	Usuario solicitante,
-								Usuario gerenciador) {
+								Usuario gerenciador) throws NoSuchFieldException {
 
 		List<String> tiposDispositivos = Arrays.asList("PC", "Desktop", "Computador", "Notebook", "Netbook", "Laptop");
 		List<String> nomesDispositivos = Arrays.asList("Trabalho", "Escola", "Casa", "Escritório", "Banheiro", "Quarto", "Sala");
@@ -127,11 +133,17 @@ public class Inicializador {
 
 			String nome_estacao = tiposDispositivos.get(tipo_index) + separadores.get(separador_index) + nomesDispositivos.get(nome_index);
 
-			Estacao estacao = estacaoDao.obtemEstacao(nome_estacao);
+			Estacao estacao = carregador.obtemEntidade(Estacao.class, "nome", nome_estacao);
 			if (estacao == null) {
 				estacao = new Estacao();
 				estacao.setNome(nome_estacao);
-				usuarioDao.insereEstacao(solicitante, gerenciador, estacao);
+
+				try {
+					modificador.insere(solicitante, gerenciador, gerenciador, "estacoes", estacao);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 				populaBackups(solicitante, gerenciador, estacao);
 			}
 		}
@@ -139,7 +151,7 @@ public class Inicializador {
 
 	public void populaBackups(	Usuario solicitante,
 								Usuario proprietario,
-								Estacao estacao) {
+								Estacao estacao) throws NoSuchFieldException {
 
 		List<String> nomes_backups = Arrays.asList(	"Meus arquivos",
 													"Minhas fotos",
@@ -165,7 +177,7 @@ public class Inicializador {
 		for (int n = gerador.nextInt(5) + 5; n > 0; n--) {
 			String nomeBackup = nomes_backups.get(gerador.nextInt(nomes_backups.size()));
 
-			Backup backup = backupDao.obtemBackup(proprietario, estacao, nomeBackup);
+			Backup backup = carregador.obtemEntidade(Backup.class, "proprietario", proprietario, "estacao", estacao, "nome", nomeBackup);
 			if (backup == null) {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
@@ -177,7 +189,12 @@ public class Inicializador {
 				backup.setPasta("C:\\" + nomeBackup	.toLowerCase()
 													.replace(' ', '_'));
 
-				estacaoDao.insereBackup(solicitante, proprietario, estacao, backup);
+				try {
+					modificador.insere(solicitante, proprietario, estacao, "backups", backup);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
 				populaOperacoes(solicitante, proprietario, estacao, backup);
 			}
 		}
@@ -198,7 +215,11 @@ public class Inicializador {
 			operacao.setStatus(Operacao.Status.values()[gerador.nextInt(Operacao.Status.values().length)]);
 			operacao.setTamanho((long) gerador.nextInt(10000000));
 
-			backupDao.insereOperacao(solicitante, backup, operacao);
+			try {
+				modificador.insere(solicitante, null, backup, "operacoes", operacao);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 
 	}

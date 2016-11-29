@@ -19,8 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
-import datasafer.backup.dao.BackupDao;
-import datasafer.backup.dao.EstacaoDao;
+import datasafer.backup.dao.utility.Carregador;
 import datasafer.backup.model.Backup;
 import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Usuario;
@@ -29,9 +28,7 @@ import datasafer.backup.model.Usuario;
 public class ValidadorFilter implements Filter {
 
 	@Autowired
-	EstacaoDao estacaoDao;
-	@Autowired
-	BackupDao backupDao;
+	private Carregador carregador;
 
 	@Override
 	public void doFilter(	ServletRequest req,
@@ -75,7 +72,7 @@ public class ValidadorFilter implements Filter {
 				}
 
 				if (request.getHeader("estacao") != null) {
-					estacao = estacaoDao.obtemEstacao((String) request.getHeader("estacao"));
+					estacao = carregador.obtemEntidade(Estacao.class, "nome", (String) request.getHeader("estacao"));
 				}
 				if (estacao == null) {
 					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -83,7 +80,7 @@ public class ValidadorFilter implements Filter {
 					response.getWriter().write(new JSONObject().put("erro", "Estação inválida ou não encontrada").toString());
 					return;
 				} else {
-					estacao.setGerenciador(usuario);
+					estacao.setProprietario(usuario);
 				}
 
 				request.setAttribute("estacao", estacao);
@@ -107,7 +104,7 @@ public class ValidadorFilter implements Filter {
 				}
 
 				if (request.getHeader("backup") != null) {
-					backup = backupDao.obtemBackup(usuario, estacao, (String) request.getHeader("backup"));
+					backup = carregador.obtemEntidade(Backup.class, "usuario", usuario, "estacao", estacao, "nome", (String) request.getHeader("backup"));
 				}
 				if (backup == null) {
 					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -116,6 +113,7 @@ public class ValidadorFilter implements Filter {
 					return;
 				} else {
 					backup.setProprietario(usuario);
+					backup.setEstacao(estacao);
 				}
 
 				request.setAttribute("backup", backup);

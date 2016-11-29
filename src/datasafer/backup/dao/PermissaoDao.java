@@ -14,8 +14,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import datasafer.backup.model.Backup;
-import datasafer.backup.model.Estacao;
+import datasafer.backup.dao.utility.Carregador;
 import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Permissao.Tipo;
 import datasafer.backup.model.Usuario;
@@ -27,11 +26,7 @@ public class PermissaoDao {
 	private EntityManager manager;
 
 	@Autowired
-	private UsuarioDao usuarioDao;
-	@Autowired
-	private EstacaoDao estacaoDao;
-	@Autowired
-	private BackupDao backupDao;
+	private Carregador carregador;
 
 	public <T> List<Permissao> obtemPermissoes(T objeto) {
 		try {
@@ -74,7 +69,7 @@ public class PermissaoDao {
 	public <T> boolean temPermissao(Usuario recebedor,
 									T objeto,
 									String atributo,
-									Tipo tipo) {
+									Tipo tipo) throws NoSuchFieldException {
 
 		{
 			Permissao permissao = this.obtemPermissao(recebedor, objeto, atributo, tipo);
@@ -84,21 +79,15 @@ public class PermissaoDao {
 		}
 
 		{
-			Usuario usuarioAux = null;
-			if (objeto instanceof Usuario) {
-				usuarioAux = usuarioDao.obtemSuperior((Usuario) objeto);
-			} else if (objeto instanceof Estacao) {
-				usuarioAux = estacaoDao.obtemGerenciador((Estacao) objeto);
-			} else if (objeto instanceof Backup) {
-				usuarioAux = backupDao.obtemProprietario((Backup) objeto);
-			}
+
+			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(objeto, "proprietario");
 			if (usuarioAux != null) {
 				while (usuarioAux != null) {
 					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, atributo, tipo);
 					if (permissao != null) {
 						return permissao.isPermitido();
 					}
-					usuarioAux = usuarioDao.obtemSuperior(usuarioAux);
+					usuarioAux = (Usuario) carregador.obtemAtributo(usuarioAux, "proprietario");
 				}
 			}
 		}
@@ -111,21 +100,14 @@ public class PermissaoDao {
 		}
 
 		{
-			Usuario usuarioAux = null;
-			if (objeto instanceof Usuario) {
-				usuarioAux = usuarioDao.obtemSuperior((Usuario) objeto);
-			} else if (objeto instanceof Estacao) {
-				usuarioAux = estacaoDao.obtemGerenciador((Estacao) objeto);
-			} else if (objeto instanceof Backup) {
-				usuarioAux = backupDao.obtemProprietario((Backup) objeto);
-			}
+			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(objeto, "proprietario");
 			if (usuarioAux != null) {
 				while (usuarioAux != null) {
 					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, null, tipo);
 					if (permissao != null) {
 						return permissao.isPermitido();
 					}
-					usuarioAux = usuarioDao.obtemSuperior(usuarioAux);
+					usuarioAux = (Usuario) carregador.obtemAtributo(usuarioAux, "proprietario");
 				}
 			}
 		}

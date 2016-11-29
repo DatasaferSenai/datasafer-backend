@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,7 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import datasafer.backup.dao.AutorizacaoDao;
-import datasafer.backup.dao.UsuarioDao;
+import datasafer.backup.dao.utility.Carregador;
+import datasafer.backup.dao.utility.Modificador;
 import datasafer.backup.model.Autorizacao;
 import datasafer.backup.model.Usuario;
 
@@ -27,21 +29,23 @@ import datasafer.backup.model.Usuario;
 public class AutorizacaoRestController {
 
 	@Autowired
-	private UsuarioDao usuarioDao;
+	private AutorizacaoDao autorizacaoDao;
+
 	@Autowired
-	private AutorizacaoDao tokenDao;
+	private Modificador modificador;
+	@Autowired
+	private Carregador carregador;
 
 	@RequestMapping(value = "/login", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
 					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<Object> login(HttpServletRequest req,
-										@RequestBody Usuario usuario) {
+										@RequestBody Usuario usuario) throws NullPointerException, AccessDeniedException, NoSuchFieldException {
 
 		try {
-
-			Usuario logado = usuarioDao.login(usuario);
+			Usuario logado = carregador.obtemEntidade(Usuario.class, "login", usuario.getLogin(), "senha", usuario.getSenha());
 			if (logado == null) {
 
-				Usuario existente = usuarioDao.obtemUsuario(usuario.getLogin());
+				Usuario existente = carregador.obtemEntidade(Usuario.class, "login", usuario.getLogin());
 				if (existente != null) {
 					Integer tentativas = existente.getTentativas();
 					if (tentativas < 3) {
@@ -49,11 +53,11 @@ public class AutorizacaoRestController {
 						existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
 																					.toInstant(ZoneOffset.UTC)));
 
-						usuarioDao.modificaUsuario(null, existente, existente);
+						modificador.modifica(null, existente, existente);
 					}
 					if (tentativas >= 3) {
 						existente.setStatus(Usuario.Status.SUSPENSO_TENTATIVAS);
-						usuarioDao.modificaUsuario(null, existente, existente);
+						modificador.modifica(null, existente, existente);
 					}
 				}
 
@@ -70,11 +74,11 @@ public class AutorizacaoRestController {
 
 			if (logado.getTentativas() > 0) {
 				logado.setTentativas(0);
-				usuarioDao.modificaUsuario(null, logado, logado);
+				modificador.modifica(null, logado, logado);
 			}
 
-			Autorizacao token = tokenDao.emiteAutorizacao(logado, req.getRemoteAddr() != null	? req.getRemoteAddr()
-																								: req.getLocalAddr());
+			Autorizacao token = autorizacaoDao.emiteAutorizacao(logado, req.getRemoteAddr() != null	? req.getRemoteAddr()
+																									: req.getLocalAddr());
 			return new ResponseEntity<>(token, HttpStatus.OK);
 
 		} catch (JSONException e) {
@@ -89,9 +93,9 @@ public class AutorizacaoRestController {
 	public ResponseEntity<Void> logout(	HttpServletRequest req,
 										@RequestHeader("Authorization") String token_autorizacao) {
 
-		tokenDao.revogaToken(tokenDao.obtemAutorizacao(	req.getRemoteAddr() != null	? req.getRemoteAddr()
-																					: req.getLocalAddr(),
-														token_autorizacao));
+		autorizacaoDao.revogaToken(autorizacaoDao.obtemAutorizacao(	req.getRemoteAddr() != null	? req.getRemoteAddr()
+																								: req.getLocalAddr(),
+																	token_autorizacao));
 
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
 	}
