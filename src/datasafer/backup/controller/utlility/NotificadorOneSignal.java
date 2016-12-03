@@ -33,14 +33,13 @@ public class NotificadorOneSignal {
 																									.body(new JSONObject()	.put(	"app_id",
 																																	APP_ID)
 																															.put(	"contents",
-																																	new Object() {
-																																		@SuppressWarnings("unused")
-																																		String en = mensagem;
-																																	})
+																																	new JSONObject().put(	"en",
+																																							mensagem))
 																															.put(	"include_ios_tokens",
 																																	notificacoes.stream()
 																																				.filter(n -> n	.getTipo()
 																																								.equals(Notificacao.Tipo.DISPOSITIVO_IOS))
+																																				.map(Notificacao::getToken)
 																																				.collect(Collectors.toList()))
 																															.toString(1)),
 																					String.class);
@@ -52,14 +51,16 @@ public class NotificadorOneSignal {
 																									.body(new JSONObject()	.put(	"app_id",
 																																	APP_ID)
 																															.put(	"contents",
-																																	new Object() {
-																																		@SuppressWarnings("unused")
-																																		String en = mensagem;
-																																	})
+																															     	new JSONObject().put(	"en",
+																																							mensagem))
+																															.put(	"headings",
+																															     	new JSONObject().put(	"en",
+																																							mensagem))
 																															.put(	"include_player_ids",
 																																	notificacoes.stream()
 																																				.filter(n -> !n	.getTipo()
 																																								.equals(Notificacao.Tipo.DISPOSITIVO_IOS))
+																																				.map(Notificacao::getToken)
 																																				.collect(Collectors.toList()))
 																															.toString(1)),
 																					String.class);

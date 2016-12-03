@@ -11,6 +11,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Transient;
@@ -139,7 +140,8 @@ public class Carregador {
 					return (T) map;
 
 				} else {
-					return resultados.isEmpty() ? null : (T) resultados.get(0);
+					return (T) (resultados.isEmpty() ? null : atributo	.getType()
+																		.cast(resultados.get(0)));
 				}
 			}
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {

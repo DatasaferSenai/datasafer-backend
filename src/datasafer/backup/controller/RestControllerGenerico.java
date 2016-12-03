@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import datasafer.backup.controller.utlility.NotificadorOneSignal;
 import datasafer.backup.dao.utility.Carregador;
@@ -61,7 +64,7 @@ public class RestControllerGenerico {
 	public ResponseEntity<Object> modificaGenerico(	HttpServletRequest req,
 													@RequestAttribute Usuario solicitante,
 													@PathVariable String objeto,
-													@RequestBody String valores) throws Exception {
+													@RequestBody String valores)	throws Exception {
 
 		modificador.modifica(solicitante, req.getAttribute(objeto), valores);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);

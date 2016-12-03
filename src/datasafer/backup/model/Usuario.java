@@ -50,7 +50,7 @@ public class Usuario {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id = null;
-	
+
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "proprietario_id")
@@ -115,7 +115,7 @@ public class Usuario {
 	@JsonProperty
 	@Min(value = 0, message = "O armazenamento dever ser no mínimo 0")
 	@NotNull(message = "Armazenamento não especificado")
-	private long armazenamento = 0L;
+	private Long armazenamento = 0L;
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
 	@Transient
@@ -284,11 +284,11 @@ public class Usuario {
 		this.email = email;
 	}
 
-	public long getArmazenamento() {
+	public Long getArmazenamento() {
 		return armazenamento;
 	}
 
-	public void setArmazenamento(long armazenamento) {
+	public void setArmazenamento(Long armazenamento) {
 		this.armazenamento = armazenamento;
 	}
 
