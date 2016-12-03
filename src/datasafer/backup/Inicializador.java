@@ -20,7 +20,6 @@ import datasafer.backup.model.Estacao;
 import datasafer.backup.model.Operacao;
 import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Usuario;
-import datasafer.backup.model.Usuario.Status;
 
 @Service
 public class Inicializador {
@@ -46,7 +45,7 @@ public class Inicializador {
 			usuario_admin.setNome("Administrador");
 			usuario_admin.setEmail("admin@admin.com");
 			usuario_admin.setSenha("admin");
-			usuario_admin.setStatus(Status.ATIVO);
+			usuario_admin.setAtivo(true);
 
 			try {
 				modificador.insere(null, null, null, "usuarios", usuario_admin);
@@ -85,7 +84,7 @@ public class Inicializador {
 				usuario.setArmazenamento(10000000L);
 				usuario.setLogin(login);
 				usuario.setSenha(login);
-				usuario.setStatus(Status.ATIVO);
+				usuario.setAtivo(true);
 
 				usuario.setProprietario(superior);
 
@@ -182,7 +181,7 @@ public class Inicializador {
 				backup = new Backup();
 				backup.setNome(nomeBackup);
 
-				backup.setIntervalo(gerador.nextInt(1000000));
+				backup.setIntervalo(new Long(gerador.nextInt(1000000)));
 
 				backup.setInicio(Timestamp.from(LocalDateTime	.now().plusDays(gerador.nextInt(60))
 																.toInstant(ZoneOffset.UTC)));

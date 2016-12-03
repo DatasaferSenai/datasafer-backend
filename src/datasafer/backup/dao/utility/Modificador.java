@@ -11,10 +11,12 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -41,6 +43,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 
 import datasafer.backup.dao.PermissaoDao;
+import datasafer.backup.dao.utility.annotations.Identificador;
+import datasafer.backup.dao.utility.annotations.Indireto;
 import datasafer.backup.model.Permissao;
 import datasafer.backup.model.Registro;
 import datasafer.backup.model.Usuario;
@@ -50,6 +54,9 @@ public class Modificador {
 
 	@PersistenceContext
 	private EntityManager manager;
+
+	@Autowired
+	private Carregador carregador;
 
 	@Autowired
 	private PermissaoDao permissaoDao;
@@ -68,6 +75,7 @@ public class Modificador {
 	}
 
 	// @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@Transactional
 	public void insere(	Usuario solicitante,
 						Usuario proprietario,
@@ -97,9 +105,9 @@ public class Modificador {
 				Object valor = new PropertyDescriptor(f.getName(), objeto.getClass()).getReadMethod().invoke(objeto);
 
 				CriteriaBuilder builder = manager.getCriteriaBuilder();
-				CriteriaQuery<?> criteria = builder.createQuery(f.getType());
+				CriteriaQuery<Object> criteria = builder.createQuery();
 				Root<?> root = criteria.from(objeto.getClass());
-				criteria.where(builder.equal(root.get(f.getName()), valor));
+				criteria.select(root).where(builder.equal(root.get(f.getName()), valor));
 
 				/* select(root.get(f.getName())) */
 
@@ -129,15 +137,19 @@ public class Modificador {
 						}
 					}
 
-					// ((Collection<Object>) new PropertyDescriptor(nomeColecao,
-					// destino.getClass()).getReadMethod().invoke(destino)).add(objeto);
+					((Collection<Object>) new PropertyDescriptor(atributo.getName(), destino.getClass()).getReadMethod().invoke(destino)).add(objeto);
 					if (atributo.isAnnotationPresent(OneToMany.class)) {
 						new PropertyDescriptor(atributo.getAnnotation(OneToMany.class).mappedBy(), objeto.getClass()).getWriteMethod().invoke(objeto, destino);
 					}
 
-					if (proprietario != null) {
-						new PropertyDescriptor("proprietario", objeto.getClass())	.getWriteMethod()
-																					.invoke(objeto, proprietario);
+					if (proprietario != null && !destino.equals(proprietario)) {
+						Field propriedade = proprietario.getClass().getDeclaredField(nomeColecao);
+						((Collection<Object>) new PropertyDescriptor(propriedade.getName(), proprietario.getClass()).getReadMethod()
+																													.invoke(proprietario)).add(objeto);
+						if (propriedade.isAnnotationPresent(OneToMany.class)) {
+							new PropertyDescriptor(propriedade.getAnnotation(OneToMany.class).mappedBy(), objeto.getClass()).getWriteMethod()
+																															.invoke(objeto, proprietario);
+						}
 					}
 
 					manager.persist(objeto);
@@ -149,6 +161,12 @@ public class Modificador {
 			manager.persist(objeto);
 		}
 
+	}
+
+	@Transactional
+	public void modifica(	Usuario solicitante,
+							Object destino) throws NullPointerException, AccessDeniedException, NoSuchFieldException {
+		this.modifica(solicitante, destino, destino);
 	}
 
 	@Transactional
@@ -184,14 +202,16 @@ public class Modificador {
 			solicitante = solicitante == null ? null : manager.find(Usuario.class, solicitante.getId());
 			destino = manager.find(destino.getClass(), (Long) new PropertyDescriptor("id", destino.getClass()).getReadMethod().invoke(destino));
 
+			this.modificaIndiretos(destino, origem);
+
 			List<Registro> registros = new ArrayList<>();
 			for (Field f : destino.getClass().getDeclaredFields()) {
 
-				if (f.isAnnotationPresent(JsonIgnore.class) && f.getAnnotation(JsonIgnore.class).value() == true) {
+				if (f.isAnnotationPresent(JsonIgnore.class) && f.getAnnotation(JsonIgnore.class).value()) {
 					continue;
 				}
 
-				if (f.isAnnotationPresent(Transient.class)) {
+				if (!f.isAnnotationPresent(Indireto.class) && f.isAnnotationPresent(Transient.class)) {
 					continue;
 				}
 
@@ -236,6 +256,49 @@ public class Modificador {
 
 			manager.persist(destino);
 
+		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void modificaIndiretos(	Object destino,
+									Object origem) throws NoSuchFieldException {
+
+		try {
+
+			List<Field> indiretos = Arrays	.asList(origem.getClass().getDeclaredFields()).stream().filter(f -> f.isAnnotationPresent(Indireto.class))
+											.collect(Collectors.toList());
+			while (!indiretos.isEmpty()) {
+				Field atributoIndireto = indiretos.get(0);
+				Indireto indireto = atributoIndireto.getAnnotation(Indireto.class);
+				List<Field> mesmosIndiretos = indiretos	.stream().filter(f -> f.getAnnotation(Indireto.class).atributo().equals(indireto.atributo()))
+														.collect(Collectors.toList());
+
+				Field atributo = origem.getClass().getDeclaredField(indireto.atributo());
+				// this.carregaIndiretos(objetoIndireto);
+
+				Object[] criterios = new Object[mesmosIndiretos.size() * 2];
+				Integer indice = 0;
+				for (Field f : atributo.getType().getDeclaredFields()) {
+					if (f.isAnnotationPresent(Identificador.class)) {
+						if (mesmosIndiretos	.stream().filter(f2 -> f2.getAnnotation(Indireto.class).identificador().equals(f.getName()))
+											.collect(Collectors.toList())
+											.isEmpty()) {
+							throw new IllegalArgumentException("Faltam identificadores no link Indireto");
+						}
+						for (Field f2 : mesmosIndiretos) {
+							criterios[indice] = f.getName();
+							criterios[indice + 1] = new PropertyDescriptor(f2.getName(), origem.getClass()).getReadMethod().invoke(origem);
+							indice += 2;
+						}
+					}
+				}
+				new PropertyDescriptor(indireto.atributo(), origem.getClass()).getWriteMethod().invoke(	destino,
+																										carregador.obtemEntidade(	atributo.getType(),
+																																	criterios));
+
+				indiretos.removeAll(mesmosIndiretos);
+			}
 		} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | IntrospectionException e) {
 			e.printStackTrace();
 		}

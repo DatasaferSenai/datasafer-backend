@@ -74,20 +74,20 @@ public class PermissaoDao {
 		{
 			Permissao permissao = this.obtemPermissao(recebedor, objeto, atributo, tipo);
 			if (permissao != null) {
-				return permissao.isPermitido();
+				return permissao.getPermitido();
 			}
 		}
 
 		{
 
-			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(objeto, "proprietario");
+			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(null, objeto, "proprietario");
 			if (usuarioAux != null) {
 				while (usuarioAux != null) {
 					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, atributo, tipo);
 					if (permissao != null) {
-						return permissao.isPermitido();
+						return permissao.getPermitido();
 					}
-					usuarioAux = (Usuario) carregador.obtemAtributo(usuarioAux, "proprietario");
+					usuarioAux = (Usuario) carregador.obtemAtributo(null, usuarioAux, "proprietario");
 				}
 			}
 		}
@@ -95,19 +95,19 @@ public class PermissaoDao {
 		{
 			Permissao permissao = this.obtemPermissao(recebedor, objeto, null, tipo);
 			if (permissao != null) {
-				return permissao.isPermitido();
+				return permissao.getPermitido();
 			}
 		}
 
 		{
-			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(objeto, "proprietario");
+			Usuario usuarioAux = (Usuario) carregador.obtemAtributo(null, objeto, "proprietario");
 			if (usuarioAux != null) {
 				while (usuarioAux != null) {
 					Permissao permissao = this.obtemPermissao(recebedor, usuarioAux, null, tipo);
 					if (permissao != null) {
-						return permissao.isPermitido();
+						return permissao.getPermitido();
 					}
-					usuarioAux = (Usuario) carregador.obtemAtributo(usuarioAux, "proprietario");
+					usuarioAux = (Usuario) carregador.obtemAtributo(null, usuarioAux, "proprietario");
 				}
 			}
 		}
@@ -121,8 +121,10 @@ public class PermissaoDao {
 										Tipo tipo) {
 
 		try {
+
+			System.out.println(" +++ = " + objeto.getClass().getName());
 			List<Permissao> resultadosPermissao = manager	.createQuery(
-																			"SELECT p FROM " + objeto.getClass().getSimpleName() + " o "
+																			"SELECT p FROM " + objeto.getClass().getName() + " o "
 																					+ "INNER JOIN o.permissoes p "
 																					+ "WHERE o.id = :id_objeto "
 																					+ "AND p.recebedor.id = :id_recebedor "

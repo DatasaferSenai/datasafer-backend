@@ -23,10 +23,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import datasafer.backup.dao.utility.Carregador.FormulaHql;
+import datasafer.backup.dao.utility.annotations.FormulaHql;
+import datasafer.backup.dao.utility.annotations.Identificador;
+import datasafer.backup.dao.utility.annotations.Indireto;
 
 @Entity
 public class Estacao {
+
+	public Estacao() {}
+
+	public Estacao(Usuario proprietario, String nome, String descricao) {
+		this.proprietario = proprietario;
+		this.nome = nome;
+		this.descricao = descricao;
+	}
 
 	@JsonIgnore
 	@Id
@@ -47,6 +57,7 @@ public class Estacao {
 	@JoinColumn(name = "estacao_id")
 	private List<Registro> registros = new ArrayList<Registro>();
 
+	@Identificador
 	@JsonProperty
 	@Column(length = 40, unique = true, nullable = false)
 	private String nome = null;
@@ -68,6 +79,31 @@ public class Estacao {
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
 	private List<Permissao> permissoes = new ArrayList<Permissao>();
+
+	@JsonProperty
+	@Column(nullable = false /* , columnDefinition = "TINYINT(1)" */)
+	private Boolean ativo = true;
+
+	@JsonProperty("login_proprietario")
+	@Transient
+	@Indireto(atributo = "proprietario", identificador = "login")
+	private String loginProprietario = null;
+
+	public String getLoginProprietario() {
+		return loginProprietario;
+	}
+
+	public void setLoginProprietario(String loginProprietario) {
+		this.loginProprietario = loginProprietario;
+	}
+
+	public Boolean getAtivo() {
+		return ativo;
+	}
+
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
+	}
 
 	public Long getId() {
 		return id;

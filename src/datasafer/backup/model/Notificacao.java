@@ -16,6 +16,8 @@ import javax.persistence.Transient;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import datasafer.backup.dao.utility.annotations.Indireto;
+
 @Entity
 public class Notificacao {
 
@@ -54,6 +56,7 @@ public class Notificacao {
 
 	@JsonProperty("login_usuario")
 	@Transient
+	@Indireto(atributo = "usuario", identificador = "login")
 	private String loginUsuario = null;
 
 	public String getLoginUsuario() {

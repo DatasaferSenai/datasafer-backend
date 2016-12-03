@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 
@@ -104,7 +103,7 @@ public class ValidadorFilter implements Filter {
 				}
 
 				if (request.getHeader("backup") != null) {
-					backup = carregador.obtemEntidade(Backup.class, "usuario", usuario, "estacao", estacao, "nome", (String) request.getHeader("backup"));
+					backup = carregador.obtemEntidade(Backup.class, "proprietario", usuario, "estacao", estacao, "nome", (String) request.getHeader("backup"));
 				}
 				if (backup == null) {
 					response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -138,7 +137,8 @@ public class ValidadorFilter implements Filter {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			return;
 		}
 
 	}

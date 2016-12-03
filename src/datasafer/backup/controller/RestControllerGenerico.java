@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,27 +33,35 @@ public class RestControllerGenerico {
 	@Autowired
 	private Modificador modificador;
 
+	@Transactional
 	@RequestMapping(value = "/{objeto}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obtem(HttpServletRequest req,
-										@PathVariable String objeto) throws Exception {
+	public ResponseEntity<Object> obtemGenerico(HttpServletRequest req,
+												@RequestAttribute Usuario solicitante,
+												@PathVariable String objeto) throws Exception {
 
-		return new ResponseEntity<>(carregador.carregaTransientes(req.getAttribute(objeto)), HttpStatus.OK);
+		return new ResponseEntity<>(carregador.carregaTransientes(	solicitante,
+																	req.getAttribute(objeto)),
+									HttpStatus.OK);
 	}
 
-	@RequestMapping(value = "/{objeto}/{atributo}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> obtem(HttpServletRequest req,
-										@PathVariable String objeto,
-										@PathVariable String atributo) throws Exception {
+	@SuppressWarnings("unchecked")
+	@RequestMapping(value = "/{objeto}/{colecao}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity<Object> obtemColecaoGenerico(	HttpServletRequest req,
+														@RequestAttribute Usuario solicitante,
+														@PathVariable String objeto,
+														@PathVariable String colecao) throws Exception {
 
-		return new ResponseEntity<>(carregador.carregaTransientes(carregador.carregaAtributo(req.getAttribute(objeto), atributo)), HttpStatus.OK);
+		return new ResponseEntity<>(carregador.carregaTransientes(	solicitante,
+																	carregador.obtemAtributo(solicitante, req.getAttribute(objeto), colecao, List.class)),
+									HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "/{objeto}", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,
 					produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-	public ResponseEntity<Object> modifica(	HttpServletRequest req,
-											@RequestAttribute Usuario solicitante,
-											@PathVariable String objeto,
-											@RequestBody String valores) throws Exception {
+	public ResponseEntity<Object> modificaGenerico(	HttpServletRequest req,
+													@RequestAttribute Usuario solicitante,
+													@PathVariable String objeto,
+													@RequestBody String valores) throws Exception {
 
 		modificador.modifica(solicitante, req.getAttribute(objeto), valores);
 		return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
@@ -85,7 +94,7 @@ public class RestControllerGenerico {
 		if (operacao.getStatus().equals(Operacao.Status.EXECUTADO)
 				|| operacao.getStatus().equals(Operacao.Status.RESTAURADO)
 				|| operacao.getStatus().equals(Operacao.Status.FALHA)) {
-			NotificadorOneSignal.envia(	(List<Notificacao>) carregador.obtemAtributo(usuario, "notificoes"),
+			NotificadorOneSignal.envia(	(List<Notificacao>) carregador.obtemAtributo(solicitante, usuario, "notificoes"),
 										"O backup " + backup.getNome() + " do " + backup.getEstacao()
 																						.getNome()
 												+ (operacao	.getStatus()

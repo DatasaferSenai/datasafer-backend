@@ -53,11 +53,13 @@ public class AutorizacaoRestController {
 						existente.setUltimaTentativa(Timestamp.from(LocalDateTime	.now()
 																					.toInstant(ZoneOffset.UTC)));
 
-						modificador.modifica(null, existente, existente);
+						modificador.modifica(null, existente);
 					}
 					if (tentativas >= 3) {
-						existente.setStatus(Usuario.Status.SUSPENSO_TENTATIVAS);
-						modificador.modifica(null, existente, existente);
+						if (existente.getAtivo()) {
+							existente.setAtivo(false);
+							modificador.modifica(null, existente);
+						}
 					}
 				}
 
@@ -66,15 +68,21 @@ public class AutorizacaoRestController {
 											HttpStatus.UNAUTHORIZED);
 			}
 
-			if (!logado.getStatus().equals(Usuario.Status.ATIVO)) {
-				return new ResponseEntity<>(new JSONObject().put("erro", logado.getStatus())
-															.toString(),
-											HttpStatus.FORBIDDEN);
+			if (!logado.getAtivo()) {
+				if (logado.getTentativas() < 3) {
+					return new ResponseEntity<>(new JSONObject().put("erro", "Usuário ou senha inválidos")
+																.toString(),
+												HttpStatus.UNAUTHORIZED);
+				} else {
+					return new ResponseEntity<>(new JSONObject().put("erro", "Usuário suspenso por excesso de tentativas")
+																.toString(),
+												HttpStatus.UNAUTHORIZED);
+				}
 			}
 
 			if (logado.getTentativas() > 0) {
 				logado.setTentativas(0);
-				modificador.modifica(null, logado, logado);
+				modificador.modifica(null, logado);
 			}
 
 			Autorizacao token = autorizacaoDao.emiteAutorizacao(logado, req.getRemoteAddr() != null	? req.getRemoteAddr()

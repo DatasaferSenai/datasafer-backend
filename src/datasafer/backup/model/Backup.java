@@ -25,21 +25,41 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import datasafer.backup.dao.utility.Carregador.FormulaHql;
+import datasafer.backup.dao.utility.annotations.FormulaHql;
+import datasafer.backup.dao.utility.annotations.Identificador;
+import datasafer.backup.dao.utility.annotations.Indireto;
 
 @Entity
 public class Backup {
+
+	public static class Views {
+
+	}
+
+	public Backup() {}
+
+	public Backup(Usuario proprietario, Estacao estacao, String nome, String descricao, Timestamp inicio, Long intervalo, String pasta) {
+		this.proprietario = proprietario;
+		this.estacao = estacao;
+		this.nome = nome;
+		this.descricao = descricao;
+		this.inicio = inicio;
+		this.intervalo = intervalo;
+		this.pasta = pasta;
+	}
 
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id = null;
 
+	@Identificador
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "priorietario_id")
 	private Usuario proprietario = null;
 
+	@Identificador
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "estacao_id")
@@ -54,6 +74,7 @@ public class Backup {
 	@JoinColumn(name = "backup_id")
 	private List<Registro> registros = new ArrayList<Registro>();
 
+	@Identificador
 	@JsonProperty
 	@Column(length = 40, nullable = false)
 	private String nome = null;
@@ -69,7 +90,7 @@ public class Backup {
 
 	@JsonProperty
 	@Column(nullable = false)
-	private long intervalo = 0L;
+	private Long intervalo = 0L;
 
 	@JsonProperty
 	@Column(nullable = false)
@@ -108,9 +129,7 @@ public class Backup {
 
 	@JsonProperty("login_proprietario")
 	@Transient
-	@FormulaHql(identificador = "id",
-				formula = "SELECT backup.proprietario.login FROM Backup backup "
-						+ "WHERE backup.id = :id")
+	@Indireto(atributo = "proprietario", identificador = "login")
 	private String loginProprietario = null;
 
 	@JsonIgnore
@@ -118,65 +137,9 @@ public class Backup {
 	@JoinColumn(name = "backup_id")
 	private List<Permissao> permissoes = new ArrayList<Permissao>();
 
-	public String getLoginProprietario() {
-		return loginProprietario;
-	}
-
-	public void setLoginProprietario(String loginProprietario) {
-		this.loginProprietario = loginProprietario;
-	}
-
-	public void setArmazenamentoOcupado(Long armazenamentoOcupado) {
-		this.armazenamentoOcupado = armazenamentoOcupado;
-	}
-
-	public List<Permissao> getPermissoes() {
-		return permissoes;
-	}
-
-	public void setPermissoes(List<Permissao> permissoes) {
-		this.permissoes = permissoes;
-	}
-
-	public String getNomeEstacao() {
-		return nomeEstacao;
-	}
-
-	public void setNomeEstacao(String nomeEstacao) {
-		this.nomeEstacao = nomeEstacao;
-	}
-
-	public long getArmazenamentoOcupado() {
-		return armazenamentoOcupado;
-	}
-
-	public void setArmazenamentoOcupado(long armazenamentoOcupado) {
-		this.armazenamentoOcupado = armazenamentoOcupado;
-	}
-
-	public Operacao getUltimaOperacao() {
-		return ultimaOperacao;
-	}
-
-	public void setUltimaOperacao(Operacao ultimaOperacao) {
-		this.ultimaOperacao = ultimaOperacao;
-	}
-
-	public Map<Operacao.Status, Long> getStatusOperacoes() {
-		return statusOperacoes;
-	}
-
-	public void setStatusOperacoes(Map<Operacao.Status, Long> statusOperacoes) {
-		this.statusOperacoes = statusOperacoes;
-	}
-
-	public Usuario getProprietario() {
-		return proprietario;
-	}
-
-	public void setProprietario(Usuario proprietario) {
-		this.proprietario = proprietario;
-	}
+	@JsonProperty
+	@Column(nullable = false /* , columnDefinition = "TINYINT(1)" */)
+	private Boolean ativo = true;
 
 	public Long getId() {
 		return id;
@@ -186,20 +149,12 @@ public class Backup {
 		this.id = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public Usuario getProprietario() {
+		return proprietario;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
-	}
-
-	public String getDescricao() {
-		return descricao;
-	}
-
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
+	public void setProprietario(Usuario proprietario) {
+		this.proprietario = proprietario;
 	}
 
 	public Estacao getEstacao() {
@@ -218,6 +173,30 @@ public class Backup {
 		this.operacoes = operacoes;
 	}
 
+	public List<Registro> getRegistros() {
+		return registros;
+	}
+
+	public void setRegistros(List<Registro> registros) {
+		this.registros = registros;
+	}
+
+	public String getNome() {
+		return nome;
+	}
+
+	public void setNome(String nome) {
+		this.nome = nome;
+	}
+
+	public String getDescricao() {
+		return descricao;
+	}
+
+	public void setDescricao(String descricao) {
+		this.descricao = descricao;
+	}
+
 	public Timestamp getInicio() {
 		return inicio;
 	}
@@ -226,11 +205,11 @@ public class Backup {
 		this.inicio = inicio;
 	}
 
-	public long getIntervalo() {
+	public Long getIntervalo() {
 		return intervalo;
 	}
 
-	public void setIntervalo(long intervalo) {
+	public void setIntervalo(Long intervalo) {
 		this.intervalo = intervalo;
 	}
 
@@ -242,12 +221,60 @@ public class Backup {
 		this.pasta = pasta;
 	}
 
-	public List<Registro> getRegistros() {
-		return registros;
+	public Operacao getUltimaOperacao() {
+		return ultimaOperacao;
 	}
 
-	public void setRegistros(List<Registro> registros) {
-		this.registros = registros;
+	public void setUltimaOperacao(Operacao ultimaOperacao) {
+		this.ultimaOperacao = ultimaOperacao;
+	}
+
+	public Map<Operacao.Status, Long> getStatusOperacoes() {
+		return statusOperacoes;
+	}
+
+	public void setStatusOperacoes(Map<Operacao.Status, Long> statusOperacoes) {
+		this.statusOperacoes = statusOperacoes;
+	}
+
+	public Long getArmazenamentoOcupado() {
+		return armazenamentoOcupado;
+	}
+
+	public void setArmazenamentoOcupado(Long armazenamentoOcupado) {
+		this.armazenamentoOcupado = armazenamentoOcupado;
+	}
+
+	public String getNomeEstacao() {
+		return nomeEstacao;
+	}
+
+	public void setNomeEstacao(String nomeEstacao) {
+		this.nomeEstacao = nomeEstacao;
+	}
+
+	public String getLoginProprietario() {
+		return loginProprietario;
+	}
+
+	public void setLoginProprietario(String loginProprietario) {
+		this.loginProprietario = loginProprietario;
+	}
+
+	public List<Permissao> getPermissoes() {
+		return permissoes;
+	}
+
+	public void setPermissoes(List<Permissao> permissoes) {
+		this.permissoes = permissoes;
+	}
+
+	public Boolean getAtivo() {
+		return ativo;
+	}
+
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
 	}
 
 }

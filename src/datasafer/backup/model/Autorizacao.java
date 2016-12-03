@@ -17,6 +17,15 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 @Entity
 public class Autorizacao {
 
+	public Autorizacao() {}
+
+	public Autorizacao(Usuario usuario, String token, String ip, Timestamp emissao) {
+		this.usuario = usuario;
+		this.token = token;
+		this.ip = ip;
+		this.emissao = emissao;
+	}
+
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	@JoinColumn(name = "usuario_id")

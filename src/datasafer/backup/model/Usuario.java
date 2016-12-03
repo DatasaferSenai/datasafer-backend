@@ -18,13 +18,12 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Transient;
@@ -33,39 +32,25 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+import org.hibernate.annotations.ManyToAny;
+
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
-import datasafer.backup.dao.utility.Carregador.FormulaHql;
+import datasafer.backup.dao.utility.annotations.FormulaHql;
+import datasafer.backup.dao.utility.annotations.Identificador;
+import datasafer.backup.dao.utility.annotations.Indireto;
 
 @Entity
 public class Usuario {
-
-	public enum Status {
-		ATIVO("Usuário ativo"),
-		INATIVO("Usuário inativo"),
-		SUSPENSO_ADMINISTRADOR("Usuário suspenso pelo administrador"),
-		SUSPENSO_TENTATIVAS("Usuário suspenso por excesso de tentativas");
-
-		private String descricao;
-
-		private Status(String descricao) {
-			this.descricao = descricao;
-		}
-
-		@Override
-		public String toString() {
-			return this.descricao;
-		}
-	};
 
 	@JsonIgnore
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id = null;
-
+	
 	@JsonIgnore
 	@ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinColumn(name = "proprietario_id")
@@ -96,40 +81,40 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Autorizacao> autorizacoes = new ArrayList<Autorizacao>();
 
+	@Identificador
 	@JsonProperty
 	@Size(min = 4, max = 20, message = "O login deve ter no mínimo de 6 e no máximo 20 caracteres")
-	@NotNull(message = "Login inválido")
+	@NotNull(message = "Login não especificado")
 	@Column(unique = true)
 	private String login = null;
 
+	@NotNull(message = "Senha não especificada")
 	@Pattern(	regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=\\S+$).{8,32}$",
 				message = "Senha inválida. Deve conter ao menos um número, uma letra minúscula e uma letra maíuscula, não pode conter espaços e deve ter no mínimo 8 e no máximo 32 caracteres")
 	@JsonProperty(access = Access.WRITE_ONLY)
 	@Column(nullable = false)
 	private String senha = null;
 
-	// @Validar
+	@NotNull(message = "Especificar se o usuário deve estar ativo ou não")
 	@JsonProperty
-	@Enumerated(EnumType.STRING)
-	@NotNull(message = "Status inválido")
-	private Status status = Usuario.Status.ATIVO;
+	@Column(nullable = false /* , columnDefinition = "TINYINT(1)" */)
+	private Boolean ativo = true;
 
-	// @Validar
 	@JsonProperty
 	@Size(min = 3, max = 40, message = "O nome deve ter no mínimo 3 e no máximo 40 caracteres")
-	@NotNull(message = "O nome não pode ser nulo")
+	@NotNull(message = "Nome não especificado")
 	private String nome = null;
 
 	@JsonProperty
 	@Pattern(	regexp = "[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
 				message = "Email inválido")
 	@Size(max = 50, message = "O email deve ter máximo 50 caracteres")
-	@NotNull(message = "O email não pode ser nulo")
+	@NotNull(message = "Email não especificado")
 	private String email = null;
 
 	@JsonProperty
 	@Min(value = 0, message = "O armazenamento dever ser no mínimo 0")
-	@NotNull(message = "O armazenamento não pode ser nulo")
+	@NotNull(message = "Armazenamento não especificado")
 	private long armazenamento = 0L;
 
 	@JsonProperty(value = "armazenamento_ocupado", access = Access.READ_ONLY)
@@ -162,13 +147,6 @@ public class Usuario {
 	@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Notificacao> notificacoes = new ArrayList<Notificacao>();
 
-	@JsonProperty("login_superior")
-	@Transient
-	@FormulaHql(identificador = "id",
-				formula = "SELECT u.proprietario.login FROM Usuario u "
-						+ "WHERE u.id = :id ")
-	private String loginProprietario = null;
-
 	@JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	@JoinColumn(name = "usuario_id")
@@ -181,6 +159,19 @@ public class Usuario {
 	@JsonIgnore
 	@OneToMany(mappedBy = "recebedor", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 	private List<Permissao> permissoesRecebidas = new ArrayList<Permissao>();
+
+	@JsonProperty("login_superior")
+	@Transient
+	@Indireto(atributo = "proprietario", identificador = "login")
+	private String loginProprietario = null;
+
+	public String getLoginProprietario() {
+		return loginProprietario;
+	}
+
+	public void setLoginProprietario(String loginProprietario) {
+		this.loginProprietario = loginProprietario;
+	}
 
 	public void setSenha(String senha) {
 		try {
@@ -269,12 +260,12 @@ public class Usuario {
 		this.login = login;
 	}
 
-	public Status getStatus() {
-		return status;
+	public Boolean getAtivo() {
+		return ativo;
 	}
 
-	public void setStatus(Status status) {
-		this.status = status;
+	public void setAtivo(Boolean ativo) {
+		this.ativo = ativo;
 	}
 
 	public String getNome() {
@@ -339,14 +330,6 @@ public class Usuario {
 
 	public void setNotificacoes(List<Notificacao> notificacoes) {
 		this.notificacoes = notificacoes;
-	}
-
-	public String getLoginProprietario() {
-		return loginProprietario;
-	}
-
-	public void setLoginProprietario(String loginProprietario) {
-		this.loginProprietario = loginProprietario;
 	}
 
 	public List<Permissao> getPermissoes() {

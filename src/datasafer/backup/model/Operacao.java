@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import datasafer.backup.dao.utility.Carregador.FormulaHql;
+import datasafer.backup.dao.utility.annotations.Indireto;
 
 @Entity
 public class Operacao {
@@ -93,9 +93,7 @@ public class Operacao {
 
 	@JsonProperty("nome_backup")
 	@Transient
-	@FormulaHql(identificador = "id",
-				formula = "SELECT operacao.backup.nome FROM Operacao operacao "
-						+ "WHERE operacao.id = :id ")
+	@Indireto(atributo = "backup", identificador = "nome")
 	private String nomeBackup = null;
 
 	public String getNomeBackup() {
